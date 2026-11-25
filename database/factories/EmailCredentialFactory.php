@@ -86,4 +86,17 @@ class EmailCredentialFactory extends Factory
             'quota_fetched_at' => now(),
         ]);
     }
+
+    /**
+     * Indicate that the credential reaches AWS through an IAM role, not keys.
+     */
+    public function role(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'access_key' => null,
+            'secret_key' => null,
+            'role_arn' => 'arn:aws:iam::'.$attributes['aws_account_id'].':role/byomailer-ses',
+            'tenant_name' => 'byomailer',
+        ]);
+    }
 }
