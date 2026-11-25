@@ -141,9 +141,9 @@ class UpdateSequenceStepTool extends Tool
                 ->description('Verified sender identity id to send this step from.'),
             'email_template_id' => $schema->integer()
                 ->description('Optional email template id to wrap the content. Pass null to remove the template.'),
-            'subject' => $schema->string()->description('Email subject line. Supports {{ variable }} template tags.'),
+            'subject' => $schema->string()->description('Email subject line. Supports Liquid: {{ variable }} placeholders, filters such as {{ name | default: "friend" }}, and tags such as {% if %}.'),
             'preview_text' => $schema->string()->description('Inbox preview / preheader text.'),
-            'html_content' => $schema->string()->description('HTML body of the step. Plain-text is derived automatically.'),
+            'html_content' => $schema->string()->description('HTML body of the step. Plain-text is derived automatically. Supports Liquid: {{ variable }} placeholders, filters, and the {% if %}, {% unless %}, {% case %} and {% for %} tags. Each output is HTML-escaped. Content that is not valid Liquid is refused with the line of the error.'),
             ...$this->filtersSchema($schema, 'Step filters. A contact who does not match them skips only this step and moves on to the next step. The sequence filters still apply first. Use view-newsletter-filters-tool to build the array. Pass an empty array to clear the filters.'),
             ...$this->confirmLiveSchema($schema),
         ];
