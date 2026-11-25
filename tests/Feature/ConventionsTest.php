@@ -102,7 +102,7 @@ class ConventionsTest extends TestCase
      */
     private const LONG_VUE_FILES = [
         'resources/js/components/newsletters/FiltersForm.vue' => 673,
-        'resources/js/components/TiptapEditor.vue' => 783,
+        'resources/js/components/TiptapEditor.vue' => 772,
         'resources/js/pages/contacts/Show.vue' => 1453,
         'resources/js/pages/Dashboard.vue' => 1035,
         'resources/js/pages/documentation/api/Newsletters.vue' => 1129,

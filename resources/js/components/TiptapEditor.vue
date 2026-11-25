@@ -21,7 +21,6 @@ import {
     PhTextUnderline,
 } from '@phosphor-icons/vue';
 import Image from '@tiptap/extension-image';
-import Link from '@tiptap/extension-link';
 import Placeholder from '@tiptap/extension-placeholder';
 import TextAlign from '@tiptap/extension-text-align';
 import Underline from '@tiptap/extension-underline';
@@ -40,6 +39,7 @@ import { ContentSlotBadge } from '@/components/tiptap/ContentSlotBadge';
 import { inlineElementDefaults } from '@/components/tiptap/elementDefaults';
 import FontFamilyMenu from '@/components/tiptap/FontFamilyMenu.vue';
 import FontSizeMenu from '@/components/tiptap/FontSizeMenu.vue';
+import { TrackedLink } from '@/components/tiptap/TrackedLink';
 import { TYPOGRAPHY_EXTENSIONS } from '@/components/tiptap/typography';
 import {
     hasContentPlaceholder,
@@ -100,7 +100,6 @@ const fromEditorHtml = (html: string): string => {
 const uploading = ref(false);
 const uploadError = ref<string | null>(null);
 const isLinkModalOpen = ref(false);
-const linkModalInitialUrl = ref('');
 const isGalleryModalOpen = ref(false);
 const isBlockModalOpen = ref(false);
 
@@ -109,6 +108,7 @@ const extensions = [
         heading: {
             levels: [1, 2, 3],
         },
+        link: false,
     }),
     Underline,
     Image.configure({
@@ -116,7 +116,7 @@ const extensions = [
             class: 'max-w-full h-auto rounded-lg',
         },
     }),
-    Link.configure({
+    TrackedLink.configure({
         openOnClick: false,
         HTMLAttributes: {
             style: 'color: #2563eb; text-decoration: underline',
@@ -140,7 +140,11 @@ const editor = useEditor({
     editable: !props.disabled,
     extensions,
     editorProps: {
-        attributes: { role: 'textbox', 'aria-multiline': 'true', 'aria-label': props.ariaLabel ?? 'Content' },
+        attributes: {
+            role: 'textbox',
+            'aria-multiline': 'true',
+            'aria-label': props.ariaLabel ?? 'Content',
+        },
     },
     onUpdate: ({ editor }) => {
         emit('update:modelValue', fromEditorHtml(editor.getHTML()));
@@ -189,7 +193,9 @@ watch(
         const currentSerialized = fromEditorHtml(editor.value.getHTML());
 
         if (currentSerialized !== value) {
-            editor.value.commands.setContent(toEditorHtml(value), { emitUpdate: false });
+            editor.value.commands.setContent(toEditorHtml(value), {
+                emitUpdate: false,
+            });
         }
     },
 );
@@ -205,7 +211,9 @@ watch(
 
 onMounted(() => {
     if (editor.value && props.modelValue) {
-        editor.value.commands.setContent(toEditorHtml(props.modelValue), { emitUpdate: false });
+        editor.value.commands.setContent(toEditorHtml(props.modelValue), {
+            emitUpdate: false,
+        });
     }
 });
 
@@ -227,26 +235,7 @@ defineExpose({
 });
 
 const openLinkModal = (): void => {
-    if (!editor.value || props.disabled) {
-        return;
-    }
-
-    const previousUrl = editor.value.getAttributes('link').href ?? '';
-    linkModalInitialUrl.value = previousUrl;
-    isLinkModalOpen.value = true;
-};
-
-const handleLinkConfirm = (url: string): void => {
-    if (!editor.value) {
-        return;
-    }
-
-    editor.value
-        .chain()
-        .focus()
-        .extendMarkRange('link')
-        .setLink({ href: url })
-        .run();
+    isLinkModalOpen.value = Boolean(editor.value) && !props.disabled;
 };
 
 const triggerImageUpload = (): void => {
@@ -583,13 +572,18 @@ const handleDrop = async (event: DragEvent): Promise<void> => {
         </div>
 
         <div class="p-3">
-            <div class="overflow-hidden rounded-md border border-border/40 bg-white">
+            <div
+                class="overflow-hidden rounded-md border border-border/40 bg-white"
+            >
                 <div
                     v-if="templateChrome?.hasSlot"
                     class="border-b border-dashed border-border/60"
                     data-template-chrome="before"
                 >
-                    <HtmlPreview :html="templateChrome.before" :min-height="40" />
+                    <HtmlPreview
+                        :html="templateChrome.before"
+                        :min-height="40"
+                    />
                 </div>
 
                 <EditorContent
@@ -604,16 +598,18 @@ const handleDrop = async (event: DragEvent): Promise<void> => {
                     class="border-t border-dashed border-border/60"
                     data-template-chrome="after"
                 >
-                    <HtmlPreview :html="templateChrome.after" :min-height="40" />
+                    <HtmlPreview
+                        :html="templateChrome.after"
+                        :min-height="40"
+                    />
                 </div>
             </div>
         </div>
 
         <InsertLinkModal
             :is-open="isLinkModalOpen"
-            :initial-url="linkModalInitialUrl"
+            :editor="editor"
             @update:is-open="(open: boolean) => (isLinkModalOpen = open)"
-            @confirm="handleLinkConfirm"
         />
 
         <ImageGalleryModal
@@ -773,6 +769,4 @@ const handleDrop = async (event: DragEvent): Promise<void> => {
     border: 1px dashed #f59e0b;
     cursor: default;
 }
-
-
 </style>
