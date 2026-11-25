@@ -164,6 +164,23 @@ class SendNewsletterServiceTest extends TestCase
         $batch->shouldHaveReceived('add')->once();
     }
 
+    public function test_it_stores_the_template_of_variant_b_when_variant_a_uses_liquid(): void
+    {
+        [$newsletter] = $this->queuedNewsletterWithContacts(2, abTest: true);
+
+        $transport = Mockery::mock(NewsletterTransport::class);
+        $transport->shouldReceive('usesSesApi')->andReturn(true);
+        $transport->shouldReceive('createTemplate')->twice()->andReturn(null, 'tpl-b');
+        $transport->shouldReceive('getChunkSize')->andReturn(50);
+        $this->app->instance(NewsletterTransport::class, $transport);
+
+        app(SendNewsletterService::class)->send($newsletter, $this->fakeBatch());
+        app(SendNewsletterService::class)->send($newsletter->fresh(), $this->fakeBatch());
+
+        $this->assertNull($newsletter->fresh()->template_name);
+        $this->assertSame('tpl-b', $newsletter->fresh()->ab_template_name);
+    }
+
     public function test_it_excludes_contacts_that_already_have_a_contact_mail_for_the_newsletter(): void
     {
         $user = User::factory()->create();

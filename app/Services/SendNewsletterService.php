@@ -88,15 +88,16 @@ class SendNewsletterService
         }
 
         // A retry of SendNewsletterJob reuses the templates of the first attempt,
-        // because the chunk jobs in the queue already use them.
+        // because the chunk jobs in the queue already use them. A variant with
+        // Liquid code has no template, so only one of the two names can be set.
         $templateNameA = $newsletter->template_name;
         $templateNameB = $newsletter->ab_template_name;
 
-        if ($templateNameA === null) {
+        if ($templateNameA === null && $templateNameB === null) {
             $templateNameA = $this->transport->createTemplate($newsletter, $owner, $messageA);
             $templateNameB = $messageB ? $this->transport->createTemplate($newsletter, $owner, $messageB) : null;
 
-            if ($templateNameA !== null) {
+            if ($templateNameA !== null || $templateNameB !== null) {
                 $newsletter->update([
                     'template_name' => $templateNameA,
                     'ab_template_name' => $templateNameB,

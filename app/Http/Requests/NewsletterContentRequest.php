@@ -33,9 +33,9 @@ class NewsletterContentRequest extends FormRequest
             'email_template_id' => ['nullable', 'integer', $this->clientTemplateExistsRule()],
             'template_slot_content' => ['nullable', 'string'],
             'ab_test_enabled' => ['sometimes', 'boolean'],
-            'subject_b' => ['required_if:ab_test_enabled,true', 'nullable', 'string', 'max:255'],
-            'preview_text_b' => ['nullable', 'string', 'max:255', new SafeHtml],
-            'html_content_b' => ['required_if:ab_test_enabled,true', 'nullable', 'string', 'max:524288', new SafeTemplatedHtml],
+            'subject_b' => ['required_if:ab_test_enabled,true', 'nullable', 'string', 'max:255', new ValidLiquid],
+            'preview_text_b' => ['nullable', 'string', 'max:255', new SafeHtml, new ValidLiquid],
+            'html_content_b' => ['required_if:ab_test_enabled,true', 'nullable', 'string', 'max:524288', new SafeTemplatedHtml, new ValidLiquid],
             'template_slot_content_b' => ['nullable', 'string'],
         ];
     }

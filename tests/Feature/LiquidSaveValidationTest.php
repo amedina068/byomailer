@@ -56,6 +56,21 @@ class LiquidSaveValidationTest extends TestCase
             ->assertJsonPath('errors.subject.0', fn (string $message): bool => str_contains($message, 'shout'));
     }
 
+    public function test_the_api_refuses_a_variant_b_that_is_not_valid_liquid(): void
+    {
+        Sanctum::actingAs(User::factory()->create(), ['*']);
+
+        $this->postJson('/api/v1/newsletters', [
+            'title' => 'News',
+            'subject' => 'Hi',
+            'html_content' => '<p>A</p>',
+            'ab_test_enabled' => true,
+            'subject_b' => 'Hi {{ name | shout }}',
+            'html_content_b' => self::BROKEN,
+            'status' => 'draft',
+        ])->assertUnprocessable()->assertJsonValidationErrors(['subject_b', 'html_content_b']);
+    }
+
     public function test_the_dashboard_refuses_newsletter_content_that_is_not_valid_liquid(): void
     {
         $user = User::factory()->create();
