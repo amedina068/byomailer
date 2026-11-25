@@ -541,9 +541,10 @@ class ProcessSesEventJob implements ShouldQueue
      * The mail, the link and the click time identify one click. A duplicate
      * SQS message carries the same three values, so it adds no second row.
      *
-     * The link name comes from the SES link tag of the anchor. The user agent
-     * and the IP address are kept for a later bot filter, because link
-     * scanners (Safe Links, Mimecast) also click.
+     * The link name comes from the SES link tag of the anchor. A new click on
+     * a named link starts the link automations, and a duplicate does not. The
+     * user agent and the IP address are kept for a later bot filter, because
+     * link scanners (Safe Links, Mimecast) also click.
      *
      * @param  array<string, mixed>  $click
      */
@@ -554,10 +555,11 @@ class ProcessSesEventJob implements ShouldQueue
         }
 
         $link = data_get($click, 'link');
+        $linkName = NamedLink::fromSesClick($click);
         $userAgent = data_get($click, 'userAgent');
         $ipAddress = data_get($click, 'ipAddress');
 
-        ContactMailClick::query()->firstOrCreate(
+        $contactMailClick = ContactMailClick::query()->firstOrCreate(
             [
                 'contact_mail_id' => $contactMail->id,
                 'link' => is_string($link) ? $link : null,
@@ -565,11 +567,15 @@ class ProcessSesEventJob implements ShouldQueue
             ],
             [
                 'contact_id' => $contactMail->contact_id,
-                'link_name' => NamedLink::fromSesClick($click),
+                'link_name' => $linkName,
                 'user_agent' => is_string($userAgent) ? Str::limit($userAgent, 512, '') : null,
                 'ip_address' => is_string($ipAddress) ? Str::limit($ipAddress, 45, '') : null,
             ],
         );
+
+        if ($contactMailClick->wasRecentlyCreated && $linkName !== null) {
+            $contactMail->contact?->clickedLink($linkName);
+        }
     }
 
     /**

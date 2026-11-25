@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\SequenceStatus;
 use App\Events\ContactAttributesChanged;
+use App\Events\ContactClickedLink;
 use App\Events\ContactListsSynced;
 use App\Events\ContactSequencesSynced;
 use App\Events\ContactTagsSynced;
@@ -11,6 +12,7 @@ use App\Jobs\SendOptInEmailJob;
 use App\Models\Concerns\BelongsToClient;
 use App\Models\Concerns\HasUuid;
 use App\Services\ContactFilterService;
+use App\Support\AutomationDefinition;
 use Database\Factories\ContactFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -93,6 +95,17 @@ class Contact extends Model
      * Whether the client of this contact has a live visual automation. The
      * enrollment listeners read the trigger of each one.
      */
+    /**
+     * Start the link automations for a click on a named link. One cheap query
+     * skips the event when the client has no live automation that can match.
+     */
+    public function clickedLink(string $linkName): void
+    {
+        if ($this->hasLiveAutomationsFor([AutomationDefinition::LINK_CLICKED]) || $this->hasLiveVisualAutomations()) {
+            ContactClickedLink::dispatch($this, $linkName);
+        }
+    }
+
     private function hasLiveVisualAutomations(): bool
     {
         return VisualAutomation::withoutGlobalScopes()

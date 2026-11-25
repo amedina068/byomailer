@@ -21,11 +21,11 @@ trait EnrollsVisualAutomations
     }
 
     /**
-     * @param  array<int, int>  $ids
+     * @param  array<int, int|string>  $values  The ids of the lists, tags or sequences, or the link names.
      */
-    protected function enroll(Contact $contact, string $triggerType, array $ids): void
+    protected function enroll(Contact $contact, string $triggerType, array $values): void
     {
-        if ($ids === []) {
+        if ($values === []) {
             return;
         }
 
@@ -33,7 +33,7 @@ trait EnrollsVisualAutomations
             ->where('client_id', $contact->client_id)
             ->live()
             ->get()
-            ->filter(fn (VisualAutomation $automation): bool => $automation->isTriggeredBy($triggerType, $ids))
+            ->filter(fn (VisualAutomation $automation): bool => $automation->isTriggeredBy($triggerType, $values))
             ->each(fn (VisualAutomation $automation) => $this->engine->enroll($automation, $contact));
     }
 }

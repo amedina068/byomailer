@@ -4,6 +4,8 @@ namespace App\Models;
 
 use App\Models\Concerns\BelongsToClient;
 use App\Models\Concerns\HasProjects;
+use App\Support\AutomationDefinition;
+use App\Support\NamedLink;
 use Database\Factories\VisualAutomationFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -44,18 +46,26 @@ class VisualAutomation extends Model
     }
 
     /**
-     * Whether the trigger has this type and matches one of the IDs. A trigger
-     * without a value matches each ID.
+     * Whether the trigger has this type and matches one of the values. A list,
+     * tag or sequence trigger without a value matches each ID. A link trigger
+     * matches only the link name that it names.
      *
-     * @param  array<int, int>  $ids
+     * @param  array<int, int|string>  $values
      */
-    public function isTriggeredBy(string $triggerType, array $ids): bool
+    public function isTriggeredBy(string $triggerType, array $values): bool
     {
         $trigger = $this->triggerNode()['data'] ?? [];
         $value = $trigger['value'] ?? null;
 
-        return ($trigger['trigger_type'] ?? null) === $triggerType
-            && ($value === null || in_array((int) $value, $ids, true));
+        if (($trigger['trigger_type'] ?? null) !== $triggerType) {
+            return false;
+        }
+
+        if ($triggerType === AutomationDefinition::LINK_CLICKED) {
+            return in_array(NamedLink::normalize($value), $values, true);
+        }
+
+        return $value === null || in_array((int) $value, $values, true);
     }
 
     /**

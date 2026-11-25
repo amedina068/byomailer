@@ -8,6 +8,8 @@ use App\Models\Sequence;
 use App\Models\Tag;
 use App\Models\Topic;
 use App\Rules\SequenceMustBeLive;
+use App\Support\AutomationDefinition;
+use App\Support\NamedLink;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
@@ -46,6 +48,7 @@ class StoreVisualAutomationRequest extends FormRequest
                 'contact_added_to_list', 'removed_from_list',
                 'tag_added', 'removed_tag',
                 'added_to_sequence', 'sequence_finished',
+                AutomationDefinition::LINK_CLICKED,
             ])],
             'workflow.nodes.*.data.action_type' => ['nullable', 'string', Rule::in([
                 'add_tag', 'remove_tag',
@@ -58,7 +61,7 @@ class StoreVisualAutomationRequest extends FormRequest
                 'subscribed_to_topic', 'not_subscribed_to_topic',
                 'in_sequence', 'not_in_sequence',
             ])],
-            'workflow.nodes.*.data.value' => ['nullable', 'integer'],
+            'workflow.nodes.*.data.value' => ['nullable'],
             'workflow.nodes.*.data.duration' => ['nullable', 'integer', 'min:1'],
             'workflow.nodes.*.data.unit' => ['nullable', 'string', Rule::in(['minutes', 'hours', 'days'])],
             'workflow.edges' => ['present', 'array'],
@@ -97,8 +100,38 @@ class StoreVisualAutomationRequest extends FormRequest
                 }
             }
 
+            $this->validateNodeValues($validator, $nodes);
             $this->validateResourceOwnership($validator, $nodes);
         });
+    }
+
+    /**
+     * A "link clicked" trigger takes a link name. Every other node value is
+     * the id of a list, tag, topic or sequence.
+     *
+     * @param  array<int, mixed>  $nodes
+     */
+    private function validateNodeValues(Validator $validator, array $nodes): void
+    {
+        foreach ($nodes as $index => $node) {
+            $value = $node['data']['value'] ?? null;
+
+            if ($value === null) {
+                continue;
+            }
+
+            if (($node['data']['trigger_type'] ?? null) === AutomationDefinition::LINK_CLICKED) {
+                if (! is_string($value) || mb_strlen($value) > NamedLink::MAX_LENGTH || NamedLink::normalize($value) === null) {
+                    $validator->errors()->add("workflow.nodes.{$index}.data.value", 'Enter a link name with a letter or a digit, '.NamedLink::MAX_LENGTH.' characters or fewer.');
+                }
+
+                continue;
+            }
+
+            if (filter_var($value, FILTER_VALIDATE_INT) === false) {
+                $validator->errors()->add("workflow.nodes.{$index}.data.value", 'The value must be an id.');
+            }
+        }
     }
 
     /**
