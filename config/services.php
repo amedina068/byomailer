@@ -73,4 +73,10 @@ return [
         'og_template_id' => env('SNAPSBREW_OG_TEMPLATE_ID'),
     ],
 
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => '/auth/google/callback',
+    ],
+
 ];
