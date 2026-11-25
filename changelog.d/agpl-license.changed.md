@@ -1,1 +1,0 @@
-- BYOMailer is licensed under the AGPL-3.0.

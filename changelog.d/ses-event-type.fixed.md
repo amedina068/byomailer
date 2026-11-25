@@ -1,1 +1,0 @@
-- A mail that SES cannot render now shows the status failed with the SES error message. Before, the app ignored the SES "Rendering Failure" event, and the mail stayed pending.

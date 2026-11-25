@@ -1,1 +1,0 @@
-- The dashboard keeps each sequence variable default that you save, also for a variable that no step uses yet. The API and the MCP tools already did this.

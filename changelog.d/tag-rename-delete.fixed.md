@@ -1,1 +1,0 @@
-- The API refuses to rename or delete a tag that a saved filter of a newsletter, a sequence, a sequence step or a segment uses. A tag delete now runs the removed-tag automations for each contact.

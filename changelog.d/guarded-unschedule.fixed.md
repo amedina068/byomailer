@@ -1,1 +1,0 @@
-- When a scheduled newsletter starts to send before you unschedule it, the dashboard, the API and the MCP server now report an error. The API `status: draft` also clears `scheduled_at`.

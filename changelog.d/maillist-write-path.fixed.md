@@ -1,1 +1,0 @@
-- Lists: a duplicate list name gives a validation error on the dashboard and in the API. Before, it gave a server error. The API refuses to delete a list when a newsletter that is not sent, a sequence, a segment or an automation uses the list or one of its topics. The `422` error names each item.

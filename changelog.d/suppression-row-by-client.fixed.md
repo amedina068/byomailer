@@ -1,1 +1,0 @@
-- A complaint or a bounce suppresses the contact when another team member created the suppression row of the address. Before, the SES event failed and the contact stayed subscribed.

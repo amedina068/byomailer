@@ -1,1 +1,0 @@
-- The API deletes a scheduled newsletter, the same as the dashboard. A delete never removes a newsletter that started to send.

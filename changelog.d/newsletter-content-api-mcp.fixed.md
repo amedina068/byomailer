@@ -1,1 +1,0 @@
-- The API and the MCP server refuse a change that leaves a scheduled newsletter with a blank subject or body. Setting filters removes a saved segment. The MCP server applies the email template at send time, and it refuses an HTML body that it cannot convert to plain text.
