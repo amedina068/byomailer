@@ -43,7 +43,7 @@ class ProbeVerifiedLinkDomainsTest extends TestCase
 
     /**
      * A broken verified domain must alert, but it must stay verified. If the
-     * app cleared it, sent mail would fall back to links on the app host.
+     * app clears it, sent mail falls back to links on the app host.
      */
     public function test_an_unhealthy_domain_is_reported_and_stays_verified(): void
     {

@@ -11,9 +11,9 @@ use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Probes each verified custom link domain through the domain and reports each
- * failure to the operator. It never clears `custom_link_domain_verified_at`.
- * The customer cannot correct the origin web server, and sent mail would fall
- * back to links on the app host.
+ * failure to the operator. The customer cannot correct the origin web server.
+ * The command never clears `custom_link_domain_verified_at`, because sent mail
+ * then falls back to links on the app host.
  */
 class ProbeVerifiedLinkDomains extends Command
 {
