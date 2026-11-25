@@ -6,6 +6,7 @@ use App\Enums\NewsletterStatus;
 use App\Exceptions\MissingSesPermissionException;
 use App\Exceptions\SendingBlockedException;
 use App\Jobs\SendNewsletterChunkJob;
+use App\Models\Message;
 use App\Models\Newsletter;
 use App\Models\User;
 use Illuminate\Bus\Batch;
@@ -87,23 +88,7 @@ class SendNewsletterService
             $fromName = $message->from_name;
         }
 
-        // A retry of SendNewsletterJob reuses the templates of the first attempt,
-        // because the chunk jobs in the queue already use them. A variant with
-        // Liquid code has no template, so only one of the two names can be set.
-        $templateNameA = $newsletter->template_name;
-        $templateNameB = $newsletter->ab_template_name;
-
-        if ($templateNameA === null && $templateNameB === null) {
-            $templateNameA = $this->transport->createTemplate($newsletter, $owner, $messageA);
-            $templateNameB = $messageB ? $this->transport->createTemplate($newsletter, $owner, $messageB) : null;
-
-            if ($templateNameA !== null || $templateNameB !== null) {
-                $newsletter->update([
-                    'template_name' => $templateNameA,
-                    'ab_template_name' => $templateNameB,
-                ]);
-            }
-        }
+        [$templateNameA, $templateNameB] = $this->templateNames($newsletter, $owner, $messageA, $messageB);
 
         $filters = $newsletter->effectiveFilters();
 
@@ -186,5 +171,32 @@ class SendNewsletterService
             : SesPermissionChecker::SEND_EMAIL;
 
         $this->permissionChecker->ensureAll($owner, $required);
+    }
+
+    /**
+     * The SES template names of variants A and B. A retry of SendNewsletterJob
+     * reuses the templates of the first attempt, because the chunk jobs in the
+     * queue already use them. A variant with Liquid code has no template, so
+     * only one of the two names can be set.
+     *
+     * @return array{0: ?string, 1: ?string}
+     */
+    private function templateNames(Newsletter $newsletter, User $owner, Message $messageA, ?Message $messageB): array
+    {
+        if ($newsletter->template_name !== null || $newsletter->ab_template_name !== null) {
+            return [$newsletter->template_name, $newsletter->ab_template_name];
+        }
+
+        $templateNameA = $this->transport->createTemplate($newsletter, $owner, $messageA);
+        $templateNameB = $messageB ? $this->transport->createTemplate($newsletter, $owner, $messageB) : null;
+
+        if ($templateNameA !== null || $templateNameB !== null) {
+            $newsletter->update([
+                'template_name' => $templateNameA,
+                'ab_template_name' => $templateNameB,
+            ]);
+        }
+
+        return [$templateNameA, $templateNameB];
     }
 }
