@@ -1,0 +1,1 @@
+- Topics: the dashboard and the API refuse to delete a topic when a newsletter that is not sent, a sequence, a segment or a visual automation uses the topic. The dashboard shows the reason in an error message. The API returns `422` and names each item.

@@ -1,0 +1,1 @@
+- The dashboard checks the newsletter body for unsafe HTML and a 500 KB size limit, the same as the API and the MCP server. Changes to a newsletter that started to send now fail with an error. A change to a scheduled newsletter fails when it leaves a blank subject or body.

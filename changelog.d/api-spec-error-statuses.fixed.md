@@ -1,0 +1,1 @@
+- The API reference shows the 422 error fields of `POST /contacts/{contactId}/subscribe` and `DELETE /newsletters/{newsletterId}`, and the 422 response of `POST /newsletters/{newsletterId}/test-mail`. Before, the test mail endpoint did not show a 422 response.

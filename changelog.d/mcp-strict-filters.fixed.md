@@ -1,0 +1,1 @@
+- The MCP tools refuse an invalid audience filter. Before, they removed it without a message, and the audience became larger.

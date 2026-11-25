@@ -1,0 +1,1 @@
+- SES events start again on their own after AWS disables an event destination. SES disables the SNS destination of a configuration set when it cannot publish to the topic, for example while AWS suspends the account. A new hourly command, `ses:enable-event-destinations`, enables it again with the same event types and topic.

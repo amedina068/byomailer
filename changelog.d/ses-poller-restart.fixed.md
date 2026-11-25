@@ -1,0 +1,1 @@
+- Docker starts the `ses-events` poller again after each exit. The service now uses `restart: always` in `docker-compose.yml` and `docker-compose.image.yml`. When the poller does not run, the SES events stay in SQS and the mails stay in the status sent.

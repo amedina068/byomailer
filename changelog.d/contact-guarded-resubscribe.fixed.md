@@ -1,0 +1,1 @@
+- When a contact unsubscribes while an admin subscribes it again, the unsubscribe of the contact stays.

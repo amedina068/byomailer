@@ -1,0 +1,5807 @@
+openapi: 3.1.0
+info:
+  title: BYOMailer
+  version: 1.0.0
+  description: |-
+    The BYOMailer API manages the contacts, lists, newsletters, sequences and webhooks of one BYOMailer instance. Each instance has its own URL.
+
+    Send a personal API token as a bearer token: `Authorization: Bearer <token>`. Make the token in Settings, API Tokens. A read-only token gets 403 on each request that changes data. Each request sees only the data of the client of the token user.
+
+    List endpoints use cursor pagination. Send `per_page` (1 to 100, default 25) and the `cursor` from `meta.next_cursor` of the previous page.
+
+    Errors use the HTTP status code and a JSON body with `message`. A 422 response also has `errors`, with the messages for each field. Each user can send 300 requests a minute (the `API_RATE_LIMIT` setting). Three endpoints have a lower limit. A request over a limit gets 429 with a `Retry-After` header.
+
+    An unversioned `/api/<resource>` path answers 308 Permanent Redirect to `/api/v1/<resource>`.
+servers:
+  -
+    url: 'https://byomailer.example/api/v1'
+    description: Production
+tags:
+  -
+    name: Contacts
+    description: 'A contact is one email address of your client, with a name, tags, custom attributes and list memberships. In a create or update request, each body field that is not `email`, `name`, `tags` or `remove_tags` becomes a custom attribute.'
+  -
+    name: Lists
+    description: 'A list groups contacts. When a list has opt-in, the contact gets a confirmation email and is subscribed only after the confirmation.'
+  -
+    name: Topics
+    description: 'A topic is a subject inside one list. A contact subscribes to each topic of the list, and can unsubscribe from one topic on the preference page.'
+  -
+    name: Tags
+    description: 'A tag labels contacts. Use tags to select the audience of a newsletter or a sequence.'
+  -
+    name: Newsletters
+    description: 'A newsletter is one email to an audience of contacts. Create and edit drafts, schedule a send, pick the winner of an A/B test, and send a test email to yourself.'
+  -
+    name: Sequences
+    description: 'A sequence is a series of emails. Each enrolled contact gets the steps on a schedule. The API reads sequences, steps and statistics, exports the mails of a step, and changes step filters and content variables.'
+  -
+    name: Blocks
+    description: 'A block is a reusable piece of HTML content.'
+  -
+    name: 'Email templates'
+    description: 'An email template is the HTML layout around the content of a newsletter or a sequence step. The API reads templates. Change them in the dashboard.'
+  -
+    name: 'Email identities'
+    description: 'An email identity is a sender domain or a sender address in the Amazon SES account of your client. The API reads identities. Add them in the dashboard.'
+  -
+    name: 'Email logs'
+    description: 'An email log is one record of the email activity of your client, for example one send, one bounce or one complaint.'
+  -
+    name: Projects
+    description: 'A project groups newsletters, sequences and automations.'
+  -
+    name: Webhooks
+    description: 'A webhook endpoint receives a signed `POST` request when an event occurs. Only an admin can manage webhook endpoints. Each delivery has the headers `X-Byomailer-Event`, `X-Byomailer-Delivery`, `X-Byomailer-Timestamp` and `X-Byomailer-Signature`. The signature is `sha256=` and the HMAC-SHA256 hex digest of the timestamp, a dot and the raw body, with the endpoint secret as the key.'
+security:
+  -
+    http: []
+paths:
+  /contacts:
+    get:
+      operationId: v1.contacts.index
+      description: |-
+        Returns the contacts of your client, newest first. Unsubscribed contacts are
+        left out unless `include_unsubscribed` is true. The filters `lists`, `tags`
+        and `topics` each match a contact that has one of the given IDs.
+      summary: 'List contacts'
+      tags:
+        - Contacts
+      parameters:
+        -
+          name: 'lists[]'
+          in: query
+          description: 'Return only contacts on one of these list IDs.'
+          schema:
+            type: array
+            items:
+              type: integer
+        -
+          name: 'tags[]'
+          in: query
+          description: 'Return only contacts with one of these tag IDs.'
+          schema:
+            type: array
+            items:
+              type: integer
+        -
+          name: 'topics[]'
+          in: query
+          description: 'Return only contacts subscribed to one of these topic IDs.'
+          schema:
+            type: array
+            items:
+              type: integer
+        -
+          name: search
+          in: query
+          description: 'Return only contacts whose name or email contains this text.'
+          schema:
+            type: string
+        -
+          name: include_unsubscribed
+          in: query
+          description: 'Also return unsubscribed contacts.'
+          schema:
+            type: boolean
+            default: false
+        -
+          name: per_page
+          in: query
+          description: 'The number of items on one page, from 1 to 100.'
+          schema:
+            type: integer
+            default: 25
+        -
+          name: cursor
+          in: query
+          description: 'The cursor from `meta.next_cursor` or `meta.prev_cursor` of the previous response.'
+          schema:
+            type: string
+      responses:
+        200:
+          description: 'Paginated set of `ContactResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ContactResource'
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type:
+                          - string
+                          - 'null'
+                      last:
+                        type:
+                          - string
+                          - 'null'
+                      prev:
+                        type:
+                          - string
+                          - 'null'
+                      next:
+                        type:
+                          - string
+                          - 'null'
+                    required:
+                      - first
+                      - last
+                      - prev
+                      - next
+                  meta:
+                    type: object
+                    properties:
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      next_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the next set of items.'
+                      prev_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the previous set of items.'
+                    required:
+                      - path
+                      - per_page
+                      - next_cursor
+                      - prev_cursor
+                required:
+                  - data
+                  - links
+                  - meta
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/contacts/{contactId}':
+    get:
+      operationId: v1.contacts.show
+      description: 'Returns one contact with its tags, lists, topics and sequences.'
+      summary: 'Get a contact'
+      tags:
+        - Contacts
+      parameters:
+        -
+          name: contactId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: '`ContactResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ContactResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    put:
+      operationId: v1.contacts.update
+      description: |-
+        Changes the email, the name, the tags or the custom attributes of a contact.
+        Only the fields in the request change. `tags` adds tags and `remove_tags`
+        removes tags. Each other body field sets a custom attribute. An update never
+        changes the subscription. To subscribe a contact again, use the subscribe
+        endpoint or add the contact to a list.
+      summary: 'Update a contact'
+      tags:
+        - Contacts
+      parameters:
+        -
+          name: contactId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactRequest'
+      responses:
+        200:
+          description: '`ContactResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ContactResource'
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    patch:
+      operationId: v1.contacts.patch
+      description: |-
+        Changes the email, the name, the tags or the custom attributes of a contact.
+        Only the fields in the request change. `tags` adds tags and `remove_tags`
+        removes tags. Each other body field sets a custom attribute. An update never
+        changes the subscription. To subscribe a contact again, use the subscribe
+        endpoint or add the contact to a list.
+      summary: 'Update a contact'
+      tags:
+        - Contacts
+      parameters:
+        -
+          name: contactId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactRequest'
+      responses:
+        200:
+          description: '`ContactResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ContactResource'
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/lists/{listId}/contacts':
+    post:
+      operationId: v1.lists.contacts.store
+      description: |-
+        Adds the contact with this email to the list. If the email is new, the
+        contact is created and the response is 201. If the contact exists, it is
+        updated and the response is 200. When the list has opt-in and the contact is
+        new on the list, the contact gets a confirmation email. A newsletter or a
+        sequence reaches the contact through this list only after it confirms. Tags
+        in `tags` are created when they do not exist. A new contact with a
+        blacklisted email gets 422.
+        The request never changes the subscription. An unsubscribed contact stays
+        unsubscribed. To subscribe it again, use the subscribe endpoint.
+      summary: 'Add a contact to a list'
+      tags:
+        - Contacts
+      parameters:
+        -
+          name: listId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ContactRequest'
+      responses:
+        200:
+          description: 'The contact existed, and the request updated it.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ContactResource'
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        201:
+          description: 'The contact is new.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ContactResource'
+                required:
+                  - data
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/contacts/{contactId}/unsubscribe':
+    post:
+      operationId: v1.contacts.unsubscribe
+      description: |-
+        Marks the contact as unsubscribed. The contact then gets no newsletters and
+        no sequence emails. A second call keeps the first unsubscribe date.
+      summary: 'Unsubscribe a contact'
+      tags:
+        - Contacts
+      parameters:
+        -
+          name: contactId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: '`ContactResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ContactResource'
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/contacts/{contactId}/subscribe':
+    post:
+      operationId: v1.contacts.subscribe
+      description: |-
+        Clears an unsubscribe that an admin or the API made. The contact then gets
+        newsletters and sequence emails again. A contact that unsubscribed through
+        an email link gets 422. An address on the suppression list after a
+        complaint, or on the global suppression list, gets 422. To remove a bounce
+        suppression of your client, send `remove_suppression` as true. A subscribed
+        contact does not change.
+      summary: 'Subscribe a contact again'
+      tags:
+        - Contacts
+      parameters:
+        -
+          name: contactId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                remove_suppression:
+                  type: boolean
+                  description: 'Remove the bounce suppression of the address. Without it, a suppressed address gets 422.'
+      responses:
+        200:
+          description: '`ContactResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ContactResource'
+                required:
+                  - data
+        422:
+          description: 'The contact unsubscribed through an email link, or the address is on a suppression list that cannot be removed (`contact`). The address has a bounce suppression and `remove_suppression` is not true (`remove_suppression`).'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: object
+                    properties:
+                      contact:
+                        type: array
+                        items:
+                          type: string
+                      remove_suppression:
+                        type: array
+                        items:
+                          type: string
+                required:
+                  - message
+                  - errors
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/lists/{listId}/contacts/{contactId}':
+    delete:
+      operationId: v1.lists.contacts.destroy
+      description: |-
+        Removes the contact from one list. The contact stays in your client and on
+        its other lists. The removal runs the live list automations of your client.
+      summary: 'Remove a contact from a list'
+      tags:
+        - Contacts
+      parameters:
+        -
+          name: listId
+          in: path
+          required: true
+          schema:
+            type: string
+        -
+          name: contactId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: '`ContactResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ContactResource'
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  /lists:
+    get:
+      operationId: v1.lists.index
+      description: 'Returns the lists of your client, newest first.'
+      summary: 'List lists'
+      tags:
+        - Lists
+      parameters:
+        -
+          name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1.0
+        -
+          name: cursor
+          in: query
+          description: 'The cursor from `meta.next_cursor` or `meta.prev_cursor` of the previous response.'
+          schema:
+            type: string
+      responses:
+        200:
+          description: 'Paginated set of `MailListResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/MailListResource'
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type:
+                          - string
+                          - 'null'
+                      last:
+                        type:
+                          - string
+                          - 'null'
+                      prev:
+                        type:
+                          - string
+                          - 'null'
+                      next:
+                        type:
+                          - string
+                          - 'null'
+                    required:
+                      - first
+                      - last
+                      - prev
+                      - next
+                  meta:
+                    type: object
+                    properties:
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      next_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the next set of items.'
+                      prev_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the previous set of items.'
+                    required:
+                      - path
+                      - per_page
+                      - next_cursor
+                      - prev_cursor
+                required:
+                  - data
+                  - links
+                  - meta
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    post:
+      operationId: v1.lists.store
+      description: 'Creates a list with the given name. A list name is unique in your account.'
+      summary: 'Create a list'
+      tags:
+        - Lists
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailListRequest'
+      responses:
+        201:
+          description: '`MailListResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/MailListResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/lists/{listId}':
+    patch:
+      operationId: v1.lists.update
+      description: 'Changes the name of a list. A list name is unique in your account.'
+      summary: 'Rename a list'
+      tags:
+        - Lists
+      parameters:
+        -
+          name: listId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MailListRequest'
+      responses:
+        200:
+          description: '`MailListResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/MailListResource'
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    delete:
+      operationId: v1.lists.destroy
+      description: |-
+        Deletes the list and its topics. The contacts on the list are not
+        deleted. When newsletters, sequences, segments or automations use the
+        list or one of its topics, the request fails with 422 and names them.
+      summary: 'Delete a list'
+      tags:
+        - Lists
+      parameters:
+        -
+          name: listId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: 'No content'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/lists/{listId}/topics':
+    get:
+      operationId: v1.lists.topics.index
+      description: 'Returns the topics of one list, newest first.'
+      summary: 'List the topics of a list'
+      tags:
+        - Topics
+      parameters:
+        -
+          name: listId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: 'Array of `TopicResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TopicResource'
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    post:
+      operationId: v1.lists.topics.store
+      description: |-
+        Creates a topic in the list. Each contact on the list is subscribed to the
+        new topic in the background.
+      summary: 'Create a topic'
+      tags:
+        - Topics
+      parameters:
+        -
+          name: listId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TopicRequest'
+      responses:
+        201:
+          description: '`TopicResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TopicResource'
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/lists/{listId}/topics/{topicId}':
+    patch:
+      operationId: v1.lists.topics.update
+      description: 'Changes the name and the description of a topic.'
+      summary: 'Update a topic'
+      tags:
+        - Topics
+      parameters:
+        -
+          name: listId
+          in: path
+          required: true
+          schema:
+            type: integer
+        -
+          name: topicId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TopicRequest'
+      responses:
+        200:
+          description: '`TopicResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TopicResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    delete:
+      operationId: v1.lists.topics.destroy
+      description: |-
+        Deletes the topic from the list. When newsletters, sequences, segments
+        or automations use the topic, the request fails with 422 and names them.
+      summary: 'Delete a topic'
+      tags:
+        - Topics
+      parameters:
+        -
+          name: listId
+          in: path
+          required: true
+          schema:
+            type: integer
+        -
+          name: topicId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: 'No content'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  /tags:
+    get:
+      operationId: v1.tags.index
+      description: |-
+        Returns all the tags of your account, newest first. This list has no
+        pagination.
+      summary: 'List tags'
+      tags:
+        - Tags
+      responses:
+        200:
+          description: 'Array of `TagResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/TagResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    post:
+      operationId: v1.tags.store
+      description: 'Creates a tag. A tag name is unique in your account.'
+      summary: 'Create a tag'
+      tags:
+        - Tags
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagRequest'
+      responses:
+        201:
+          description: '`TagResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TagResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/tags/{tag}':
+    patch:
+      operationId: v1.tags.update
+      description: |-
+        Changes the name of a tag. Tag filters select tags by name. When a saved
+        filter of a newsletter that can still send, a sequence, a sequence step or
+        a segment uses the tag, the response is 422.
+      summary: 'Rename a tag'
+      tags:
+        - Tags
+      parameters:
+        -
+          name: tag
+          in: path
+          required: true
+          description: 'The tag ID'
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TagRequest'
+      responses:
+        200:
+          description: '`TagResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/TagResource'
+                required:
+                  - data
+        422:
+          $ref: '#/components/responses/ValidationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    delete:
+      operationId: v1.tags.destroy
+      description: |-
+        Deletes the tag and removes it from each contact. The removal runs the
+        live tag automations of your client. When a saved filter uses the tag,
+        the response is 422, as for a rename.
+      summary: 'Delete a tag'
+      tags:
+        - Tags
+      parameters:
+        -
+          name: tag
+          in: path
+          required: true
+          description: 'The tag ID'
+          schema:
+            type: integer
+      responses:
+        204:
+          description: 'No content'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  /newsletters:
+    get:
+      operationId: v1.newsletters.index
+      description: |-
+        Returns the newsletters of your client, newest first, with their send
+        metrics. Filter by status, by project, or by a text in the title or the
+        subject.
+      summary: 'List newsletters'
+      tags:
+        - Newsletters
+      parameters:
+        -
+          name: status
+          in: query
+          schema:
+            $ref: '#/components/schemas/NewsletterStatus'
+        -
+          name: search
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+            maxLength: 255.0
+        -
+          name: project
+          in: query
+          schema:
+            type: integer
+        -
+          name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1.0
+        -
+          name: cursor
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+      responses:
+        200:
+          description: 'Paginated set of `NewsletterResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/NewsletterResource'
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type:
+                          - string
+                          - 'null'
+                      last:
+                        type:
+                          - string
+                          - 'null'
+                      prev:
+                        type:
+                          - string
+                          - 'null'
+                      next:
+                        type:
+                          - string
+                          - 'null'
+                    required:
+                      - first
+                      - last
+                      - prev
+                      - next
+                  meta:
+                    type: object
+                    properties:
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      next_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the next set of items.'
+                      prev_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the previous set of items.'
+                    required:
+                      - path
+                      - per_page
+                      - next_cursor
+                      - prev_cursor
+                required:
+                  - data
+                  - links
+                  - meta
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    post:
+      operationId: v1.newsletters.store
+      description: |-
+        Creates a draft newsletter. To schedule it, send `status: live` with
+        `scheduled_at`, `subject`, `html_content` and a verified
+        `email_identity_id`. A `scheduled_at` in the past or now queues the send at
+        once. The send checks the content, the sender and the sending permissions
+        of your AWS account first. `meta.warnings` lists the compliance warnings of
+        a scheduled or queued newsletter. They never block the send.
+      summary: 'Create a newsletter'
+      tags:
+        - Newsletters
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreNewsletterRequest'
+      responses:
+        201:
+          description: '`NewsletterResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/NewsletterResource'
+                  meta:
+                    type: object
+                    properties:
+                      warnings:
+                        type: array
+                        items: {}
+                    required:
+                      - warnings
+                required:
+                  - data
+                  - meta
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  /newsletters/contacts/preview:
+    post:
+      operationId: v1.newsletters.contacts.preview
+      description: |-
+        Returns the number of contacts that match the given audience filters.
+        Nothing is saved. A read-only token can call this endpoint. The limit is 30
+        requests a minute for each user.
+      summary: 'Count the recipients of filters'
+      tags:
+        - Newsletters
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsletterContactsPreviewRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  count:
+                    type: integer
+                    minimum: 0
+                required:
+                  - count
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/newsletters/{newsletterId}':
+    get:
+      operationId: v1.newsletters.show
+      description: |-
+        Returns one newsletter with its message, its A/B variant, its filters, its
+        projects and its send metrics.
+      summary: 'Get a newsletter'
+      tags:
+        - Newsletters
+      parameters:
+        -
+          name: newsletterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: '`NewsletterResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/NewsletterResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    patch:
+      operationId: v1.newsletters.update
+      description: |-
+        Changes a newsletter with the status `draft` or `scheduled`. Only the fields
+        in the request change. A newsletter that is sending or sent cannot change
+        and returns 422, except for a request with only `title` and `project_ids`.
+        These labels change in any status. A change to a scheduled newsletter must keep a subject and
+        a body. `status: live` schedules the newsletter, with the same checks as
+        create. `status: draft` returns a scheduled newsletter to draft and clears
+        `scheduled_at`. When the send started first, it returns 422 and nothing
+        changes.
+      summary: 'Update a newsletter'
+      tags:
+        - Newsletters
+      parameters:
+        -
+          name: newsletterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateNewsletterRequest'
+      responses:
+        200:
+          description: |-
+            `NewsletterResource`
+
+            `NewsletterResource`
+          content:
+            application/json:
+              schema:
+                anyOf:
+                  -
+                    type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/NewsletterResource'
+                      meta:
+                        type: object
+                        properties:
+                          warnings:
+                            type: array
+                            items: {}
+                        required:
+                          - warnings
+                    required:
+                      - data
+                      - meta
+                  -
+                    type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/NewsletterResource'
+                      meta:
+                        type: object
+                        properties:
+                          warnings:
+                            type: array
+                            items:
+                              type: string
+                            minItems: 0
+                            maxItems: 0
+                            additionalItems: false
+                        required:
+                          - warnings
+                    required:
+                      - data
+                      - meta
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    delete:
+      operationId: v1.newsletters.destroy
+      description: |-
+        Deletes a newsletter with the status `draft` or `scheduled`, with its
+        messages. Other statuses return 422. When the send of a scheduled
+        newsletter started first, it returns 422 and nothing changes.
+      summary: 'Delete a newsletter'
+      tags:
+        - Newsletters
+      parameters:
+        -
+          name: newsletterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: 'No content'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        422:
+          description: 'The newsletter is sending or sent, or its send started first (`status`).'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: object
+                    properties:
+                      status:
+                        type: array
+                        items:
+                          type: string
+                    required:
+                      - status
+                required:
+                  - message
+                  - errors
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/newsletters/{newsletterId}/test-mail':
+    post:
+      operationId: v1.newsletters.test-mail
+      description: |-
+        Sends the newsletter to the email address of the token user, through the SES
+        account of your client. The newsletter needs a verified email identity. The
+        limit is 5 requests a minute for each user.
+      summary: 'Send a test email'
+      tags:
+        - Newsletters
+      parameters:
+        -
+          name: newsletterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  sent_to:
+                    type: string
+                required:
+                  - message
+                  - sent_to
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          description: 'The newsletter has no sender (`email_identity_id`), or SES did not accept the email (`send`).'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  errors:
+                    type: object
+                    properties:
+                      email_identity_id:
+                        type: array
+                        items:
+                          type: string
+                      send:
+                        type: array
+                        items:
+                          type: string
+                required:
+                  - message
+                  - errors
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/newsletters/{newsletterId}/ab-winner':
+    post:
+      operationId: v1.newsletters.ab-winner
+      description: |-
+        Stores variant `a` or `b` as the winner of an A/B test. The newsletter must
+        have the status `ab_testing`. Each half of the audience already got one
+        variant, so BYOMailer sends no more email. The newsletter gets the status
+        `sent`, and the `newsletter.sent` webhook event fires one time.
+      summary: 'Pick the A/B test winner'
+      tags:
+        - Newsletters
+      parameters:
+        -
+          name: newsletterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewsletterAbWinnerRequest'
+      responses:
+        200:
+          description: '`NewsletterResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/NewsletterResource'
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/newsletters/{newsletterId}/variables':
+    get:
+      operationId: v1.newsletters.variables.show
+      description: |-
+        Returns the `{{ variables }}` that the content of the newsletter uses, and
+        the saved default of each one. A default fills a variable when the contact
+        has no value for it.
+      summary: 'Get the content variables of a newsletter'
+      tags:
+        - Newsletters
+      parameters:
+        -
+          name: newsletterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      newsletter_id:
+                        type: integer
+                      detected_variables:
+                        type: array
+                        items:
+                          type: string
+                      content_variables:
+                        type: object
+                        additionalProperties:
+                          type: string
+                    required:
+                      - newsletter_id
+                      - detected_variables
+                      - content_variables
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    patch:
+      operationId: v1.newsletters.variables.update
+      description: |-
+        Replaces the content variable defaults of a newsletter with the status
+        `draft` or `scheduled`. The object replaces all saved defaults. A default
+        can name a variable that the content does not use yet. Each variable
+        that the content uses and the object leaves out gets an empty default.
+      summary: 'Replace the content variables of a newsletter'
+      tags:
+        - Newsletters
+      parameters:
+        -
+          name: newsletterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateContentVariablesRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      newsletter_id:
+                        type: integer
+                      detected_variables:
+                        type: array
+                        items:
+                          type: string
+                      content_variables:
+                        type: object
+                        additionalProperties:
+                          type: string
+                    required:
+                      - newsletter_id
+                      - detected_variables
+                      - content_variables
+                required:
+                  - data
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/sequences/{sequenceId}/steps/{sequenceStepId}/contact-mails/export':
+    get:
+      operationId: v1.sequences.steps.contact-mails.export
+      description: |-
+        Returns a CSV file with one row for each mail of the step. The query
+        parameters filter the rows.
+      summary: 'Export the mails of a sequence step'
+      tags:
+        - Sequences
+      parameters:
+        -
+          name: sequenceId
+          in: path
+          required: true
+          schema:
+            type: integer
+        -
+          name: sequenceStepId
+          in: path
+          required: true
+          schema:
+            type: integer
+        -
+          name: contact_id
+          in: query
+          schema:
+            type: integer
+            minimum: 1.0
+        -
+          name: status
+          in: query
+          schema:
+            type: string
+            enum:
+              - pending
+              - sent
+              - delivered
+              - opened
+              - bounced
+              - rejected
+              - complained
+              - unsubscribed
+              - failed
+              - skipped
+        -
+          name: filter
+          in: query
+          schema:
+            type: string
+            enum:
+              - all
+              - pending
+              - sent
+              - delivered
+              - opened
+              - clicked
+              - bounced
+              - rejected
+              - complained
+              - unsubscribed
+              - failed
+              - skipped
+        -
+          name: search
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+            maxLength: 255.0
+        -
+          name: sent_after
+          in: query
+          schema:
+            type: string
+            format: date-time
+        -
+          name: sent_before
+          in: query
+          schema:
+            type: string
+            format: date-time
+        -
+          name: sort
+          in: query
+          schema:
+            type: string
+            enum:
+              - id
+              - email
+              - name
+              - subject
+              - status
+              - scheduled_at
+              - sent_at
+              - delivered_at
+              - opened_at
+              - clicked_at
+              - bounced_at
+              - rejected_at
+              - complained_at
+              - unsubscribed_at
+              - created_at
+        -
+          name: direction
+          in: query
+          schema:
+            type: string
+            enum:
+              - asc
+              - desc
+        -
+          name: current_only
+          in: query
+          description: 'Ignored. The export always writes the full history of the step.'
+          schema:
+            type: boolean
+            deprecated: true
+      responses:
+        200:
+          description: 'A CSV file with one row for each mail.'
+          content:
+            'text/csv; charset=UTF-8':
+              schema:
+                type: string
+          headers:
+            Transfer-Encoding:
+              required: true
+              schema:
+                type: string
+                enum:
+                  - chunked
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  /sequences:
+    get:
+      operationId: v1.sequences.index
+      description: |-
+        Returns the sequences of your client. Live sequences come first, then the
+        others by name. Each item has its number of steps and contacts.
+      summary: 'List sequences'
+      tags:
+        - Sequences
+      parameters:
+        -
+          name: status
+          in: query
+          description: 'The sequence status. `paused` is the same as `draft`: a paused sequence has the status `draft`.'
+          schema:
+            type: string
+            enum:
+              - draft
+              - live
+              - paused
+        -
+          name: search
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+            maxLength: 255.0
+        -
+          name: project
+          in: query
+          schema:
+            type: integer
+        -
+          name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1.0
+        -
+          name: cursor
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+      responses:
+        200:
+          description: 'Paginated set of `SequenceSummaryResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SequenceSummaryResource'
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type:
+                          - string
+                          - 'null'
+                      last:
+                        type:
+                          - string
+                          - 'null'
+                      prev:
+                        type:
+                          - string
+                          - 'null'
+                      next:
+                        type:
+                          - string
+                          - 'null'
+                    required:
+                      - first
+                      - last
+                      - prev
+                      - next
+                  meta:
+                    type: object
+                    properties:
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      next_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the next set of items.'
+                      prev_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the previous set of items.'
+                    required:
+                      - path
+                      - per_page
+                      - next_cursor
+                      - prev_cursor
+                required:
+                  - data
+                  - links
+                  - meta
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/sequences/{sequenceId}':
+    get:
+      operationId: v1.sequences.show
+      description: |-
+        Returns one sequence with its steps, the message of each step, its filters
+        and its projects.
+      summary: 'Get a sequence'
+      tags:
+        - Sequences
+      parameters:
+        -
+          name: sequenceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: '`SequenceResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/SequenceResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/sequences/{sequenceId}/stats':
+    get:
+      operationId: v1.sequences.stats
+      description: 'Returns the delivery and engagement counts of the sequence and of each step.'
+      summary: 'Get the statistics of a sequence'
+      tags:
+        - Sequences
+      parameters:
+        -
+          name: sequenceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: '`SequenceStatsResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/SequenceStatsResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/sequences/{sequenceId}/variables':
+    get:
+      operationId: v1.sequences.variables.show
+      description: |-
+        Returns the `{{ variables }}` that the steps of the sequence use, and the
+        saved default of each one. A default fills a variable when the contact has
+        no value for it.
+      summary: 'Get the content variables of a sequence'
+      tags:
+        - Sequences
+      parameters:
+        -
+          name: sequenceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      sequence_id:
+                        type: integer
+                      detected_variables:
+                        type: array
+                        items:
+                          type: string
+                      content_variables:
+                        type: object
+                        additionalProperties:
+                          type: string
+                    required:
+                      - sequence_id
+                      - detected_variables
+                      - content_variables
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    patch:
+      operationId: v1.sequences.variables.update
+      description: |-
+        Replaces the content variable defaults of the sequence. The object replaces
+        all saved defaults. A default can name a variable that no step uses yet.
+      summary: 'Replace the content variables of a sequence'
+      tags:
+        - Sequences
+      parameters:
+        -
+          name: sequenceId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateContentVariablesRequest'
+      responses:
+        200:
+          description: ''
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: object
+                    properties:
+                      sequence_id:
+                        type: integer
+                      detected_variables:
+                        type: array
+                        items:
+                          type: string
+                      content_variables:
+                        type: object
+                        additionalProperties:
+                          type: string
+                    required:
+                      - sequence_id
+                      - detected_variables
+                      - content_variables
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/sequences/{sequenceId}/steps/{sequenceStepId}':
+    get:
+      operationId: v1.sequences.steps.show
+      description: |-
+        Returns one step of the sequence, with its message, its email identity and
+        its template.
+      summary: 'Get a sequence step'
+      tags:
+        - Sequences
+      parameters:
+        -
+          name: sequenceId
+          in: path
+          required: true
+          schema:
+            type: integer
+        -
+          name: sequenceStepId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: '`SequenceStepResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/SequenceStepResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/sequences/{sequenceId}/steps/{sequenceStepId}/stats':
+    get:
+      operationId: v1.sequences.steps.stats
+      description: 'Returns the delivery and engagement counts of one sequence step.'
+      summary: 'Get the statistics of a sequence step'
+      tags:
+        - Sequences
+      parameters:
+        -
+          name: sequenceId
+          in: path
+          required: true
+          schema:
+            type: integer
+        -
+          name: sequenceStepId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: '`SequenceStepStatsResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/SequenceStepStatsResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/sequences/{sequenceId}/steps/{sequenceStepId}/filters':
+    patch:
+      operationId: v1.sequences.steps.filters.update
+      description: |-
+        Replaces the audience filters of one sequence step. A contact who does not
+        match them skips only the email of this step. An empty array clears the
+        filters.
+      summary: 'Replace the filters of a sequence step'
+      tags:
+        - Sequences
+      parameters:
+        -
+          name: sequenceId
+          in: path
+          required: true
+          schema:
+            type: integer
+        -
+          name: sequenceStepId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SequenceStepFiltersRequest'
+      responses:
+        200:
+          description: '`SequenceStepResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/SequenceStepResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  /blocks:
+    get:
+      operationId: v1.blocks.index
+      description: |-
+        Returns all the blocks of your client, newest first. This list has no
+        pagination.
+      summary: 'List blocks'
+      tags:
+        - Blocks
+      responses:
+        200:
+          description: 'Array of `BlockResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/BlockResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    post:
+      operationId: v1.blocks.store
+      description: 'Creates a block with a name and HTML content.'
+      summary: 'Create a block'
+      tags:
+        - Blocks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockRequest'
+      responses:
+        201:
+          description: '`BlockResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/BlockResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/blocks/{blockId}':
+    get:
+      operationId: v1.blocks.show
+      description: 'Returns one block with its HTML content.'
+      summary: 'Get a block'
+      tags:
+        - Blocks
+      parameters:
+        -
+          name: blockId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: '`BlockResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/BlockResource'
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    patch:
+      operationId: v1.blocks.update
+      description: 'Replaces the name and the HTML content of a block.'
+      summary: 'Update a block'
+      tags:
+        - Blocks
+      parameters:
+        -
+          name: blockId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BlockRequest'
+      responses:
+        200:
+          description: '`BlockResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/BlockResource'
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    delete:
+      operationId: v1.blocks.destroy
+      description: 'Deletes the block.'
+      summary: 'Delete a block'
+      tags:
+        - Blocks
+      parameters:
+        -
+          name: blockId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: 'No content'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  /email-templates:
+    get:
+      operationId: v1.email-templates.index
+      description: |-
+        Returns the email templates of your client, newest first. Archived templates
+        are left out unless `archived` is true.
+      summary: 'List email templates'
+      tags:
+        - 'Email templates'
+      parameters:
+        -
+          name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1.0
+        -
+          name: archived
+          in: query
+          description: 'Return only archived templates.'
+          schema:
+            type: boolean
+            default: false
+        -
+          name: is_default
+          in: query
+          description: 'Return only the default template (true) or only the other templates (false).'
+          schema:
+            type: boolean
+        -
+          name: cursor
+          in: query
+          description: 'The cursor from `meta.next_cursor` or `meta.prev_cursor` of the previous response.'
+          schema:
+            type: string
+      responses:
+        200:
+          description: 'Paginated set of `EmailTemplateResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EmailTemplateResource'
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type:
+                          - string
+                          - 'null'
+                      last:
+                        type:
+                          - string
+                          - 'null'
+                      prev:
+                        type:
+                          - string
+                          - 'null'
+                      next:
+                        type:
+                          - string
+                          - 'null'
+                    required:
+                      - first
+                      - last
+                      - prev
+                      - next
+                  meta:
+                    type: object
+                    properties:
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      next_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the next set of items.'
+                      prev_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the previous set of items.'
+                    required:
+                      - path
+                      - per_page
+                      - next_cursor
+                      - prev_cursor
+                required:
+                  - data
+                  - links
+                  - meta
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  /email-templates/default:
+    get:
+      operationId: v1.email-templates.default
+      description: |-
+        Returns the default email template of your client. Returns 404 when no
+        template is the default.
+      summary: 'Get the default email template'
+      tags:
+        - 'Email templates'
+      responses:
+        200:
+          description: '`EmailTemplateResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/EmailTemplateResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        404:
+          description: 'No template is the default.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/email-templates/{emailTemplateId}':
+    get:
+      operationId: v1.email-templates.show
+      description: 'Returns one email template with its HTML.'
+      summary: 'Get an email template'
+      tags:
+        - 'Email templates'
+      parameters:
+        -
+          name: emailTemplateId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: '`EmailTemplateResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/EmailTemplateResource'
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  /email-identities:
+    get:
+      operationId: v1.email-identities.index
+      description: 'Returns the email identities of your client, newest first.'
+      summary: 'List email identities'
+      tags:
+        - 'Email identities'
+      parameters:
+        -
+          name: identity_status
+          in: query
+          description: 'Return only identities with this verification status, for example `verified`.'
+          schema:
+            type: string
+        -
+          name: per_page
+          in: query
+          description: 'The number of items on one page, from 1 to 100.'
+          schema:
+            type: integer
+            default: 25
+        -
+          name: cursor
+          in: query
+          description: 'The cursor from `meta.next_cursor` or `meta.prev_cursor` of the previous response.'
+          schema:
+            type: string
+      responses:
+        200:
+          description: 'Paginated set of `EmailIdentityResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EmailIdentityResource'
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type:
+                          - string
+                          - 'null'
+                      last:
+                        type:
+                          - string
+                          - 'null'
+                      prev:
+                        type:
+                          - string
+                          - 'null'
+                      next:
+                        type:
+                          - string
+                          - 'null'
+                    required:
+                      - first
+                      - last
+                      - prev
+                      - next
+                  meta:
+                    type: object
+                    properties:
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      next_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the next set of items.'
+                      prev_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the previous set of items.'
+                    required:
+                      - path
+                      - per_page
+                      - next_cursor
+                      - prev_cursor
+                required:
+                  - data
+                  - links
+                  - meta
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/email-identities/{emailIdentityId}':
+    get:
+      operationId: v1.email-identities.show
+      description: 'Returns one email identity with its verification status.'
+      summary: 'Get an email identity'
+      tags:
+        - 'Email identities'
+      parameters:
+        -
+          name: emailIdentityId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: '`EmailIdentityResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/EmailIdentityResource'
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  /email-logs:
+    get:
+      operationId: v1.email-logs.index
+      description: 'Returns the email logs of your client, newest first.'
+      summary: 'List email logs'
+      tags:
+        - 'Email logs'
+      parameters:
+        -
+          name: status
+          in: query
+          description: 'Return only logs with this status.'
+          schema:
+            type: string
+        -
+          name: operation
+          in: query
+          description: 'Return only logs of this operation.'
+          schema:
+            type: string
+        -
+          name: recipient
+          in: query
+          description: 'Return only logs whose recipient contains this text.'
+          schema:
+            type: string
+        -
+          name: per_page
+          in: query
+          description: 'The number of items on one page, from 1 to 100.'
+          schema:
+            type: integer
+            default: 25
+        -
+          name: cursor
+          in: query
+          description: 'The cursor from `meta.next_cursor` or `meta.prev_cursor` of the previous response.'
+          schema:
+            type: string
+      responses:
+        200:
+          description: 'Paginated set of `EmailLogResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/EmailLogResource'
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type:
+                          - string
+                          - 'null'
+                      last:
+                        type:
+                          - string
+                          - 'null'
+                      prev:
+                        type:
+                          - string
+                          - 'null'
+                      next:
+                        type:
+                          - string
+                          - 'null'
+                    required:
+                      - first
+                      - last
+                      - prev
+                      - next
+                  meta:
+                    type: object
+                    properties:
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      next_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the next set of items.'
+                      prev_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the previous set of items.'
+                    required:
+                      - path
+                      - per_page
+                      - next_cursor
+                      - prev_cursor
+                required:
+                  - data
+                  - links
+                  - meta
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/email-logs/{emailLogId}':
+    get:
+      operationId: v1.email-logs.show
+      description: 'Returns one email log.'
+      summary: 'Get an email log'
+      tags:
+        - 'Email logs'
+      parameters:
+        -
+          name: emailLogId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: '`EmailLogResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/EmailLogResource'
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  /projects:
+    get:
+      operationId: v1.projects.index
+      description: |-
+        Returns the projects of your client, newest first, with the number of
+        newsletters, sequences and automations in each one.
+      summary: 'List projects'
+      tags:
+        - Projects
+      parameters:
+        -
+          name: per_page
+          in: query
+          schema:
+            type: integer
+            minimum: 1.0
+        -
+          name: cursor
+          in: query
+          schema:
+            type:
+              - string
+              - 'null'
+      responses:
+        200:
+          description: 'Paginated set of `ProjectResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProjectResource'
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type:
+                          - string
+                          - 'null'
+                      last:
+                        type:
+                          - string
+                          - 'null'
+                      prev:
+                        type:
+                          - string
+                          - 'null'
+                      next:
+                        type:
+                          - string
+                          - 'null'
+                    required:
+                      - first
+                      - last
+                      - prev
+                      - next
+                  meta:
+                    type: object
+                    properties:
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      next_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the next set of items.'
+                      prev_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the previous set of items.'
+                    required:
+                      - path
+                      - per_page
+                      - next_cursor
+                      - prev_cursor
+                required:
+                  - data
+                  - links
+                  - meta
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    post:
+      operationId: v1.projects.store
+      description: 'Creates a project with the given name.'
+      summary: 'Create a project'
+      tags:
+        - Projects
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreProjectRequest'
+      responses:
+        201:
+          description: '`ProjectResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ProjectResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/projects/{projectId}':
+    get:
+      operationId: v1.projects.show
+      description: |-
+        Returns one project with the number of newsletters, sequences and
+        automations in it.
+      summary: 'Get a project'
+      tags:
+        - Projects
+      parameters:
+        -
+          name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: '`ProjectResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ProjectResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    patch:
+      operationId: v1.projects.update
+      description: 'Changes the name of a project.'
+      summary: 'Rename a project'
+      tags:
+        - Projects
+      parameters:
+        -
+          name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProjectRequest'
+      responses:
+        200:
+          description: '`ProjectResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ProjectResource'
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    delete:
+      operationId: v1.projects.destroy
+      description: |-
+        Deletes the project. The newsletters, sequences and automations in it are
+        not deleted.
+      summary: 'Delete a project'
+      tags:
+        - Projects
+      parameters:
+        -
+          name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: 'No content'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  /webhook-endpoints:
+    get:
+      operationId: v1.webhook-endpoints.index
+      description: |-
+        Returns the webhook endpoints of your client, newest first. Only an admin
+        can call this endpoint.
+      summary: 'List webhook endpoints'
+      tags:
+        - Webhooks
+      parameters:
+        -
+          name: per_page
+          in: query
+          description: 'The number of items on one page, from 1 to 100.'
+          schema:
+            type: integer
+            default: 25
+        -
+          name: cursor
+          in: query
+          description: 'The cursor from `meta.next_cursor` or `meta.prev_cursor` of the previous response.'
+          schema:
+            type: string
+      responses:
+        200:
+          description: 'Paginated set of `WebhookEndpointResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WebhookEndpointResource'
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type:
+                          - string
+                          - 'null'
+                      last:
+                        type:
+                          - string
+                          - 'null'
+                      prev:
+                        type:
+                          - string
+                          - 'null'
+                      next:
+                        type:
+                          - string
+                          - 'null'
+                    required:
+                      - first
+                      - last
+                      - prev
+                      - next
+                  meta:
+                    type: object
+                    properties:
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      next_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the next set of items.'
+                      prev_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the previous set of items.'
+                    required:
+                      - path
+                      - per_page
+                      - next_cursor
+                      - prev_cursor
+                required:
+                  - data
+                  - links
+                  - meta
+        403:
+          description: 'An error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                    example: 'Only an admin of the account can manage webhook endpoints.'
+                required:
+                  - message
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    post:
+      operationId: v1.webhook-endpoints.store
+      description: |-
+        Creates a webhook endpoint for the given events. The URL must be a public
+        HTTPS URL. The response has the signing `secret`. Keep it: the API shows it
+        only in this response and after a secret rotation.
+      summary: 'Create a webhook endpoint'
+      tags:
+        - Webhooks
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StoreWebhookEndpointRequest'
+      responses:
+        201:
+          description: '`WebhookEndpointResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/WebhookEndpointResource'
+                required:
+                  - data
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/webhook-endpoints/{webhookEndpointId}':
+    get:
+      operationId: v1.webhook-endpoints.show
+      description: |-
+        Returns one webhook endpoint, without its secret. Only an admin can call
+        this endpoint.
+      summary: 'Get a webhook endpoint'
+      tags:
+        - Webhooks
+      parameters:
+        -
+          name: webhookEndpointId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: '`WebhookEndpointResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/WebhookEndpointResource'
+                required:
+                  - data
+        403:
+          description: 'An error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                    example: 'Only an admin of the account can manage webhook endpoints.'
+                required:
+                  - message
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    patch:
+      operationId: v1.webhook-endpoints.update
+      description: 'Changes the description, or turns the endpoint on or off with `active`.'
+      summary: 'Update a webhook endpoint'
+      tags:
+        - Webhooks
+      parameters:
+        -
+          name: webhookEndpointId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateWebhookEndpointRequest'
+      responses:
+        200:
+          description: '`WebhookEndpointResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/WebhookEndpointResource'
+                required:
+                  - data
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+    delete:
+      operationId: v1.webhook-endpoints.destroy
+      description: 'Deletes the webhook endpoint. Only an admin can call this endpoint.'
+      summary: 'Delete a webhook endpoint'
+      tags:
+        - Webhooks
+      parameters:
+        -
+          name: webhookEndpointId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        204:
+          description: 'No content'
+        403:
+          description: 'An error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                    example: 'Only an admin of the account can manage webhook endpoints.'
+                required:
+                  - message
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/webhook-endpoints/{webhookEndpointId}/deliveries':
+    get:
+      operationId: v1.webhook-endpoints.deliveries
+      description: |-
+        Returns the deliveries of one endpoint, newest first, with the response
+        status and the attempts of each one. Only an admin can call this endpoint.
+      summary: 'List the deliveries of a webhook endpoint'
+      tags:
+        - Webhooks
+      parameters:
+        -
+          name: webhookEndpointId
+          in: path
+          required: true
+          schema:
+            type: integer
+        -
+          name: per_page
+          in: query
+          description: 'The number of items on one page, from 1 to 100.'
+          schema:
+            type: integer
+            default: 25
+        -
+          name: cursor
+          in: query
+          description: 'The cursor from `meta.next_cursor` or `meta.prev_cursor` of the previous response.'
+          schema:
+            type: string
+      responses:
+        200:
+          description: 'Paginated set of `WebhookDeliveryResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/WebhookDeliveryResource'
+                  links:
+                    type: object
+                    properties:
+                      first:
+                        type:
+                          - string
+                          - 'null'
+                      last:
+                        type:
+                          - string
+                          - 'null'
+                      prev:
+                        type:
+                          - string
+                          - 'null'
+                      next:
+                        type:
+                          - string
+                          - 'null'
+                    required:
+                      - first
+                      - last
+                      - prev
+                      - next
+                  meta:
+                    type: object
+                    properties:
+                      path:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'Base path for paginator generated URLs.'
+                      per_page:
+                        type: integer
+                        description: 'Number of items shown per page.'
+                        minimum: 0
+                      next_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the next set of items.'
+                      prev_cursor:
+                        type:
+                          - string
+                          - 'null'
+                        description: 'The "cursor" that points to the previous set of items.'
+                    required:
+                      - path
+                      - per_page
+                      - next_cursor
+                      - prev_cursor
+                required:
+                  - data
+                  - links
+                  - meta
+        403:
+          description: 'An error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                    example: 'Only an admin of the account can manage webhook endpoints.'
+                required:
+                  - message
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/webhook-endpoints/{webhookEndpointId}/test':
+    post:
+      operationId: v1.webhook-endpoints.test
+      description: |-
+        Queues a `webhook.test` delivery to the endpoint and returns it with the
+        status 202. Only an admin can call this endpoint. The limit is 10 requests a
+        minute for each client.
+      summary: 'Send a test delivery'
+      tags:
+        - Webhooks
+      parameters:
+        -
+          name: webhookEndpointId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        202:
+          description: '`WebhookDeliveryResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/WebhookDeliveryResource'
+                required:
+                  - data
+        403:
+          description: 'An error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                    example: 'Only an admin of the account can manage webhook endpoints.'
+                required:
+                  - message
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+  '/webhook-endpoints/{webhookEndpointId}/secret':
+    post:
+      operationId: v1.webhook-endpoints.secret
+      description: |-
+        Makes a new signing secret and returns it. The old secret stops working at
+        once. Only an admin can call this endpoint.
+      summary: 'Rotate the secret of a webhook endpoint'
+      tags:
+        - Webhooks
+      parameters:
+        -
+          name: webhookEndpointId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        200:
+          description: '`WebhookEndpointResource`'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/WebhookEndpointResource'
+                required:
+                  - data
+        403:
+          description: 'An error'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                    example: 'Only an admin of the account can manage webhook endpoints.'
+                required:
+                  - message
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
+components:
+  securitySchemes:
+    http:
+      type: http
+      scheme: bearer
+  schemas:
+    AbVariant:
+      type: string
+      description: |
+        The variant of an A/B test newsletter. The `variant` column of a message and the `ab_test_winner_variant` column of a newsletter store the value. A message of a newsletter without an A/B test has no variant.
+      enum:
+        - a
+        - b
+      title: AbVariant
+    BlockRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          pattern: '^[a-z0-9_]+$'
+          maxLength: 255.0
+        html_content:
+          type: string
+      required:
+        - name
+        - html_content
+      title: BlockRequest
+    BlockResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+        name:
+          type: string
+        html_content:
+          type: string
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        updated_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - id
+        - uuid
+        - name
+        - html_content
+        - created_at
+        - updated_at
+      title: BlockResource
+    ContactRequest:
+      type: object
+      properties:
+        name:
+          type:
+            - string
+            - 'null'
+          maxLength: 255.0
+        email:
+          type: string
+          format: email
+        tags:
+          type: array
+          items:
+            type: string
+            maxLength: 255.0
+        remove_tags:
+          type: array
+          items:
+            type: string
+            maxLength: 255.0
+      title: ContactRequest
+    ContactResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+        name:
+          type:
+            - string
+            - 'null'
+        email:
+          type: string
+        extra_attributes:
+          type: array
+          items: {}
+        unsubscribed_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        unsubscribed_by_contact:
+          type: boolean
+        tags:
+          type: array
+          items:
+            type: array
+            items: {}
+        lists:
+          type: array
+          items:
+            type: array
+            items: {}
+        topics:
+          type: array
+          items: {}
+        sequences:
+          type: array
+          items:
+            type: object
+            properties:
+              id:
+                type: integer
+              name:
+                type: string
+              status:
+                type: string
+            required:
+              - id
+              - name
+              - status
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - id
+        - uuid
+        - name
+        - email
+        - extra_attributes
+        - unsubscribed_at
+        - unsubscribed_by_contact
+        - tags
+        - lists
+        - topics
+        - sequences
+        - created_at
+      title: ContactResource
+    EmailIdentityResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+        email:
+          type: string
+        name:
+          type:
+            - string
+            - 'null'
+        domain:
+          type:
+            - string
+            - 'null'
+        identity_status:
+          type: string
+        verified_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        updated_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - id
+        - uuid
+        - email
+        - name
+        - domain
+        - identity_status
+        - verified_at
+        - created_at
+        - updated_at
+      title: EmailIdentityResource
+    EmailLogResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        provider:
+          type: string
+        operation:
+          type: string
+        recipient:
+          type:
+            - string
+            - 'null'
+        message_id:
+          type:
+            - string
+            - 'null'
+        status:
+          type: string
+        error:
+          type:
+            - string
+            - 'null'
+        request_payload:
+          type:
+            - array
+            - 'null'
+          items: {}
+        response_payload:
+          type:
+            - array
+            - 'null'
+          items: {}
+        sns_payload:
+          type:
+            - array
+            - 'null'
+          items: {}
+        logged_at:
+          type: string
+          format: date-time
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - id
+        - provider
+        - operation
+        - recipient
+        - message_id
+        - status
+        - error
+        - request_payload
+        - response_payload
+        - sns_payload
+        - logged_at
+        - created_at
+      title: EmailLogResource
+    EmailTemplateResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        html_content:
+          type: string
+        is_default:
+          type: boolean
+        archived_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        updated_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - id
+        - name
+        - html_content
+        - is_default
+        - archived_at
+        - created_at
+        - updated_at
+      title: EmailTemplateResource
+    FilterCategory:
+      type: string
+      description: |
+        The category of an audience filter. The `filters` JSON columns of newsletters, sequences, sequence steps and segments store the value. Mirrored on the frontend in resources/js/types/newsletters.ts.
+      enum:
+        - attributes
+        - tags
+        - lists
+        - topics
+        - date
+        - engagement
+        - location
+      title: FilterCategory
+    FilterConnector:
+      type: string
+      description: |
+        How an audience filter joins the filter before it.
+      enum:
+        - and
+        - or
+      title: FilterConnector
+    FilterMode:
+      type: string
+      description: |
+        How an audience filter combines its values. "all" needs each value, "any" needs one value, and "none" excludes each value.
+      enum:
+        - all
+        - any
+        - none
+      title: FilterMode
+    MailListRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255.0
+      required:
+        - name
+      title: MailListRequest
+    MailListResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+        name:
+          type: string
+        opt_in_enabled:
+          type: boolean
+        message:
+          type: object
+          properties:
+            subject:
+              type:
+                - string
+                - 'null'
+            html_content:
+              type:
+                - string
+                - 'null'
+            email_identity_id:
+              type:
+                - integer
+                - 'null'
+          required:
+            - subject
+            - html_content
+            - email_identity_id
+        contacts_count:
+          type: string
+        topics_count:
+          type: string
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - id
+        - uuid
+        - name
+        - opt_in_enabled
+        - created_at
+      title: MailListResource
+    NewsletterAbWinnerRequest:
+      type: object
+      properties:
+        winner_variant:
+          $ref: '#/components/schemas/AbVariant'
+      required:
+        - winner_variant
+      title: NewsletterAbWinnerRequest
+    NewsletterContactsPreviewRequest:
+      type: object
+      properties:
+        filters:
+          type: array
+          items:
+            type: object
+            properties:
+              connector:
+                $ref: '#/components/schemas/FilterConnector'
+              category:
+                $ref: '#/components/schemas/FilterCategory'
+              mode:
+                $ref: '#/components/schemas/FilterMode'
+              operator:
+                type: string
+              field:
+                type: string
+              values:
+                type: array
+                items:
+                  type: string
+          maxItems: 20.0
+      title: NewsletterContactsPreviewRequest
+    NewsletterResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+        title:
+          type: string
+        status:
+          type: string
+        subject:
+          type: string
+        preview_text:
+          type: string
+        email_identity_id:
+          type: string
+        email_identity:
+          type:
+            - array
+            - 'null'
+          items: {}
+        email_template_id:
+          type: string
+        from_email:
+          type: string
+        from_name:
+          type: string
+        scheduled_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        sent_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        segment_id:
+          type:
+            - integer
+            - 'null'
+        filters:
+          type: array
+          items:
+            type: object
+        content_variables:
+          type: array
+          items: {}
+        ab_test_enabled:
+          type: boolean
+        ab_test_winner_variant:
+          type:
+            - string
+            - 'null'
+        subject_b:
+          type: string
+        preview_text_b:
+          type: string
+        total_contacts_reached:
+          type: integer
+        project_ids:
+          type: object
+          additionalProperties: {}
+        metrics:
+          type: object
+          properties:
+            total:
+              type: integer
+            sent:
+              type: integer
+            pending:
+              type: integer
+            opened:
+              type: integer
+            bounced:
+              type: integer
+            unsubscribed:
+              type: integer
+            complained:
+              type: integer
+            open_rate:
+              type: number
+            unsubscribe_rate:
+              type: number
+          required:
+            - total
+            - sent
+            - pending
+            - opened
+            - bounced
+            - unsubscribed
+            - complained
+            - open_rate
+            - unsubscribe_rate
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        updated_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        html_content:
+          type: string
+        text_content:
+          type: string
+        html_content_b:
+          type: string
+        text_content_b:
+          type: string
+      required:
+        - id
+        - uuid
+        - title
+        - status
+        - subject
+        - preview_text
+        - email_identity_id
+        - email_identity
+        - email_template_id
+        - from_email
+        - from_name
+        - scheduled_at
+        - sent_at
+        - segment_id
+        - filters
+        - content_variables
+        - ab_test_enabled
+        - ab_test_winner_variant
+        - subject_b
+        - preview_text_b
+        - total_contacts_reached
+        - metrics
+        - created_at
+        - updated_at
+        - html_content
+        - text_content
+        - html_content_b
+        - text_content_b
+      title: NewsletterResource
+    NewsletterStatus:
+      type: string
+      enum:
+        - draft
+        - scheduled
+        - queued
+        - ab_testing
+        - sent
+        - failed
+      title: NewsletterStatus
+    ProjectResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+        name:
+          type: string
+        newsletters_count:
+          type: integer
+        sequences_count:
+          type: integer
+        automations_count:
+          type: integer
+        visual_automations_count:
+          type: integer
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - id
+        - uuid
+        - name
+        - created_at
+      title: ProjectResource
+    SequenceResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+        contacts_count:
+          type: integer
+        completed_count:
+          type: integer
+        active_count:
+          type: integer
+        steps_count:
+          type: integer
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/SequenceStepResource'
+        segment_id:
+          type:
+            - integer
+            - 'null'
+        filters:
+          type: array
+          items:
+            type: object
+        content_variables:
+          type: object
+          additionalProperties:
+            type: string
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        project_ids:
+          type: array
+          items:
+            type: integer
+      required:
+        - id
+        - name
+        - status
+        - contacts_count
+        - completed_count
+        - active_count
+        - steps_count
+        - steps
+        - segment_id
+        - filters
+        - content_variables
+        - created_at
+      title: SequenceResource
+    SequenceStatsResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+        stats:
+          type: string
+        mail_metrics:
+          type: string
+      required:
+        - id
+        - name
+        - status
+        - stats
+        - mail_metrics
+      title: SequenceStatsResource
+    SequenceStepFiltersRequest:
+      type: object
+      properties:
+        filters:
+          type: array
+          items:
+            type: object
+            properties:
+              connector:
+                $ref: '#/components/schemas/FilterConnector'
+              category:
+                $ref: '#/components/schemas/FilterCategory'
+              mode:
+                $ref: '#/components/schemas/FilterMode'
+              operator:
+                type: string
+              field:
+                type: string
+              values:
+                type: array
+                items:
+                  type: string
+          maxItems: 20.0
+      required:
+        - filters
+      title: SequenceStepFiltersRequest
+    SequenceStepResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        sequence_id:
+          type: integer
+        delay_days:
+          type: integer
+        delay_type:
+          type: string
+        status:
+          type: string
+        filters:
+          type: array
+          items: {}
+        message:
+          type:
+            - object
+            - 'null'
+          properties:
+            id:
+              type: integer
+            subject:
+              type:
+                - string
+                - 'null'
+            preview_text:
+              type:
+                - string
+                - 'null'
+            html_content:
+              type:
+                - string
+                - 'null'
+            text_content:
+              type:
+                - string
+                - 'null'
+            email_identity_id:
+              type:
+                - integer
+                - 'null'
+            email_template_id:
+              type:
+                - integer
+                - 'null'
+            template_slot_content:
+              type:
+                - string
+                - 'null'
+            email_template:
+              type:
+                - array
+                - 'null'
+              items: {}
+            email_identity:
+              type:
+                - array
+                - 'null'
+              items: {}
+          required:
+            - id
+            - subject
+            - preview_text
+            - html_content
+            - text_content
+            - email_identity_id
+            - email_template_id
+            - template_slot_content
+            - email_template
+            - email_identity
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - id
+        - sequence_id
+        - delay_days
+        - delay_type
+        - status
+        - filters
+        - message
+        - created_at
+      title: SequenceStepResource
+    SequenceStepStatsResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        sequence_id:
+          type: integer
+        subject:
+          type: string
+        delay_days:
+          type: integer
+        delay_type:
+          type: string
+        status:
+          type: string
+        stats:
+          type: string
+        mail_metrics:
+          type: string
+      required:
+        - id
+        - sequence_id
+        - subject
+        - delay_days
+        - delay_type
+        - status
+        - stats
+        - mail_metrics
+      title: SequenceStepStatsResource
+    SequenceSummaryResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        status:
+          type: string
+        steps_count:
+          type: integer
+        contacts_count:
+          type: integer
+        completed_count:
+          type: integer
+        active_count:
+          type: integer
+        project_ids:
+          type: array
+          items:
+            type: integer
+      required:
+        - id
+        - name
+        - status
+        - steps_count
+        - contacts_count
+        - completed_count
+        - active_count
+      title: SequenceSummaryResource
+    StoreNewsletterRequest:
+      type: object
+      properties:
+        title:
+          type:
+            - string
+            - 'null'
+          maxLength: 255.0
+        subject:
+          type:
+            - string
+            - 'null'
+          maxLength: 255.0
+        preview_text:
+          type:
+            - string
+            - 'null'
+          maxLength: 255.0
+        html_content:
+          type:
+            - string
+            - 'null'
+          maxLength: 524288.0
+        status:
+          type: string
+          enum:
+            - draft
+            - live
+        scheduled_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        email_identity_id:
+          type:
+            - integer
+            - 'null'
+        email_template_id:
+          type:
+            - integer
+            - 'null'
+        ab_test_enabled:
+          type: boolean
+        subject_b:
+          type:
+            - string
+            - 'null'
+          maxLength: 255.0
+        preview_text_b:
+          type:
+            - string
+            - 'null'
+          maxLength: 255.0
+        html_content_b:
+          type:
+            - string
+            - 'null'
+          maxLength: 524288.0
+        content_variables:
+          type:
+            - array
+            - 'null'
+          items:
+            type:
+              - string
+              - 'null'
+            maxLength: 255.0
+        filters:
+          type: array
+          items:
+            type: object
+            properties:
+              connector:
+                $ref: '#/components/schemas/FilterConnector'
+              category:
+                $ref: '#/components/schemas/FilterCategory'
+              mode:
+                $ref: '#/components/schemas/FilterMode'
+              operator:
+                type: string
+              field:
+                type: string
+              values:
+                type: array
+                items:
+                  type: string
+          maxItems: 20.0
+        project_ids:
+          type: array
+          items:
+            type: integer
+      title: StoreNewsletterRequest
+    StoreProjectRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255.0
+      required:
+        - name
+      title: StoreProjectRequest
+    StoreWebhookEndpointRequest:
+      type: object
+      properties:
+        url:
+          type: string
+          maxLength: 2048.0
+        description:
+          type:
+            - string
+            - 'null'
+          maxLength: 255.0
+        events:
+          type: array
+          items:
+            type: string
+            enum:
+              - contact.subscribed
+              - contact.unsubscribed
+              - contact.resubscribed
+              - newsletter.sent
+              - sequence_step.sent
+              - sequence.completed
+          minItems: 1.0
+      required:
+        - url
+        - events
+      title: StoreWebhookEndpointRequest
+    TagRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255.0
+      required:
+        - name
+      title: TagRequest
+    TagResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+        name:
+          type: string
+        contacts_count:
+          type: integer
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - id
+        - uuid
+        - name
+        - created_at
+      title: TagResource
+    TopicRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255.0
+        description:
+          type:
+            - string
+            - 'null'
+          maxLength: 1000.0
+      required:
+        - name
+      title: TopicRequest
+    TopicResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+        list_id:
+          type: integer
+        list_name:
+          type: string
+        name:
+          type: string
+        description:
+          type:
+            - string
+            - 'null'
+        subscribed_count:
+          type: string
+        created_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+      required:
+        - id
+        - uuid
+        - list_id
+        - name
+        - description
+        - created_at
+      title: TopicResource
+    UpdateContentVariablesRequest:
+      type: object
+      properties:
+        content_variables:
+          type:
+            - array
+            - 'null'
+          items:
+            type:
+              - string
+              - 'null'
+            maxLength: 255.0
+      required:
+        - content_variables
+      title: UpdateContentVariablesRequest
+    UpdateNewsletterRequest:
+      type: object
+      properties:
+        title:
+          type:
+            - string
+            - 'null'
+          maxLength: 255.0
+        subject:
+          type:
+            - string
+            - 'null'
+          maxLength: 255.0
+        preview_text:
+          type:
+            - string
+            - 'null'
+          maxLength: 255.0
+        html_content:
+          type:
+            - string
+            - 'null'
+          maxLength: 524288.0
+        status:
+          type: string
+          enum:
+            - draft
+            - live
+        scheduled_at:
+          type:
+            - string
+            - 'null'
+          format: date-time
+        email_identity_id:
+          type:
+            - integer
+            - 'null'
+        email_template_id:
+          type:
+            - integer
+            - 'null'
+        ab_test_enabled:
+          type: boolean
+        subject_b:
+          type:
+            - string
+            - 'null'
+          maxLength: 255.0
+        preview_text_b:
+          type:
+            - string
+            - 'null'
+          maxLength: 255.0
+        html_content_b:
+          type:
+            - string
+            - 'null'
+          maxLength: 524288.0
+        content_variables:
+          type:
+            - array
+            - 'null'
+          items:
+            type:
+              - string
+              - 'null'
+            maxLength: 255.0
+        filters:
+          type: array
+          items:
+            type: object
+            properties:
+              connector:
+                $ref: '#/components/schemas/FilterConnector'
+              category:
+                $ref: '#/components/schemas/FilterCategory'
+              mode:
+                $ref: '#/components/schemas/FilterMode'
+              operator:
+                type: string
+              field:
+                type: string
+              values:
+                type: array
+                items:
+                  type: string
+          maxItems: 20.0
+        project_ids:
+          type: array
+          items:
+            type: integer
+      title: UpdateNewsletterRequest
+    UpdateProjectRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          maxLength: 255.0
+      required:
+        - name
+      title: UpdateProjectRequest
+    UpdateWebhookEndpointRequest:
+      type: object
+      properties:
+        active:
+          type: boolean
+        description:
+          type:
+            - string
+            - 'null'
+          maxLength: 255.0
+      title: UpdateWebhookEndpointRequest
+    WebhookDeliveryResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+        event_type:
+          type: string
+        status:
+          $ref: '#/components/schemas/WebhookDeliveryStatus'
+        attempts:
+          type: integer
+        response_status:
+          type:
+            - integer
+            - 'null'
+        response_body:
+          type:
+            - string
+            - 'null'
+        error:
+          type:
+            - string
+            - 'null'
+        payload:
+          type: array
+          items: {}
+        dispatched_at:
+          type: string
+        delivered_at:
+          type: string
+        created_at:
+          type: string
+      required:
+        - id
+        - uuid
+        - event_type
+        - status
+        - attempts
+        - response_status
+        - response_body
+        - error
+        - payload
+        - dispatched_at
+        - delivered_at
+        - created_at
+      title: WebhookDeliveryResource
+    WebhookDeliveryStatus:
+      type: string
+      enum:
+        - pending
+        - success
+        - failed
+      title: WebhookDeliveryStatus
+    WebhookDisabledReason:
+      type: string
+      enum:
+        - manual
+        - auto_failures
+      title: WebhookDisabledReason
+    WebhookEndpointResource:
+      type: object
+      properties:
+        id:
+          type: integer
+        uuid:
+          type: string
+        url:
+          type: string
+        description:
+          type:
+            - string
+            - 'null'
+        events:
+          type: array
+          items: {}
+        active:
+          type: boolean
+        disabled_reason:
+          anyOf:
+            -
+              $ref: '#/components/schemas/WebhookDisabledReason'
+            -
+              type: 'null'
+        consecutive_failures:
+          type: integer
+        last_triggered_at:
+          type: string
+        disabled_at:
+          type: string
+        created_at:
+          type: string
+        secret:
+          type: string
+      required:
+        - id
+        - uuid
+        - url
+        - description
+        - events
+        - active
+        - disabled_reason
+        - consecutive_failures
+        - last_triggered_at
+        - disabled_at
+        - created_at
+        - secret
+      title: WebhookEndpointResource
+  responses:
+    AuthenticationException:
+      description: Unauthenticated
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: 'Error overview.'
+            required:
+              - message
+    ValidationException:
+      description: 'Validation error'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: 'Errors overview.'
+              errors:
+                type: object
+                description: 'A detailed description of each field that failed validation.'
+                additionalProperties:
+                  type: array
+                  items:
+                    type: string
+            required:
+              - message
+              - errors
+    AuthorizationException:
+      description: 'Authorization error'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: 'Error overview.'
+            required:
+              - message
+    ModelNotFoundException:
+      description: 'Not found'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+                description: 'Error overview.'
+            required:
+              - message

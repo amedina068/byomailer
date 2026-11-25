@@ -1,0 +1,1 @@
+- Each response sends `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`. Another site cannot show the app in a frame.

@@ -1,0 +1,1 @@
+- A link whose address comes from a `{{ variable }}` now gets the UTM parameters in bulk newsletters sent through SES. A signed link (with a `signature` parameter) and the one-click unsubscribe link never get UTM parameters.

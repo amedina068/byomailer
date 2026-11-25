@@ -1,0 +1,1 @@
+- The WebAuthn libraries that Fortify loads (`web-auth/webauthn-lib`, `web-auth/cose-lib`, `spomky-labs/pki-framework`, `spomky-labs/cbor-php`) are updated to versions that fix 40 known security advisories.

@@ -1,0 +1,1 @@
+- A newsletter starts one send only. When the scheduler, the dashboard and the API try to send or change one newsletter at the same time, only the first change applies. A send job does not send a newsletter that went back to draft.

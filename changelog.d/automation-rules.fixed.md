@@ -1,0 +1,2 @@
+- An automation that you save in the dashboard stores its list, tag and sequence ids as numbers, the same as the MCP tools.
+- The dashboard saves an edit of a paused automation that adds contacts to a draft sequence. Before, it refused every edit of such an automation.

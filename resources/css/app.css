@@ -1,0 +1,318 @@
+@import 'tailwindcss';
+
+/* Override inline visibility:hidden to prevent FOUC with SSR */
+body {
+    visibility: visible;
+}
+@plugin '@tailwindcss/typography';
+
+@import 'tw-animate-css';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+
+@theme inline {
+    --font-sans:
+        'General Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+
+    --radius-lg: var(--radius);
+    --radius-md: calc(var(--radius) - 2px);
+    --radius-sm: calc(var(--radius) - 4px);
+
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+
+    --color-card: var(--card);
+    --color-card-foreground: var(--card-foreground);
+
+    --color-popover: var(--popover);
+    --color-popover-foreground: var(--popover-foreground);
+
+    --color-primary: var(--primary);
+    --color-primary-foreground: var(--primary-foreground);
+
+    --color-secondary: var(--secondary);
+    --color-secondary-foreground: var(--secondary-foreground);
+
+    --color-muted: var(--muted);
+    --color-muted-foreground: var(--muted-foreground);
+
+    --color-accent: var(--accent);
+    --color-accent-foreground: var(--accent-foreground);
+
+    --color-destructive: var(--destructive);
+    --color-destructive-foreground: var(--destructive-foreground);
+
+    --color-border: var(--border);
+    --color-input: var(--input);
+    --color-ring: var(--ring);
+
+    --color-chart-1: var(--chart-1);
+    --color-chart-2: var(--chart-2);
+    --color-chart-3: var(--chart-3);
+    --color-chart-4: var(--chart-4);
+    --color-chart-5: var(--chart-5);
+
+    --color-sidebar: var(--sidebar-background);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-ring: var(--sidebar-ring);
+}
+
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
+
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+    *,
+    ::after,
+    ::before,
+    ::backdrop,
+    ::file-selector-button {
+        border-color: var(--color-gray-200, currentColor);
+    }
+}
+
+@layer utilities {
+    body,
+    html {
+        --font-sans:
+            'General Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+}
+
+/* ─── BYOMailer Design System (light-first) ─────────── */
+:root {
+    /* Backgrounds — warm off-whites */
+    --bm-base:         #F4F4F6;
+    --bm-surface:      #FFFFFF;
+    --bm-surface-2:    #F9F9FB;
+    --bm-elevated:     #EFEFF2;
+
+    /* Borders */
+    --bm-border:        #E0E0E6;
+    --bm-border-hover:  #CCCCDD;
+    --bm-border-strong: #D0D0DA;
+
+    /* Brand accent — deep olive/lime for contrast on white */
+    --bm-accent:       #4A7A00;
+    --bm-accent-hover: #3D6600;
+    --bm-accent-dim:   rgba(74, 122, 0, 0.06);
+    --bm-accent-border: rgba(74, 122, 0, 0.12);
+    --bm-accent-text:  #FFFFFF;
+    --bm-accent-bright: #6AAF00;
+    --bm-accent-bright-dim: rgba(106, 175, 0, 0.08);
+
+    /* Semantic colors */
+    --bm-success:      #1A8A4A;
+    --bm-success-dim:  rgba(26, 138, 74, 0.06);
+    --bm-success-light: #E8F5EE;
+    --bm-error:        #DC3030;
+    --bm-error-dim:    rgba(220, 48, 48, 0.05);
+    --bm-error-light:  #FDF0F0;
+    --bm-warning:      #A86E00;
+    --bm-warning-dim:  rgba(168, 110, 0, 0.06);
+    --bm-warning-light: #FFF8EB;
+    --bm-info:         #2563EB;
+    --bm-info-dim:     rgba(37, 99, 235, 0.05);
+    --bm-info-light:   #EFF4FF;
+
+    /* Text — near-black, NOT pure #000 */
+    --bm-text-1:  #111118;
+    --bm-text-2:  #555566;
+    --bm-text-3:  #626273;
+    --bm-text-4:  #6E6E80;
+
+    /* Radius */
+    --bm-radius-sm:    3px;
+    --bm-radius:       4px;
+    --bm-radius-md:    6px;
+
+    /* Fonts */
+    --bm-font-sans:    'General Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    --bm-font-mono:    'JetBrains Mono', 'SF Mono', 'Fira Code', monospace;
+
+    /* Shadows — subtle, layered */
+    --bm-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+    --bm-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+    --bm-shadow:    0 2px 8px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+    --bm-shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08), 0 2px 8px rgba(0, 0, 0, 0.04);
+
+    /* Sidebar — always dark */
+    --bm-sidebar:         #111114;
+    --bm-sidebar-surface: #1A1A1E;
+    --bm-sidebar-border:  #2A2A30;
+    --bm-sidebar-text-1:  #ECECEC;
+    --bm-sidebar-text-2:  #888888;
+    --bm-sidebar-text-3:  #555555;
+}
+
+/* ─── Marketing (light, cohesive) flagship utilities ─────
+   The landing is fully LIGHT end-to-end to match the white
+   email-editor product — no dark/light band alternation. */
+
+/* Product-frame depth on light: soft elevation + faint lime halo */
+.bm-frame-glow {
+    box-shadow:
+        0 24px 60px -18px rgba(17, 17, 24, 0.20),
+        0 8px 20px -10px rgba(17, 17, 24, 0.12),
+        0 0 90px -36px rgba(74, 122, 0, 0.30);
+}
+
+/* Faint hairline grid texture for light hero (masked at edges) */
+.bm-soft-grid {
+    background-image:
+        linear-gradient(to right, rgba(17, 17, 24, 0.035) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(17, 17, 24, 0.035) 1px, transparent 1px);
+    background-size: 60px 60px;
+    -webkit-mask-image: radial-gradient(ellipse 85% 65% at 50% 0%, #000 28%, transparent 76%);
+    mask-image: radial-gradient(ellipse 85% 65% at 50% 0%, #000 28%, transparent 76%);
+}
+
+/* Lime highlighter for a headline kicker on light (dark text on lime,
+   wraps cleanly across lines). Background ambiance accent, not a fill button. */
+.bm-mark {
+    background-color: #C8FF00;
+    color: #0A0A0B;
+    padding: 0 0.12em;
+    border-radius: 3px;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+}
+
+::selection {
+    background: var(--bm-accent);
+    color: var(--bm-accent-text);
+}
+
+/* ─── Sidebar active indicator bar ──────────────────── */
+[data-sidebar="menu-button"][data-active="true"]::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 16px;
+    background: var(--bm-accent);
+    border-radius: 0 2px 2px 0;
+}
+
+/* ─── BYOMailer prose theme for blog content ────────── */
+[data-bm] .bm-prose {
+    --tw-prose-body: var(--bm-text-2);
+    --tw-prose-headings: var(--bm-text-1);
+    --tw-prose-lead: var(--bm-text-2);
+    --tw-prose-links: var(--bm-accent);
+    --tw-prose-bold: var(--bm-text-1);
+    --tw-prose-counters: var(--bm-text-3);
+    --tw-prose-bullets: var(--bm-text-4);
+    --tw-prose-hr: var(--bm-border);
+    --tw-prose-quotes: var(--bm-text-2);
+    --tw-prose-quote-borders: var(--bm-accent);
+    --tw-prose-captions: var(--bm-text-3);
+    --tw-prose-code: var(--bm-success);
+    --tw-prose-pre-code: var(--bm-success);
+    --tw-prose-pre-bg: var(--bm-surface-2);
+    --tw-prose-th-borders: var(--bm-border-strong);
+    --tw-prose-td-borders: var(--bm-border);
+    font-family: var(--bm-font-sans);
+}
+[data-bm] .bm-prose code {
+    font-family: var(--bm-font-mono);
+}
+[data-bm] .bm-prose pre {
+    border: 1px solid var(--bm-border);
+    border-radius: var(--bm-radius);
+}
+[data-bm] .bm-prose table {
+    border-collapse: collapse;
+}
+[data-bm] .bm-prose thead th {
+    font-size: 0.6875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--bm-text-4);
+    border-bottom: 1px solid var(--bm-border);
+}
+[data-bm] .bm-prose tbody td {
+    font-size: 0.8125rem;
+    color: var(--bm-text-2);
+    border-bottom: 1px solid var(--bm-border);
+}
+[data-bm] .bm-prose tbody td:first-child {
+    color: var(--bm-text-1);
+    font-weight: 500;
+}
+[data-bm] .bm-prose strong {
+    color: var(--bm-text-1);
+}
+[data-bm] .bm-prose a {
+    color: var(--bm-accent);
+    text-decoration: none;
+}
+[data-bm] .bm-prose a:hover {
+    text-decoration: underline;
+}
+
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bm-border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--bm-border-hover); }
+
+/* ─── Shadcn theme (light-first, dark sidebar) ──────── */
+:root {
+    --background: #F4F4F6;
+    --foreground: #111118;
+    --card: #FFFFFF;
+    --card-foreground: #111118;
+    --popover: #FFFFFF;
+    --popover-foreground: #111118;
+    --primary: #4A7A00;
+    --primary-foreground: #FFFFFF;
+    --secondary: #F9F9FB;
+    --secondary-foreground: #111118;
+    --muted: #F4F4F6;
+    --muted-foreground: #555566;
+    --accent: #EFEFF2;
+    --accent-foreground: #111118;
+    --destructive: #DC3030;
+    --destructive-foreground: #FFFFFF;
+    --border: #E0E0E6;
+    --input: #E0E0E6;
+    --ring: #4A7A00;
+    --chart-1: hsl(220 70% 50%);
+    --chart-2: hsl(160 60% 45%);
+    --chart-3: hsl(30 80% 55%);
+    --chart-4: hsl(280 65% 60%);
+    --chart-5: hsl(340 75% 55%);
+    --radius: 0.375rem;
+    /* Sidebar — always dark */
+    --sidebar-background: #111114;
+    --sidebar-foreground: #ECECEC;
+    --sidebar-primary: #6AAF00;
+    --sidebar-primary-foreground: #FFFFFF;
+    --sidebar-accent: #1A1A1E;
+    --sidebar-accent-foreground: #ECECEC;
+    --sidebar-border: #2A2A30;
+    --sidebar-ring: #6AAF00;
+    --sidebar: #111114;
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+    body {
+        @apply bg-background text-foreground;
+    }
+}

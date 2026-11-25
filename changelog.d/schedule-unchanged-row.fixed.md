@@ -1,0 +1,1 @@
+- On MySQL, a schedule change that kept the same values reported that the send had started. For example, the API `status: draft` on a draft, or a schedule saved again at the same time. These changes now succeed.

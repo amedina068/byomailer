@@ -1,0 +1,1 @@
+- The MCP sequence tools return the stored status of a sequence and a step: "draft" or "live". set-sequence-status and set-sequence-step-status accept "draft", and they still accept "paused" as the same value.

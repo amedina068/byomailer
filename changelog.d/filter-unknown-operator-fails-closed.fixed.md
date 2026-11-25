@@ -1,0 +1,1 @@
+- A saved date, engagement, attribute or location filter with an unknown operator, time window or field matches no contact. Before, it could match every contact and send to more contacts than the filter selects.

@@ -1,0 +1,35 @@
+# Caddy proxy for the custom tracking domains of BYOMailer.
+#
+# Run Caddy 2 with this file on the server of TRACKING_PROXY_IP. Open the
+# ports 80 and 443. Each custom tracking domain has an A record to this IP.
+#
+# Set these values before you start Caddy:
+#   TRACKING_PROXY_ASK_TOKEN   The environment variable. Use the same value
+#                              as in the .env file of BYOMailer.
+#   byomailer.example          The host of APP_URL.
+#   us-east-1                  The AWS region of SES. SES writes the tracking
+#                              links for the region of the account that sends.
+#
+# Caddy gets a certificate for a tracking domain only when BYOMailer answers
+# 200 on /tls/ask. Caddy adds the `domain` query parameter to the ask URL.
+{
+	on_demand_tls {
+		ask https://byomailer.example/tls/ask?token={$TRACKING_PROXY_ASK_TOKEN}
+	}
+}
+
+https:// {
+	tls {
+		on_demand
+	}
+
+	# BYOMailer calls /healthz to get the certificate. Caddy answers it.
+	# Do not send it to SES: SES answers 200 for each path.
+	respond /healthz 200
+
+	# Send the open and click requests to the SES tracking service.
+	# Keep the Host of the tracking domain, as a CNAME to SES does.
+	reverse_proxy https://r.us-east-1.awstrack.me {
+		header_up Host {host}
+	}
+}

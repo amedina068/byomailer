@@ -1,0 +1,1 @@
+- The step contacts page shows a failed mail as "Failed" with its failure reason. Before, it showed "Pending".

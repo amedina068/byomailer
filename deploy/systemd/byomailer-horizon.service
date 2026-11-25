@@ -1,0 +1,32 @@
+# Runs the BYOMailer queue workers (Laravel Horizon) without Docker.
+#
+# Horizon processes all the queues of the app: default, newsletter,
+# sequences, automations, ses-events, tracking-domains and webhooks.
+# config/horizon.php sets the workers of each queue.
+#
+# Install:
+#   sudo cp byomailer-horizon.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now byomailer-horizon
+#
+# After a deploy, run `php artisan horizon:terminate`. Horizon finishes the
+# current jobs and stops. systemd then starts it with the new code.
+
+[Unit]
+Description=BYOMailer queue workers (Laravel Horizon)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/byomailer
+ExecStart=/usr/bin/php artisan horizon
+# Horizon stops cleanly on SIGTERM. A newsletter job can run for 300 seconds.
+KillSignal=SIGTERM
+TimeoutStopSec=330
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

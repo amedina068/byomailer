@@ -1,0 +1,1 @@
+- The sequence list, the sequence page, the step page and the dashboard read the sequence status labels from the server. They show the same label for each status.

@@ -1,0 +1,1 @@
+- A saved audience filter with an unknown category or match mode matches no contact. Before, it could send to more contacts than the filter selects.

@@ -1,0 +1,1 @@
+- The API schedules and sends a newsletter with the same checks as the dashboard and the MCP server, and returns the compliance warnings in `meta.warnings`. All three require a verified sender identity to schedule or send. When the send started first, each channel reports an error.

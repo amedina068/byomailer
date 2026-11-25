@@ -1,0 +1,1 @@
+- The API subscribe endpoint now uses the suppression rule of the dashboard. It accepts `remove_suppression` to remove a bounce suppression of your client. A second unsubscribe in the dashboard keeps the first date and sends one webhook.

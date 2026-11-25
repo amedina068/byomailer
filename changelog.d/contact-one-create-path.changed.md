@@ -1,0 +1,1 @@
+- A new contact with a blacklisted email is saved as unsubscribed in the dashboard, the MCP server and the import. The MCP server no longer refuses it. The API still refuses it with 422.

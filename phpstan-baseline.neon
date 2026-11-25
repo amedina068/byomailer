@@ -1,0 +1,1513 @@
+parameters:
+	ignoreErrors:
+		-
+			message: '#^Using nullsafe property access "\?\-\>html_content" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Actions/SeedClientDefaultTemplate.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Actions/SeedClientDefaultTemplate.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>content_variables" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Actions/SendSequenceStepTestMail.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Actions/TestMailSender.php
+
+		-
+			message: '#^Method Illuminate\\Mail\\PendingMail\:\:to\(\) invoked with 2 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Actions/TestMailSender.php
+
+		-
+			message: '#^Method App\\Auth\\ActiveUserProvider\:\:retrieveById\(\) should return \(Illuminate\\Contracts\\Auth\\Authenticatable&Illuminate\\Database\\Eloquent\\Model\)\|null but returns Illuminate\\Contracts\\Auth\\Authenticatable\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Auth/ActiveUserProvider.php
+
+		-
+			message: '#^Method App\\Auth\\ActiveUserProvider\:\:retrieveByToken\(\) should return \(Illuminate\\Contracts\\Auth\\Authenticatable&Illuminate\\Database\\Eloquent\\Model\)\|null but returns Illuminate\\Contracts\\Auth\\Authenticatable\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Auth/ActiveUserProvider.php
+
+		-
+			message: '#^Expression on left side of \?\? is not nullable\.$#'
+			identifier: nullCoalesce.expr
+			count: 1
+			path: app/Concerns/AppliesUtmParameters.php
+
+		-
+			message: '#^Offset ''tenant_arn'' on array\{success\: true, error\?\: string\} on left side of \?\? does not exist\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Console/Commands/BackfillSesTenantsCommand.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$custom_link_domain\.$#'
+			identifier: property.notFound
+			count: 4
+			path: app/Console/Commands/CheckCustomLinkDomains.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/CheckCustomLinkDomains.php
+
+		-
+			message: '#^Method App\\Console\\Commands\\CheckCustomLinkDomains\:\:unverified\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Console/Commands/CheckCustomLinkDomains.php
+
+		-
+			message: '#^Parameter \#1 \$identity of method App\\Services\\LinkDomainVerifier\:\:verify\(\) expects App\\Models\\EmailIdentity, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Console/Commands/CheckCustomLinkDomains.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Console/Commands/ExportPostmanCommand.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Console/Commands/ExportPostmanCommand.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:mailable\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Console/Commands/SendDueSequenceStepContactMails.php
+
+		-
+			message: '#^Method App\\Console\\Commands\\SendDueSequenceStepContactMails\:\:claimable\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Console/Commands/SendDueSequenceStepContactMails.php
+
+		-
+			message: '#^Method App\\Console\\Commands\\SendDueSequenceStepContactMails\:\:claimable\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Console/Commands/SendDueSequenceStepContactMails.php
+
+		-
+			message: '#^Method App\\Console\\Commands\\SendWeeklySummaryMail\:\:scopeActiveUsers\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Console/Commands/SendWeeklySummaryMail.php
+
+		-
+			message: '#^Method App\\Console\\Commands\\SendWeeklySummaryMail\:\:scopeActiveUsers\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Relations\\Relation but does not specify its types\: TRelatedModel, TDeclaringModel, TResult$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Console/Commands/SendWeeklySummaryMail.php
+
+		-
+			message: '#^Method App\\Console\\Commands\\SendWeeklySummaryMail\:\:scopeActiveUsers\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Console/Commands/SendWeeklySummaryMail.php
+
+		-
+			message: '#^Method App\\Console\\Commands\\SendWeeklySummaryMail\:\:scopeActiveUsers\(\) return type with generic class Illuminate\\Database\\Eloquent\\Relations\\Relation does not specify its types\: TRelatedModel, TDeclaringModel, TResult$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Console/Commands/SendWeeklySummaryMail.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$cf_custom_hostname_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Console/Commands/SyncCustomHostnameOrigins.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$custom_link_domain\.$#'
+			identifier: property.notFound
+			count: 2
+			path: app/Console/Commands/SyncCustomHostnameOrigins.php
+
+		-
+			message: '#^Method App\\Console\\Commands\\SyncCustomHostnameOrigins\:\:registered\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Console/Commands/SyncCustomHostnameOrigins.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\Api\\ContactController\:\:removeFromList\(\) has parameter \$listId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/Api/ContactController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\AutomationController\:\:destroy\(\) has parameter \$automationId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/AutomationController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\AutomationController\:\:edit\(\) has parameter \$automationId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/AutomationController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\AutomationStatusController\:\:__invoke\(\) has parameter \$automationId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/AutomationStatusController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$client_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/ConfirmOptInController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/ConfirmOptInController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sequence\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/ConfirmOptInController.php
+
+		-
+			message: '#^Parameter \#2 \$list of method App\\Services\\ContactMembership\:\:confirmOptIn\(\) expects App\\Models\\MailList, Illuminate\\Database\\Eloquent\\Model\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/ConfirmOptInController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$client_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/ConfirmResubscribeController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sequence\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/ConfirmResubscribeController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$client_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/ConfirmUnsubscribeController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sequence\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/ConfirmUnsubscribeController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\ContactAttributeController\:\:destroy\(\) has parameter \$contactId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/ContactAttributeController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\ContactAttributeController\:\:store\(\) has parameter \$contactId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/ContactAttributeController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\ContactAttributeController\:\:update\(\) has parameter \$contactId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/ContactAttributeController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\ContactController\:\:contactMails\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Http/Controllers/ContactController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\ContactController\:\:show\(\) has parameter \$contactId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/ContactController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\ContactController\:\:subscribe\(\) has parameter \$contactId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/ContactController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\ContactController\:\:unsubscribe\(\) has parameter \$contactId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/ContactController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\ContactController\:\:update\(\) has parameter \$contactId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/ContactController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\ContactImportStatusController\:\:__invoke\(\) has parameter \$contactImportId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/ContactImportStatusController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\ContactListController\:\:sync\(\) has parameter \$contactId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/ContactListController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\ContactMailController\:\:show\(\) has parameter \$contactMailId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/ContactMailController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\ContactTagController\:\:sync\(\) has parameter \$contactId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/ContactTagController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\DashboardController\:\:buildLatestNewsletters\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/DashboardController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\InviteController\:\:expiredResponse\(\) should return Illuminate\\Http\\Response but returns Symfony\\Component\\HttpFoundation\\Response\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Http/Controllers/InviteController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\NewsletterController\:\:destroy\(\) has parameter \$newsletterId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/NewsletterController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\NewsletterController\:\:formProps\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Controllers/NewsletterController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\NewsletterController\:\:schedule\(\) has parameter \$newsletterId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/NewsletterController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\NewsletterController\:\:show\(\) has parameter \$newsletterId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/NewsletterController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\NewsletterController\:\:showContent\(\) has parameter \$newsletterId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/NewsletterController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\NewsletterController\:\:showFilters\(\) has parameter \$newsletterId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/NewsletterController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\NewsletterController\:\:showPreview\(\) has parameter \$newsletterId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/NewsletterController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\NewsletterController\:\:showSchedule\(\) has parameter \$newsletterId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/NewsletterController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\NewsletterController\:\:updateContent\(\) has parameter \$newsletterId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/NewsletterController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\NewsletterController\:\:updateFilters\(\) has parameter \$newsletterId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/NewsletterController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\NewsletterController\:\:updateTitle\(\) has parameter \$newsletterId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/NewsletterController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\NewsletterVariablesController\:\:show\(\) has parameter \$newsletterId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/NewsletterVariablesController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\NewsletterVariablesController\:\:update\(\) has parameter \$newsletterId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/NewsletterVariablesController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$client_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/OneClickUnsubscribeController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sequence\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/OneClickUnsubscribeController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$client_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/OptInController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$name\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/OptInController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$pivot\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/OptInController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sequence\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/OptInController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$client_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/ResubscribeController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sequence\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/ResubscribeController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\SequenceContactController\:\:contactsQuery\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Http/Controllers/SequenceContactController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\SequenceContactController\:\:index\(\) has parameter \$sequenceId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/SequenceContactController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\SequenceController\:\:show\(\) has parameter \$sequenceId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/SequenceController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\SequenceStatusController\:\:__invoke\(\) has parameter \$sequenceId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/SequenceStatusController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Contact\:\:\$step_bounced_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/SequenceStepContactController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Contact\:\:\$step_clicked_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/SequenceStepContactController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Contact\:\:\$step_complained_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/SequenceStepContactController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Contact\:\:\$step_delivered_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/SequenceStepContactController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Contact\:\:\$step_opened_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/SequenceStepContactController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Contact\:\:\$step_rejected_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/SequenceStepContactController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Contact\:\:\$step_sent_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/SequenceStepContactController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Contact\:\:\$step_status\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/SequenceStepContactController.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Contact\:\:\$step_unsubscribed_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/SequenceStepContactController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\SequenceStepContactController\:\:contactsQuery\(\) has no return type specified\.$#'
+			identifier: missingType.return
+			count: 1
+			path: app/Http/Controllers/SequenceStepContactController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\SequenceStepContactController\:\:index\(\) has parameter \$sequenceId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/SequenceStepContactController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\SequenceStepContactController\:\:index\(\) has parameter \$sequenceStepId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/SequenceStepContactController.php
+
+		-
+			message: '#^Parameter \#2 \$stepIds of method App\\Services\\SequenceAnalyticsService\:\:contactClicks\(\) expects Illuminate\\Support\\Collection\<int, int\>, Illuminate\\Support\\Collection\<int, int\<0, max\>\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Http/Controllers/SequenceStepContactController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\SequenceStepFiltersController\:\:__invoke\(\) has parameter \$sequenceId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/SequenceStepFiltersController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\SequenceStepFiltersController\:\:__invoke\(\) has parameter \$sequenceStepId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/SequenceStepFiltersController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\SequenceStepStatusController\:\:__invoke\(\) has parameter \$sequenceId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/SequenceStepStatusController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\SequenceStepStatusController\:\:__invoke\(\) has parameter \$sequenceStepId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/SequenceStepStatusController.php
+
+		-
+			message: '#^Offset ''success'' on array\{success\: bool, status\?\: string, dkim_status\?\: string, dkim_tokens\?\: array\<int, string\>, dkim_signing_hosted_zone\?\: string\|null, mail_from_domain\?\: string\|null, mail_from_status\?\: string\|null, error\?\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Http/Controllers/Settings/AwsIdentityDetailsController.php
+
+		-
+			message: '#^PHPDoc tag @return with type array\<string, bool\|string\> is incompatible with native type Illuminate\\Http\\JsonResponse\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: app/Http/Controllers/Settings/CustomTrackingDomainCheckController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$client_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/UnsubscribeController.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$sequence\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Controllers/UnsubscribeController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\VisualAutomationContactController\:\:paginateContacts\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Http/Controllers/VisualAutomationContactController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\VisualAutomationContactController\:\:paginateContacts\(\) return type with generic interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Http/Controllers/VisualAutomationContactController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\VisualAutomationController\:\:destroy\(\) has parameter \$visualAutomationId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/VisualAutomationController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\VisualAutomationController\:\:show\(\) has parameter \$visualAutomationId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/VisualAutomationController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\VisualAutomationController\:\:update\(\) has parameter \$visualAutomationId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/VisualAutomationController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\VisualAutomationNodeContactController\:\:paginateContacts\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Http/Controllers/VisualAutomationNodeContactController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\VisualAutomationNodeContactController\:\:paginateContacts\(\) return type with generic interface Illuminate\\Contracts\\Pagination\\LengthAwarePaginator does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Http/Controllers/VisualAutomationNodeContactController.php
+
+		-
+			message: '#^Method App\\Http\\Controllers\\VisualAutomationStatusController\:\:__invoke\(\) has parameter \$visualAutomationId with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Controllers/VisualAutomationStatusController.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>timezone" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Middleware/HandleInertiaRequests.php
+
+		-
+			message: '#^Instanceof between App\\Models\\User and App\\Models\\User will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: app/Http/Middleware/LogoutDeactivatedUser.php
+
+		-
+			message: '#^Method App\\Http\\Middleware\\ValidateSignatureWithPreviousUrls\:\:handle\(\) has parameter \$args with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Middleware/ValidateSignatureWithPreviousUrls.php
+
+		-
+			message: '#^Method App\\Http\\Middleware\\ValidateSignatureWithPreviousUrls\:\:handle\(\) should return Illuminate\\Http\\Response but returns Symfony\\Component\\HttpFoundation\\Response\.$#'
+			identifier: return.type
+			count: 2
+			path: app/Http/Middleware/ValidateSignatureWithPreviousUrls.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>client_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Requests/Api/BlockRequest.php
+
+		-
+			message: '#^Trait App\\Http\\Requests\\Concerns\\HasHoneypot is used zero times and is not analysed\.$#'
+			identifier: trait.unused
+			count: 1
+			path: app/Http/Requests/Concerns/HasHoneypot.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>client_id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Requests/StoreSequenceStepRequest.php
+
+		-
+			message: '#^PHPDoc tag @return with type array\<string, mixed\> is incompatible with native type void\.$#'
+			identifier: return.phpDocType
+			count: 1
+			path: app/Http/Requests/StoreUserStorageSettingRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\StoreVisualAutomationRequest\:\:validateResourceOwnership\(\) has parameter \$nodes with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Http/Requests/StoreVisualAutomationRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\StoreVisualAutomationRequest\:\:withValidator\(\) has parameter \$validator with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Requests/StoreVisualAutomationRequest.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Http/Requests/StoreVisualAutomationRequest.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Http/Requests/StoreVisualAutomationRequest.php
+
+		-
+			message: '#^Method App\\Http\\Requests\\UpdateVisualAutomationStatusRequest\:\:withValidator\(\) has parameter \$validator with no type specified\.$#'
+			identifier: missingType.parameter
+			count: 1
+			path: app/Http/Requests/UpdateVisualAutomationStatusRequest.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>emailIdentity" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/Api/NewsletterResource.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$message\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ContactMailResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ContactMailSummaryResource\:\:\$newsletter_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ContactMailSummaryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\ContactMailSummaryResource\:\:\$sequence_step_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ContactMailSummaryResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\Topic\:\:\$pivot\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/ContactResource.php
+
+		-
+			message: '#^Access to an undefined property App\\Http\\Resources\\TopicResource\:\:\$subscribed_count\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Http/Resources/TopicResource.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>value" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Http/Resources/UserResource.php
+
+		-
+			message: '#^Method App\\Imports\\MailListContactsImport\:\:collection\(\) has parameter \$rows with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Imports/MailListContactsImport.php
+
+		-
+			message: '#^Method App\\Imports\\MailListContactsImport\:\:mapRow\(\) has parameter \$row with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Imports/MailListContactsImport.php
+
+		-
+			message: '#^Method App\\Imports\\MailListContactsImport\:\:normalizeHeaders\(\) has parameter \$row with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Imports/MailListContactsImport.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Imports/MailListContactsImport.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 2
+			path: app/Imports/MailListContactsImport.php
+
+		-
+			message: '#^Call to function is_array\(\) with array\<string, mixed\> will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: app/Jobs/ProcessSesEventJob.php
+
+		-
+			message: '#^Method App\\Jobs\\ProcessSesEventJob\:\:blacklistContact\(\) has parameter \$event with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Jobs/ProcessSesEventJob.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ContactMail\:\:\$preferences_link\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Jobs/SendNewsletterChunkJob.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ContactMail\:\:\$unsubscribe_link\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Jobs/SendNewsletterChunkJob.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ContactMail\:\:\$sequenceStep\.$#'
+			identifier: property.notFound
+			count: 6
+			path: app/Jobs/SendSequenceContactMailJob.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Relations\\Relation\<\*, \*, \*\>\:\:morphWith\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Jobs/SendSequenceContactMailJob.php
+
+		-
+			message: '#^Method App\\Jobs\\SendSequenceContactMailJob\:\:claimedMails\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Jobs/SendSequenceContactMailJob.php
+
+		-
+			message: '#^Method Illuminate\\Mail\\PendingMail\:\:to\(\) invoked with 2 parameters, 1 required\.$#'
+			identifier: arguments.count
+			count: 1
+			path: app/Jobs/SendSequenceContactMailJob.php
+
+		-
+			message: '#^Parameter \#1 \$mail of method App\\Jobs\\SendSequenceContactMailJob\:\:sendMail\(\) expects App\\Models\\ContactMail, Illuminate\\Database\\Eloquent\\Model given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Jobs/SendSequenceContactMailJob.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between int\<0, max\> and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Listeners/SetTenantFromAuthenticatedUser.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>message" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Mail/Concerns/BuildsFromContactMail.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>preview_text" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Mail/Concerns/BuildsFromContactMail.php
+
+		-
+			message: '#^Method App\\Mail\\NewsletterBlockedMail\:\:attachments\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Mail/NewsletterBlockedMail.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ContactMail\:\:\$one_click_unsubscribe_link\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mail/NewsletterMail.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$message\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mail/NewsletterMail.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>subject" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Mail/NewsletterMail.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ContactMail\:\:\$one_click_unsubscribe_link\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mail/OptInMail.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$message\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mail/OptInMail.php
+
+		-
+			message: '#^Method App\\Mail\\SequenceBlockedDigestMail\:\:attachments\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Mail/SequenceBlockedDigestMail.php
+
+		-
+			message: '#^Method App\\Mail\\SesPermissionAlertMail\:\:attachments\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Mail/SesPermissionAlertMail.php
+
+		-
+			message: '#^Method App\\Mail\\WeeklySummaryMail\:\:attachments\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Mail/WeeklySummaryMail.php
+
+		-
+			message: '#^Method App\\Mail\\WeeklySummaryMail\:\:metrics\(\) return type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Mail/WeeklySummaryMail.php
+
+		-
+			message: '#^Property App\\Mail\\WeeklySummaryMail\:\:\$computedMetrics type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Mail/WeeklySummaryMail.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 5
+			path: app/Mcp/Tools/BulkUpdateContactsTool.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 5
+			path: app/Mcp/Tools/BulkUpdateContactsTool.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ContactMail\|Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\ContactMail\>\:\:\$sequenceStep\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/ContactMailDetailsTool.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$message\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/ContactMailDetailsTool.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\ContactMailQuery\:\:forUser\(\) expects App\\Models\\User, Illuminate\\Contracts\\Auth\\Authenticatable\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mcp/Tools/ContactMailDetailsTool.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\ContactMailQuery\:\:forUser\(\) expects App\\Models\\User, Illuminate\\Contracts\\Auth\\Authenticatable\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mcp/Tools/ExportSequenceStepContactMailsTool.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\ContactMailQuery\:\:forUser\(\) expects App\\Models\\User, Illuminate\\Contracts\\Auth\\Authenticatable\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mcp/Tools/ListContactMailsTool.php
+
+		-
+			message: '#^Parameter \#1 \$user of method App\\Services\\ContactMailQuery\:\:forUser\(\) expects App\\Models\\User, Illuminate\\Contracts\\Auth\\Authenticatable\|null given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Mcp/Tools/ListSequenceStepContactMailsTool.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>timezone" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Mcp/Tools/ScheduleNewsletterTool.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$email_template_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Mcp/Tools/UpdateSequenceStepTool.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:projects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/Automation.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between int and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Models/BlacklistedEmail.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Block.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Client.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Contact.php
+
+		-
+			message: '#^Offset ''attached'' on array\{attached\: array, detached\: array, updated\: array\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: app/Models/Contact.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/ContactAttribute.php
+
+		-
+			message: '#^Called ''only'' on Laravel collection, but could have been retrieved as a query\.$#'
+			identifier: larastan.noUnnecessaryCollectionCall
+			count: 1
+			path: app/Models/ContactAttribute.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/ContactMail.php
+
+		-
+			message: '#^Anonymous function should return App\\Models\\Newsletter\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/ContactMail.php
+
+		-
+			message: '#^Anonymous function should return App\\Models\\SequenceStep\|null but returns Illuminate\\Database\\Eloquent\\Model\|null\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/ContactMail.php
+
+		-
+			message: '#^Method App\\Models\\ContactMail\:\:newsletter\(\) return type with generic class Illuminate\\Database\\Eloquent\\Casts\\Attribute does not specify its types\: TGet, TSet$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ContactMail.php
+
+		-
+			message: '#^Method App\\Models\\ContactMail\:\:newsletterId\(\) return type with generic class Illuminate\\Database\\Eloquent\\Casts\\Attribute does not specify its types\: TGet, TSet$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ContactMail.php
+
+		-
+			message: '#^Method App\\Models\\ContactMail\:\:oneClickUnsubscribeLink\(\) return type with generic class Illuminate\\Database\\Eloquent\\Casts\\Attribute does not specify its types\: TGet, TSet$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ContactMail.php
+
+		-
+			message: '#^Method App\\Models\\ContactMail\:\:optInLink\(\) return type with generic class Illuminate\\Database\\Eloquent\\Casts\\Attribute does not specify its types\: TGet, TSet$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ContactMail.php
+
+		-
+			message: '#^Method App\\Models\\ContactMail\:\:preferencesLink\(\) return type with generic class Illuminate\\Database\\Eloquent\\Casts\\Attribute does not specify its types\: TGet, TSet$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ContactMail.php
+
+		-
+			message: '#^Method App\\Models\\ContactMail\:\:scopeExclusiveToStep\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ContactMail.php
+
+		-
+			message: '#^Method App\\Models\\ContactMail\:\:scopeExclusiveToStep\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ContactMail.php
+
+		-
+			message: '#^Method App\\Models\\ContactMail\:\:sequenceStep\(\) return type with generic class Illuminate\\Database\\Eloquent\\Casts\\Attribute does not specify its types\: TGet, TSet$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ContactMail.php
+
+		-
+			message: '#^Method App\\Models\\ContactMail\:\:sequenceStepId\(\) return type with generic class Illuminate\\Database\\Eloquent\\Casts\\Attribute does not specify its types\: TGet, TSet$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ContactMail.php
+
+		-
+			message: '#^Method App\\Models\\ContactMail\:\:unsubscribeLink\(\) return type with generic class Illuminate\\Database\\Eloquent\\Casts\\Attribute does not specify its types\: TGet, TSet$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/ContactMail.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/EmailIdentity.php
+
+		-
+			message: '#^Method App\\Models\\EmailIdentity\:\:dnsRecordCollection\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/EmailIdentity.php
+
+		-
+			message: '#^Property App\\Models\\EmailIdentity\:\:\$dnsRecordCache with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/EmailIdentity.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/MailList.php
+
+		-
+			message: '#^Offset 1 on array\{list\<string\>, list\<non\-empty\-string\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Models/Message.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Newsletter.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:projects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/Newsletter.php
+
+		-
+			message: '#^Method App\\Models\\Newsletter\:\:metricsCountDefinitions\(\) should return array\<string, \(callable\(\)\: mixed\)\|string\> but returns array\{0\: ''contactMails'', ''contactMails as sent_count''\: Closure\(Illuminate\\Database\\Eloquent\\Builder\)\: Illuminate\\Database\\Eloquent\\Builder, ''contactMails as delivered_count''\: Closure\(Illuminate\\Database\\Eloquent\\Builder\)\: Illuminate\\Database\\Eloquent\\Builder, ''contactMails as pending_count''\: Closure\(Illuminate\\Database\\Eloquent\\Builder\)\: Illuminate\\Database\\Eloquent\\Builder, ''contactMails as opened_count''\: Closure\(Illuminate\\Database\\Eloquent\\Builder\)\: Illuminate\\Database\\Eloquent\\Builder, ''contactMails as clicked_count''\: Closure\(Illuminate\\Database\\Eloquent\\Builder\)\: Illuminate\\Database\\Eloquent\\Builder, ''contactMails as bounced_count''\: Closure\(Illuminate\\Database\\Eloquent\\Builder\)\: Illuminate\\Database\\Eloquent\\Builder, ''contactMails as unsubscribed_count''\: Closure\(Illuminate\\Database\\Eloquent\\Builder\)\: Illuminate\\Database\\Eloquent\\Builder, \.\.\.\}\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Models/Newsletter.php
+
+		-
+			message: '#^Method App\\Models\\Newsletter\:\:scopeWithMetricsCounts\(\) has parameter \$query with generic class Illuminate\\Database\\Eloquent\\Builder but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Newsletter.php
+
+		-
+			message: '#^Method App\\Models\\Newsletter\:\:scopeWithMetricsCounts\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/Newsletter.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Project.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:projects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/Sequence.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Tag.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/TestMail.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/Topic.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$uuid\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Models/User.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between Laravel\\Sanctum\\PersonalAccessToken and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 2
+			path: app/Models/User.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:projects\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: app/Models/VisualAutomation.php
+
+		-
+			message: '#^Method App\\Models\\WebhookDelivery\:\:prunable\(\) return type with generic class Illuminate\\Database\\Eloquent\\Builder does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Models/WebhookDelivery.php
+
+		-
+			message: '#^Class App\\Scopes\\ClientScope implements generic interface Illuminate\\Database\\Eloquent\\Scope but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Scopes/ClientScope.php
+
+		-
+			message: '#^Method App\\Services\\AutomationRunner\:\:applyAction\(\) has parameter \$action with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/AutomationRunner.php
+
+		-
+			message: '#^Strict comparison using \=\=\= between string and null will always evaluate to false\.$#'
+			identifier: identical.alwaysFalse
+			count: 1
+			path: app/Services/ContactMailExport.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Relations\\Pivot\:\:\$opted_in_at\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/ContactMembership.php
+
+		-
+			message: '#^Offset ''tags'' on array\{email\?\: string, name\?\: string\|null, tags\: array\<int, string\|null\>, remove_tags\?\: array\{\}, extra_attributes\?\: array\<string, mixed\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Services/ContactMembership.php
+
+		-
+			message: '#^Offset ''success'' on array\{success\: bool, status\?\: string, dkim_status\?\: string, dkim_tokens\?\: array\<int, string\>, dkim_signing_hosted_zone\?\: string\|null, mail_from_domain\?\: string\|null, mail_from_status\?\: string\|null, error\?\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 2
+			path: app/Services/EmailIdentityProvisioningService.php
+
+		-
+			message: '#^Strict comparison using \!\=\= between array\{success\: bool, status\?\: string, dkim_status\?\: string, dkim_tokens\?\: array\<int, string\>, dkim_signing_hosted_zone\?\: string\|null, mail_from_domain\?\: string\|null, mail_from_status\?\: string\|null, error\?\: string\} and null will always evaluate to true\.$#'
+			identifier: notIdentical.alwaysTrue
+			count: 1
+			path: app/Services/EmailIdentityProvisioningService.php
+
+		-
+			message: '#^Offset ''success'' on array\{success\: bool, status\?\: string, dkim_status\?\: string\|null, mail_from_status\?\: string\|null\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Services/EmailIdentityStatusSyncService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ContactMail\:\:\$one_click_unsubscribe_link\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/NewsletterTransport.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ContactMail\:\:\$unsubscribe_link\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/NewsletterTransport.php
+
+		-
+			message: '#^Offset ''Status'' on array\{Status\: string, Error\?\: string, MessageId\?\: string\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Services/NewsletterTransport.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,App\\Models\\Contact\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: argument.unresolvableType
+			count: 1
+			path: app/Services/NewsletterTransport.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,App\\Models\\Contact\>\:\:map\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Services/NewsletterTransport.php
+
+		-
+			message: '#^Return type of call to method Illuminate\\Support\\Collection\<int,array\<string, mixed\>\>\:\:all\(\) contains unresolvable type\.$#'
+			identifier: method.unresolvableReturnType
+			count: 1
+			path: app/Services/NewsletterTransport.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ContactMail\:\:\$step_id\.$#'
+			identifier: property.notFound
+			count: 3
+			path: app/Services/SequenceAnalyticsService.php
+
+		-
+			message: '#^Parameter \#1 \$stepIds of method App\\Services\\SequenceAnalyticsService\:\:mailMetricsForStepIds\(\) expects Illuminate\\Support\\Collection\<int, int\>, Illuminate\\Support\\Collection\<int, int\<0, max\>\> given\.$#'
+			identifier: argument.type
+			count: 1
+			path: app/Services/SequenceAnalyticsService.php
+
+		-
+			message: '#^Access to an undefined property App\\Models\\ContactMail\:\:\$sequence_step_id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Services/SequenceStepScheduler.php
+
+		-
+			message: '#^Method App\\Services\\SequenceStepScheduler\:\:delayInHoursExpression\(\) return type with generic class Illuminate\\Database\\Query\\Expression does not specify its types\: TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: app/Services/SequenceStepScheduler.php
+
+		-
+			message: '#^Method App\\Services\\SequenceStepScheduler\:\:delayInHoursExpression\(\) should return Illuminate\\Database\\Query\\Expression but returns Illuminate\\Contracts\\Database\\Query\\Expression\.$#'
+			identifier: return.type
+			count: 1
+			path: app/Services/SequenceStepScheduler.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>name" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/SequenceStepScheduler.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>subject" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/SequenceStepScheduler.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>subject" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/SesBulkEmailService.php
+
+		-
+			message: '#^Property App\\Services\\SesClientManager\:\:\$config is never read, only written\.$#'
+			identifier: property.onlyWritten
+			count: 1
+			path: app/Services/SesClientManager.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>max_send_rate" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 1
+			path: app/Services/SesClientManager.php
+
+		-
+			message: '#^Unable to resolve the template type TFlatMapKey in call to method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:flatMap\(\)$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Services/SesConfigurationSetService.php
+
+		-
+			message: '#^Unable to resolve the template type TFlatMapValue in call to method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:flatMap\(\)$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Services/SesConfigurationSetService.php
+
+		-
+			message: '#^Unable to resolve the template type TKey in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Services/SesConfigurationSetService.php
+
+		-
+			message: '#^Unable to resolve the template type TValue in call to function collect$#'
+			identifier: argument.templateType
+			count: 1
+			path: app/Services/SesConfigurationSetService.php
+
+		-
+			message: '#^Property App\\Services\\UserFilesystemManager\:\:\$registered type has no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/UserFilesystemManager.php
+
+		-
+			message: '#^Method App\\Services\\VisualAutomationEngine\:\:processActionNode\(\) has parameter \$node with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/VisualAutomationEngine.php
+
+		-
+			message: '#^Method App\\Services\\VisualAutomationEngine\:\:processConditionNode\(\) has parameter \$node with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/VisualAutomationEngine.php
+
+		-
+			message: '#^Method App\\Services\\VisualAutomationEngine\:\:processDelayNode\(\) has parameter \$node with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: app/Services/VisualAutomationEngine.php
+
+		-
+			message: '#^Offset 1 on array\{list\<string\>, list\<non\-empty\-string\>\} on left side of \?\? always exists and is not nullable\.$#'
+			identifier: nullCoalesce.offset
+			count: 1
+			path: app/Support/DetectsTemplateVariables.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Support/Media/UserPathGenerator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$storageSetting\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Support/Media/UserPathGenerator.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$storageSetting\.$#'
+			identifier: property.notFound
+			count: 1
+			path: app/Support/Media/UserUrlGenerator.php
+
+		-
+			message: '#^Using nullsafe property access "\?\-\>id" on left side of \?\? is unnecessary\. Use \-\> instead\.$#'
+			identifier: nullsafe.neverNull
+			count: 2
+			path: database/factories/ContactMailFactory.php
+
+		-
+			message: '#^Class Database\\Factories\\SequenceFactory extends generic class Illuminate\\Database\\Eloquent\\Factories\\Factory but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: database/factories/SequenceFactory.php
+
+		-
+			message: '#^PHPDoc tag @extends has invalid value \(\\Illuminate\\Database\\Eloquent\\Factories\.Factory\<\\App\\Models\\Sequence\>\)\: Unexpected token "\.Factory\<\\\\App\\\\Models\\\\Sequence\>", expected ''\<'' at offset 55 on line 2$#'
+			identifier: phpDoc.parseError
+			count: 1
+			path: database/factories/SequenceFactory.php
+
+		-
+			message: '#^Class Database\\Factories\\SequenceStepFactory extends generic class Illuminate\\Database\\Eloquent\\Factories\\Factory but does not specify its types\: TModel$#'
+			identifier: missingType.generics
+			count: 1
+			path: database/factories/SequenceStepFactory.php
+
+		-
+			message: '#^PHPDoc tag @extends has invalid value \(\\Illuminate\\Database\\Eloquent\\Factories\.Factory\<\\App\\Models\\SequenceStep\>\)\: Unexpected token "\.Factory\<\\\\App\\\\Models\\\\SequenceStep\>", expected ''\<'' at offset 55 on line 2$#'
+			identifier: phpDoc.parseError
+			count: 1
+			path: database/factories/SequenceStepFactory.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Database\\Eloquent\\Factories\\Factory\<Illuminate\\Database\\Eloquent\\Model\>\:\:afterCreating\(\) expects Closure\(Illuminate\\Database\\Eloquent\\Model\)\: mixed, Closure\(App\\Models\\SequenceStep\)\: void given\.$#'
+			identifier: argument.type
+			count: 1
+			path: database/factories/SequenceStepFactory.php
+
+		-
+			message: '#^Call to an undefined method Illuminate\\Database\\Schema\\ForeignKeyDefinition\:\:after\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: database/migrations/2026_02_25_224055_add_message_id_to_contact_mails_table.php
+
+		-
+			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Model\:\:\$id\.$#'
+			identifier: property.notFound
+			count: 2
+			path: database/seeders/DatabaseSeeder.php
+
+		-
+			message: '#^Call to an undefined method Database\\Factories\\ClientFactory\:\:subscribed\(\)\.$#'
+			identifier: method.notFound
+			count: 1
+			path: database/seeders/DatabaseSeeder.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 13
+			path: database/seeders/DatabaseSeeder.php
+
+		-
+			message: '#^Instanceof between Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\MailList\> and App\\Models\\MailList will always evaluate to false\.$#'
+			identifier: instanceof.alwaysFalse
+			count: 1
+			path: database/seeders/DatabaseSeeder.php
+
+		-
+			message: '#^Instanceof between Illuminate\\Database\\Eloquent\\Collection\<int, App\\Models\\Tag\> and App\\Models\\Tag will always evaluate to false\.$#'
+			identifier: instanceof.alwaysFalse
+			count: 1
+			path: database/seeders/DatabaseSeeder.php
+
+		-
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<int,Illuminate\\Database\\Eloquent\\Model\>\:\:each\(\) expects callable\(Illuminate\\Database\\Eloquent\\Model, int\)\: mixed, Closure\(App\\Models\\Sequence\)\: void given\.$#'
+			identifier: argument.type
+			count: 2
+			path: database/seeders/DatabaseSeeder.php

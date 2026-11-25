@@ -1,0 +1,21 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+    - phpstan-baseline.neon
+
+parameters:
+    level: 6
+    parseModelCastsMethod: true
+    phpVersion: 80400
+    tmpDir: storage/framework/cache/phpstan
+    paths:
+        - app
+        - database
+        - routes
+    ignoreErrors:
+        # The error in the trait also matches the baseline entry of the class that uses the trait.
+        # PHPStan then counts it 2 times, so a baseline entry with a count cannot hold it.
+        -
+            identifier: nullsafe.neverNull
+            paths:
+                - app/Http/Requests/Concerns/ValidatesClientTemplate.php
+                - app/Http/Requests/UpdateSequenceStepRequest.php

@@ -1,0 +1,1 @@
+- A "none of these" filter on a deleted or renamed tag, list or topic matches no contact. Before, it excluded nobody, and the audience became larger.

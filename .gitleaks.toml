@@ -1,0 +1,10 @@
+# Gitleaks configuration for the public export (scripts/export-public.sh).
+# The default rules stay on. The allowlist below removes known false positives.
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Fake AWS secret keys in tests and factories. Each key starts with the example key of the AWS documentation."
+regexTarget = "line"
+regexes = ['''wJalrXUtnFEMI/K7MDENG/bPxRfiCY''']

@@ -1,0 +1,30 @@
+# Runs the BYOMailer scheduler without Docker.
+#
+# Each minute, the scheduler starts the scheduled newsletters, the due
+# sequence steps and the visual automation steps. It also starts the
+# commands of routes/console.php. The Docker stack runs the same command.
+#
+# Install:
+#   sudo cp byomailer-scheduler.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now byomailer-scheduler
+#
+# Run only one scheduler for each instance.
+
+[Unit]
+Description=BYOMailer scheduler
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/byomailer
+ExecStart=/usr/bin/php artisan schedule:work
+KillSignal=SIGTERM
+TimeoutStopSec=60
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

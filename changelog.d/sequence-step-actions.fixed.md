@@ -1,0 +1,2 @@
+- The dashboard refuses to save a live sequence step without a subject or content. The step editor also refuses unsafe HTML and content over 500 KB.
+- A sequence step uses the name of the sequence author as the from name when the sender identity has no name.

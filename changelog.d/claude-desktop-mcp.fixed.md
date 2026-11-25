@@ -1,0 +1,1 @@
+- The MCP guide gives Claude Desktop an `mcp-remote` entry. Claude Desktop did not accept the old HTTP entry.

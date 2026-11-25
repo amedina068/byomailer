@@ -1,0 +1,31 @@
+# Runs the BYOMailer SES events worker without Docker.
+#
+# The worker reads the SES events from the SQS queue and puts them on the
+# ses-events queue of Horizon. It needs PLATFORM_AWS_* and
+# SES_EVENTS_SQS_QUEUE_URL in .env.
+#
+# Install:
+#   sudo cp byomailer-ses-events.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now byomailer-ses-events
+#
+# The worker stops with exit code 0 when it uses more than 256 MB, and after
+# `php artisan queue:restart`. Restart=always starts it again in these cases.
+
+[Unit]
+Description=BYOMailer SES events worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/byomailer
+ExecStart=/usr/bin/php artisan ses-events:poll
+KillSignal=SIGTERM
+TimeoutStopSec=30
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

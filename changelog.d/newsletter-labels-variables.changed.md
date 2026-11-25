@@ -1,0 +1,1 @@
+- A new newsletter gets the title "Untitled newsletter" in the dashboard, the API and the MCP server. The API changes the title and the projects of a newsletter in any status, the same as the dashboard. Saved content variables keep every key that you send, and each variable that the content uses gets an empty default.

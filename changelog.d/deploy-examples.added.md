@@ -1,0 +1,1 @@
+- Example files for an install without Docker in `deploy/`: an NGINX server block, systemd units, a Supervisor file, and the Caddyfile of the tracking proxy.
