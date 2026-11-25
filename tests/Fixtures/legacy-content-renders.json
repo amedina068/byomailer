@@ -1,0 +1,256 @@
+{
+    "mailer": {
+        "bare placeholders": {
+            "subject": "News for Ann <b>&</b> \"Q\"",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n</head>\n<body>\n<div style=\"display:none;font-size:1px;color:transparent;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;\">Hello Ann &lt;b&gt;&amp;&lt;/b&gt; &quot;Q&quot;, read this&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</div>\n<p>Hi Ann &lt;b&gt;&amp;&lt;/b&gt; \"Q\", from Acme &amp; Sons in your city.</p><p>Missing: []</p>\n</body>\n</html>\n",
+            "text": "Hi Ann &lt;b&gt;&amp;&lt;/b&gt; &quot;Q&quot;, from Acme &amp; Sons in your city.\n\nMissing: []\n"
+        },
+        "system variables": {
+            "subject": "Your update",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n</head>\n<body>\n\n<p>1 Main St, Springfield</p><p><a href=\"{UNSUBSCRIBE_LINK}\">Unsubscribe</a> <a href=\"{PREFERENCES_LINK}\">Preferences</a></p>\n</body>\n</html>\n",
+            "text": "1 Main St, Springfield\n\n[Unsubscribe]({UNSUBSCRIBE_LINK}) [Preferences]({PREFERENCES_LINK})\n"
+        },
+        "query string after a placeholder": {
+            "subject": "Cart",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n</head>\n<body>\n\n<p><a href=\"https://shop.example.com/cart?utm_medium=mail&utm_source=cart&utm_campaign=newsletter&a=1&b=2&coupon=X\">Buy</a> Are you Ann &lt;b&gt;&amp;&lt;/b&gt; \"Q\"? Great</p>\n</body>\n</html>\n",
+            "text": "[Buy](https://shop.example.com/cart?a=1&amp;b=2&amp;coupon=X) Are you Ann &lt;b&gt;&amp;&lt;/b&gt; &quot;Q&quot;? Great\n"
+        },
+        "utm on fixed and variable links": {
+            "subject": "Links for you",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n</head>\n<body>\n\n<p><a href=\"https://shop.example.com/sale?utm_medium=mail&utm_source=links-for-you&utm_campaign=newsletter\">Sale</a> <a href=\"https://shop.example.com/cart?utm_medium=mail&utm_source=links-for-you&utm_campaign=newsletter&a=1&b=2\">Cart</a> <a href=\"https://shop.example.com/?utm_medium=mail&utm_source=keep&utm_campaign=newsletter\">Keep</a></p>\n</body>\n</html>\n",
+            "text": "[Sale](https://shop.example.com/sale) [Cart](https://shop.example.com/cart?a=1&amp;b=2) [Keep](https://shop.example.com/?utm_source=keep)\n"
+        },
+        "block with a placeholder": {
+            "subject": "Block The team",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n</head>\n<body>\n\n<p>Body</p><p>Bye Ann &lt;b&gt;&amp;&lt;/b&gt; \"Q\", see <a href=\"https://example.com/blog?utm_medium=mail&utm_source=block-blocksignature&utm_campaign=newsletter\">the blog</a></p>\n</body>\n</html>\n",
+            "text": "Body\n\nBye Ann &lt;b&gt;&amp;&lt;/b&gt; &quot;Q&quot;, see [the blog](https://example.com/blog)\n"
+        },
+        "dotted, hyphen and array attributes": {
+            "subject": "Hi Ann",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n</head>\n<body>\n\n<p>Ann lives in Paris. Likes [\"email\",\"caf\\u00e9\"].</p>\n</body>\n</html>\n",
+            "text": "Ann lives in Paris. Likes [&quot;email&quot;,&quot;caf\\u00e9&quot;].\n"
+        },
+        "text that is not a placeholder": {
+            "subject": "Literal {{ first name }}",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n</head>\n<body>\n\n<p>{{ first name }} {{#if vip}}VIP{{/if}} {Ann &lt;b&gt;&amp;&lt;/b&gt; \"Q\"} 100% {% off %} {{ name | upcase }}</p>\n</body>\n</html>\n",
+            "text": "{{ first name }} {{#if vip}}VIP{{/if}} {Ann &lt;b&gt;&amp;&lt;/b&gt; &quot;Q&quot;} 100% {% off %} {{ name | upcase }}\n"
+        },
+        "stored text body": {
+            "subject": "Text",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n</head>\n<body>\n\n<p>Hi Ann &lt;b&gt;&amp;&lt;/b&gt; \"Q\"</p>\n</body>\n</html>\n",
+            "text": "Hi Ann &lt;b&gt;&amp;&lt;/b&gt; &quot;Q&quot;\nVisit {{ checkout_url }}?coupon=X\n"
+        },
+        "email template": {
+            "subject": "Templated",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n</head>\n<body>\n\n<div class=\"wrap\"><h1>Acme &amp; Sons</h1><p>Slot for Ann &lt;b&gt;&amp;&lt;/b&gt; \"Q\"</p><footer><a href=\"{UNSUBSCRIBE_LINK}\">Leave</a></footer></div>\n</body>\n</html>\n",
+            "text": "Acme &amp; Sons\n\nSlot for Ann &lt;b&gt;&amp;&lt;/b&gt; &quot;Q&quot;\n\n[Leave]({UNSUBSCRIBE_LINK})\n"
+        }
+    },
+    "ses": {
+        "bare placeholders": {
+            "subject": "News for {{ name }}",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>News for {{ name }}</title>\n</head>\n<body>\n<div style=\"display:none;font-size:1px;color:transparent;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;mso-hide:all;\">Hello {{name}}, read this&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;&zwnj;&nbsp;</div>\n<p>Hi {{ name }}, from {{ company }} in {{ city_label }}.</p><p>Missing: [{{ nickname }}]</p>\n</body>\n</html>",
+            "text": "Hi {{{ name }}}, from {{{ company }}} in {{{ city_label }}}.\n\nMissing: [{{{ nickname }}}]",
+            "data": {
+                "name": "Ann <b>&</b> \"Q\"",
+                "company": "Acme & Sons",
+                "city_label": "your city",
+                "nickname": "",
+                "unsubscribe_url": "{UNSUBSCRIBE_LINK}",
+                "preferences_url": "{PREFERENCES_LINK}",
+                "name__utm": "Ann%20%3Cb%3E&%3C/b%3E%20%22Q%22",
+                "company__utm": "Acme%20&%20Sons",
+                "city_label__utm": "your%20city",
+                "nickname__utm": "",
+                "name__qs": "?",
+                "company__qs": "?",
+                "city_label__qs": "?",
+                "nickname__qs": "?",
+                "unsubscribe_url__qs": "?",
+                "preferences_url__qs": "&",
+                "name__utm__qs": "?",
+                "company__utm__qs": "?",
+                "city_label__utm__qs": "?",
+                "nickname__utm__qs": "?"
+            }
+        },
+        "system variables": {
+            "subject": "Your update",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Your update</title>\n</head>\n<body>\n<p>{{ postal_address }}</p><p><a href=\"{{ unsubscribe_url }}\">Unsubscribe</a> <a href=\"{{ preferences_url }}\">Preferences</a></p>\n</body>\n</html>",
+            "text": "{{{ postal_address }}}\n\n[Unsubscribe]({{{ unsubscribe_url }}}) [Preferences]({{{ preferences_url }}})",
+            "data": {
+                "postal_address": "1 Main St, Springfield",
+                "unsubscribe_url": "{UNSUBSCRIBE_LINK}",
+                "preferences_url": "{PREFERENCES_LINK}",
+                "city_label": "your city",
+                "name": "Friend",
+                "city_label__utm": "your%20city",
+                "name__utm": "Friend",
+                "postal_address__qs": "?",
+                "unsubscribe_url__qs": "?",
+                "preferences_url__qs": "&",
+                "city_label__qs": "?",
+                "name__qs": "?",
+                "city_label__utm__qs": "?",
+                "name__utm__qs": "?"
+            }
+        },
+        "query string after a placeholder": {
+            "subject": "Cart",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Cart</title>\n</head>\n<body>\n<p><a href=\"{{{ checkout_url__utm }}}{{{ checkout_url__utm__qs }}}coupon=X\">Buy</a> Are you {{ name }}? Great</p>\n</body>\n</html>",
+            "text": "[Buy]({{{ checkout_url__utm }}}{{{ checkout_url__utm__qs }}}coupon=X) Are you {{{ name }}}? Great",
+            "data": {
+                "checkout_url": "https://shop.example.com/cart?a=1&b=2",
+                "name": "Ann <b>&</b> \"Q\"",
+                "city_label": "your city",
+                "unsubscribe_url": "{UNSUBSCRIBE_LINK}",
+                "preferences_url": "{PREFERENCES_LINK}",
+                "checkout_url__utm": "https://shop.example.com/cart?utm_medium=mail&utm_source=cart&utm_campaign=newsletter&a=1&b=2",
+                "name__utm": "Ann%20%3Cb%3E&%3C/b%3E%20%22Q%22",
+                "city_label__utm": "your%20city",
+                "checkout_url__qs": "&",
+                "name__qs": "?",
+                "city_label__qs": "?",
+                "unsubscribe_url__qs": "?",
+                "preferences_url__qs": "&",
+                "checkout_url__utm__qs": "&",
+                "name__utm__qs": "?",
+                "city_label__utm__qs": "?"
+            }
+        },
+        "utm on fixed and variable links": {
+            "subject": "Links for you",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Links for you</title>\n</head>\n<body>\n<p><a href=\"https://shop.example.com/sale?utm_medium=mail&utm_source=links-for-you&utm_campaign=newsletter\">Sale</a> <a href=\"{{{ checkout_url__utm }}}\">Cart</a> <a href=\"https://shop.example.com/?utm_medium=mail&utm_source=keep&utm_campaign=newsletter\">Keep</a></p>\n</body>\n</html>",
+            "text": "[Sale](https://shop.example.com/sale?utm_medium=mail&utm_source=links-for-you&utm_campaign=newsletter) [Cart]({{{ checkout_url__utm }}}) [Keep](https://shop.example.com/?utm_medium=mail&utm_source=keep&utm_campaign=newsletter)",
+            "data": {
+                "checkout_url": "https://shop.example.com/cart?a=1&b=2",
+                "city_label": "your city",
+                "name": "Friend",
+                "unsubscribe_url": "{UNSUBSCRIBE_LINK}",
+                "preferences_url": "{PREFERENCES_LINK}",
+                "checkout_url__utm": "https://shop.example.com/cart?utm_medium=mail&utm_source=links-for-you&utm_campaign=newsletter&a=1&b=2",
+                "city_label__utm": "your%20city",
+                "name__utm": "Friend",
+                "checkout_url__qs": "&",
+                "city_label__qs": "?",
+                "name__qs": "?",
+                "unsubscribe_url__qs": "?",
+                "preferences_url__qs": "&",
+                "checkout_url__utm__qs": "&",
+                "city_label__utm__qs": "?",
+                "name__utm__qs": "?"
+            }
+        },
+        "block with a placeholder": {
+            "subject": "Block The team",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Block The team</title>\n</head>\n<body>\n<p>Body</p><p>Bye {{ name }}, see <a href=\"https://example.com/blog?utm_medium=mail&utm_source=block-blocksignature&utm_campaign=newsletter\">the blog</a></p>\n</body>\n</html>",
+            "text": "Body\n\nBye {{{ name }}}, see [the blog](https://example.com/blog?utm_medium=mail&utm_source=block-blocksignature&utm_campaign=newsletter)",
+            "data": {
+                "name": "Ann <b>&</b> \"Q\"",
+                "city_label": "your city",
+                "unsubscribe_url": "{UNSUBSCRIBE_LINK}",
+                "preferences_url": "{PREFERENCES_LINK}",
+                "name__utm": "Ann%20%3Cb%3E&%3C/b%3E%20%22Q%22",
+                "city_label__utm": "your%20city",
+                "name__qs": "?",
+                "city_label__qs": "?",
+                "unsubscribe_url__qs": "?",
+                "preferences_url__qs": "&",
+                "name__utm__qs": "?",
+                "city_label__utm__qs": "?"
+            }
+        },
+        "dotted, hyphen and array attributes": {
+            "subject": "Hi {{ first-name }}",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Hi {{ first-name }}</title>\n</head>\n<body>\n<p>{{ first-name }} lives in {{ address.city }}. Likes {{ interests }}.</p>\n</body>\n</html>",
+            "text": "{{ first-name }} lives in {{{ address.city }}}. Likes {{{ interests }}}.",
+            "data": {
+                "first-name": "Ann",
+                "address.city": "Paris",
+                "interests": "[\"email\",\"caf\\u00e9\"]",
+                "city_label": "your city",
+                "name": "Friend",
+                "unsubscribe_url": "{UNSUBSCRIBE_LINK}",
+                "preferences_url": "{PREFERENCES_LINK}",
+                "first-name__utm": "Ann",
+                "address.city__utm": "Paris",
+                "interests__utm": "[%22email%22,%22caf\\u00e9%22]",
+                "city_label__utm": "your%20city",
+                "name__utm": "Friend",
+                "first-name__qs": "?",
+                "address.city__qs": "?",
+                "interests__qs": "?",
+                "city_label__qs": "?",
+                "name__qs": "?",
+                "unsubscribe_url__qs": "?",
+                "preferences_url__qs": "&",
+                "first-name__utm__qs": "?",
+                "address.city__utm__qs": "?",
+                "interests__utm__qs": "?",
+                "city_label__utm__qs": "?",
+                "name__utm__qs": "?"
+            }
+        },
+        "text that is not a placeholder": {
+            "subject": "Literal {{ first name }}",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Literal {{ first name }}</title>\n</head>\n<body>\n<p>{{ first name }} {{#if vip}}VIP{{/if}} {{{ name }}} 100% {% off %} {{ name | upcase }}</p>\n</body>\n</html>",
+            "text": "{{ first name }} {{#if vip}}VIP{{/if}} {{{ name }}} 100% {% off %} {{ name | upcase }}",
+            "data": {
+                "name": "Ann <b>&</b> \"Q\"",
+                "city_label": "your city",
+                "unsubscribe_url": "{UNSUBSCRIBE_LINK}",
+                "preferences_url": "{PREFERENCES_LINK}",
+                "name__utm": "Ann%20%3Cb%3E&%3C/b%3E%20%22Q%22",
+                "city_label__utm": "your%20city",
+                "name__qs": "?",
+                "city_label__qs": "?",
+                "unsubscribe_url__qs": "?",
+                "preferences_url__qs": "&",
+                "name__utm__qs": "?",
+                "city_label__utm__qs": "?"
+            }
+        },
+        "stored text body": {
+            "subject": "Text",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Text</title>\n</head>\n<body>\n<p>Hi {{ name }}</p>\n</body>\n</html>",
+            "text": "Hi {{{ name }}}\nVisit {{{ checkout_url }}}{{{ checkout_url__qs }}}coupon=X",
+            "data": {
+                "name": "Ann <b>&</b> \"Q\"",
+                "city_label": "your city",
+                "unsubscribe_url": "{UNSUBSCRIBE_LINK}",
+                "preferences_url": "{PREFERENCES_LINK}",
+                "name__utm": "Ann%20%3Cb%3E&%3C/b%3E%20%22Q%22",
+                "city_label__utm": "your%20city",
+                "name__qs": "?",
+                "city_label__qs": "?",
+                "unsubscribe_url__qs": "?",
+                "preferences_url__qs": "&",
+                "name__utm__qs": "?",
+                "city_label__utm__qs": "?"
+            }
+        },
+        "email template": {
+            "subject": "Templated",
+            "html": "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n    <meta charset=\"UTF-8\">\n    <title>Templated</title>\n</head>\n<body>\n<div class=\"wrap\"><h1>{{ company }}</h1><p>Slot for {{ name }}</p><footer><a href=\"{{ unsubscribe_url }}\">Leave</a></footer></div>\n</body>\n</html>",
+            "text": "{{{ company }}}\n\nSlot for {{{ name }}}\n\n[Leave]({{{ unsubscribe_url }}})",
+            "data": {
+                "company": "Acme & Sons",
+                "name": "Ann <b>&</b> \"Q\"",
+                "unsubscribe_url": "{UNSUBSCRIBE_LINK}",
+                "city_label": "your city",
+                "preferences_url": "{PREFERENCES_LINK}",
+                "company__utm": "Acme%20&%20Sons",
+                "name__utm": "Ann%20%3Cb%3E&%3C/b%3E%20%22Q%22",
+                "city_label__utm": "your%20city",
+                "company__qs": "?",
+                "name__qs": "?",
+                "unsubscribe_url__qs": "?",
+                "city_label__qs": "?",
+                "preferences_url__qs": "&",
+                "company__utm__qs": "?",
+                "name__utm__qs": "?",
+                "city_label__utm__qs": "?"
+            }
+        }
+    }
+}
