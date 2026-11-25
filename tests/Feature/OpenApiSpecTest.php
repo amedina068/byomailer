@@ -245,7 +245,7 @@ class OpenApiSpecTest extends TestCase
             }
         }
 
-        $this->assertCount(64, $operations);
+        $this->assertCount(68, $operations);
 
         return $operations;
     }

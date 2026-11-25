@@ -42,6 +42,11 @@ class DocumentationApiController extends Controller
         return Inertia::render('documentation/api/Sequences');
     }
 
+    public function linkClicks(): Response
+    {
+        return Inertia::render('documentation/api/LinkClicks');
+    }
+
     public function projects(): Response
     {
         return Inertia::render('documentation/api/Projects');

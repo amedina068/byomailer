@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use Inertia\Testing\AssertableInertia as Assert;
 use Tests\TestCase;
 
 class DocumentationTest extends TestCase
@@ -27,6 +28,33 @@ class DocumentationTest extends TestCase
         $this->assertArrayHasKey('item', $content);
         $this->assertCount(12, $content['item']);
         $this->assertContains('Projects', array_column($content['item'], 'name'));
+    }
+
+    public function test_postman_link_contact_requests_carry_the_link_query_parameter(): void
+    {
+        $content = json_decode($this->get(route('documentation.postman'))->streamedContent(), true);
+
+        $requests = collect($content['item'])
+            ->flatMap(fn (array $folder): array => $folder['item'] ?? [])
+            ->keyBy('name');
+
+        $request = $requests['List Newsletter Link Contacts (named link)']['request'];
+
+        $this->assertStringEndsWith('/links/contacts?link=name:black-friday&per_page=50', $request['url']['raw']);
+        $this->assertSame(
+            [['key' => 'link', 'value' => 'name:black-friday'], ['key' => 'per_page', 'value' => '50']],
+            $request['url']['query'],
+        );
+        $this->assertSame(['api', 'v1', 'newsletters', ':newsletterId', 'links', 'contacts'], $request['url']['path']);
+        $this->assertArrayNotHasKey('query', $requests['Get Newsletter Links']['request']['url']);
+        $this->assertArrayHasKey('List Sequence Step Link Contacts (URL link)', $requests->all());
+    }
+
+    public function test_link_clicks_api_reference_page_can_be_viewed_by_guests(): void
+    {
+        $this->get(route('documentation.api.link-clicks'))
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page->component('documentation/api/LinkClicks'));
     }
 
     public function test_release_notes_page_redirects_permanently_to_the_docs_site(): void

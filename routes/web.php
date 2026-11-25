@@ -109,6 +109,7 @@ Route::prefix('documentation/api')->name('documentation.api.')->group(function (
     Route::get('blocks', [DocumentationApiController::class, 'blocks'])->name('blocks');
     Route::get('newsletters', [DocumentationApiController::class, 'newsletters'])->name('newsletters');
     Route::get('sequences', [DocumentationApiController::class, 'sequences'])->name('sequences');
+    Route::get('link-clicks', [DocumentationApiController::class, 'linkClicks'])->name('link-clicks');
     Route::get('projects', [DocumentationApiController::class, 'projects'])->name('projects');
     Route::get('filters', [DocumentationApiController::class, 'filters'])->name('filters');
     Route::get('email-identities', [DocumentationApiController::class, 'emailIdentities'])->name('email-identities');

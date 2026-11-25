@@ -174,6 +174,12 @@ export function useDocumentationSidebar(activePage: string): DocumentationNav {
             ],
         },
         {
+            slug: 'api-link-clicks',
+            title: 'Link Clicks',
+            href: '/documentation/api/link-clicks',
+            group: 'Content',
+        },
+        {
             slug: 'api-projects',
             title: 'Projects',
             href: '/documentation/api/projects',

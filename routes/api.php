@@ -10,6 +10,8 @@ use App\Http\Controllers\Api\MailListController;
 use App\Http\Controllers\Api\NewsletterAbWinnerController;
 use App\Http\Controllers\Api\NewsletterContactsPreviewController;
 use App\Http\Controllers\Api\NewsletterController;
+use App\Http\Controllers\Api\NewsletterLinkContactController;
+use App\Http\Controllers\Api\NewsletterLinkController;
 use App\Http\Controllers\Api\NewsletterTestMailController;
 use App\Http\Controllers\Api\NewsletterVariablesController;
 use App\Http\Controllers\Api\ProjectController;
@@ -17,6 +19,8 @@ use App\Http\Controllers\Api\SequenceController;
 use App\Http\Controllers\Api\SequenceStatsController;
 use App\Http\Controllers\Api\SequenceStepController;
 use App\Http\Controllers\Api\SequenceStepFiltersController;
+use App\Http\Controllers\Api\SequenceStepLinkContactController;
+use App\Http\Controllers\Api\SequenceStepLinkController;
 use App\Http\Controllers\Api\SequenceStepStatsController;
 use App\Http\Controllers\Api\SequenceVariablesController;
 use App\Http\Controllers\Api\TagController;
@@ -94,6 +98,8 @@ Route::middleware(['auth:sanctum', EnforceAccessLevel::class, 'throttle:api'])
             ->middleware([EnforceReadAccess::class, 'throttle:newsletter-preview'])
             ->name('newsletters.contacts.preview');
         Route::get('newsletters/{newsletterId}', [NewsletterController::class, 'show'])->name('newsletters.show');
+        Route::get('newsletters/{newsletterId}/links', NewsletterLinkController::class)->name('newsletters.links.index');
+        Route::get('newsletters/{newsletterId}/links/contacts', NewsletterLinkContactController::class)->name('newsletters.links.contacts.index');
         Route::post('newsletters', [NewsletterController::class, 'store'])->name('newsletters.store');
         Route::patch('newsletters/{newsletterId}', [NewsletterController::class, 'update'])->name('newsletters.update');
         Route::delete('newsletters/{newsletterId}', [NewsletterController::class, 'destroy'])->name('newsletters.destroy');
@@ -120,6 +126,8 @@ Route::middleware(['auth:sanctum', EnforceAccessLevel::class, 'throttle:api'])
         Route::patch('sequences/{sequenceId}/variables', [SequenceVariablesController::class, 'update'])->name('sequences.variables.update');
         Route::get('sequences/{sequenceId}/steps/{sequenceStepId}', [SequenceStepController::class, 'show'])->name('sequences.steps.show');
         Route::get('sequences/{sequenceId}/steps/{sequenceStepId}/stats', SequenceStepStatsController::class)->name('sequences.steps.stats');
+        Route::get('sequences/{sequenceId}/steps/{sequenceStepId}/links', SequenceStepLinkController::class)->name('sequences.steps.links.index');
+        Route::get('sequences/{sequenceId}/steps/{sequenceStepId}/links/contacts', SequenceStepLinkContactController::class)->name('sequences.steps.links.contacts.index');
         Route::patch('sequences/{sequenceId}/steps/{sequenceStepId}/filters', SequenceStepFiltersController::class)->name('sequences.steps.filters.update');
 
         Route::get('webhook-endpoints', [WebhookEndpointController::class, 'index'])->name('webhook-endpoints.index');

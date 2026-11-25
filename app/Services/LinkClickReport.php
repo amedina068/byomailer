@@ -61,11 +61,11 @@ class LinkClickReport
                 $url = array_key_first($group['urls']);
 
                 return [
-                    'key' => $key,
-                    'name' => $group['name'],
+                    'key' => (string) $key,
+                    'name' => $group['name'] === null ? null : (string) $group['name'],
                     'url' => $url === null ? null : (string) $url,
                     'unique_contacts' => $uniqueContacts,
-                    'total_clicks' => $group['total_clicks'],
+                    'total_clicks' => (int) $group['total_clicks'],
                     'click_rate' => $delivered > 0 ? round($uniqueContacts / $delivered * 100, 2) : null,
                 ];
             })
