@@ -22,7 +22,7 @@ class CheckCustomLinkDomains extends Command
      *
      * @var string
      */
-    protected $description = 'Activate custom link domains once Cloudflare for SaaS has issued their certificate.';
+    protected $description = 'Activate custom link domains once Cloudflare for SaaS has issued their certificate and a request through the domain reaches the app.';
 
     public function __construct(private LinkDomainVerifier $verifier)
     {

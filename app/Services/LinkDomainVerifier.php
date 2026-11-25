@@ -8,11 +8,15 @@ use Illuminate\Support\Facades\Cache;
 
 /**
  * Confirms a customer's custom link domain is live on Cloudflare for SaaS
- * (hostname proxied + TLS certificate issued) and marks it verified.
+ * (hostname proxied + TLS certificate issued), then confirms that a request
+ * through the domain reaches the app, and marks it verified.
  */
 class LinkDomainVerifier
 {
-    public function __construct(private CloudflareClient $cloudflare) {}
+    public function __construct(
+        private CloudflareClient $cloudflare,
+        private LinkDomainProbe $probe,
+    ) {}
 
     /**
      * @return array{verified: bool, error?: string}
@@ -39,6 +43,12 @@ class LinkDomainVerifier
 
         if ($hostname['status'] !== 'active' || $hostname['ssl_status'] !== 'active') {
             return ['verified' => false];
+        }
+
+        $probe = $this->probe->check($identity->custom_link_domain);
+
+        if (! $probe['healthy']) {
+            return ['verified' => false, 'error' => $probe['reason'] ?? 'The domain does not reach the app.'];
         }
 
         return Cache::lock("link-domain-activate:{$identity->id}", 30)->get(
