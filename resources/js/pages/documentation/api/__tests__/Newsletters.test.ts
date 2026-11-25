@@ -27,9 +27,7 @@ describe('Newsletters API reference', () => {
             global: { stubs: { CodeBlock: true } },
         }).text();
 
-        expect(text).toContain(
-            'Content that is not valid Liquid returns 422.',
-        );
+        expect(text).toContain('Content that is not valid Liquid returns 422.');
         expect(text).toContain('Supports Liquid, for example {{ name }}.');
     });
 });

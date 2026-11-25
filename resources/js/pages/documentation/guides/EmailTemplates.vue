@@ -1,16 +1,12 @@
 <script setup lang="ts">
 import { Head } from '@inertiajs/vue3';
 
-import {
-    Card,
-    CardContent,
-    CardHeader,
-    CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useDocumentationSidebar } from '@/composables/useDocumentationSidebar';
 import DocumentationLayout from '@/layouts/documentation/DocumentationLayout.vue';
 
-const { activeSection, sidebarItems } = useDocumentationSidebar('email-templates');
+const { activeSection, sidebarItems } =
+    useDocumentationSidebar('email-templates');
 </script>
 
 <template>
@@ -22,7 +18,10 @@ const { activeSection, sidebarItems } = useDocumentationSidebar('email-templates
         />
     </Head>
 
-    <DocumentationLayout :active-section="activeSection" :sidebar-items="sidebarItems">
+    <DocumentationLayout
+        :active-section="activeSection"
+        :sidebar-items="sidebarItems"
+    >
         <div class="mb-8">
             <h1 class="text-4xl font-bold tracking-tight">Email Templates</h1>
             <p class="mt-4 text-lg text-muted-foreground">
@@ -52,7 +51,9 @@ const { activeSection, sidebarItems } = useDocumentationSidebar('email-templates
 
                 <Card>
                     <CardHeader>
-                        <CardTitle class="text-base">Default template</CardTitle>
+                        <CardTitle class="text-base"
+                            >Default template</CardTitle
+                        >
                     </CardHeader>
                     <CardContent>
                         <p class="text-sm text-muted-foreground">
@@ -80,13 +81,17 @@ const { activeSection, sidebarItems } = useDocumentationSidebar('email-templates
 
                 <Card>
                     <CardHeader>
-                        <CardTitle class="text-base">Unsubscribe link</CardTitle>
+                        <CardTitle class="text-base"
+                            >Unsubscribe link</CardTitle
+                        >
                     </CardHeader>
                     <CardContent>
                         <p class="text-sm text-muted-foreground">
                             BYOMailer no longer appends an unsubscribe footer
                             automatically. Templates must include a
-                            <code>&#123;&#123; unsubscribe_url &#125;&#125;</code>
+                            <code
+                                >&#123;&#123; unsubscribe_url &#125;&#125;</code
+                            >
                             anchor. Saving without one triggers a deliverability
                             warning.
                         </p>
@@ -97,12 +102,30 @@ const { activeSection, sidebarItems } = useDocumentationSidebar('email-templates
 
         <section class="mb-12">
             <h2 class="mb-4 text-2xl font-bold">Creating a template</h2>
-            <ol class="ml-6 list-decimal space-y-2 text-sm text-muted-foreground">
-                <li>Go to <code>/email-templates</code> and click <strong>New template</strong>.</li>
-                <li>Pick a starter or choose <strong>Start from scratch</strong>.</li>
-                <li>Edit shell content freely. Use the placeholder button in the toolbar to insert <code>&#123;&#123; content &#125;&#125;</code> exactly once.</li>
-                <li>Keep the unsubscribe + manage-preferences links at the bottom.</li>
-                <li>Save. The first template you create becomes your default automatically.</li>
+            <ol
+                class="ml-6 list-decimal space-y-2 text-sm text-muted-foreground"
+            >
+                <li>
+                    Go to <code>/email-templates</code> and click
+                    <strong>New template</strong>.
+                </li>
+                <li>
+                    Pick a starter or choose
+                    <strong>Start from scratch</strong>.
+                </li>
+                <li>
+                    Edit shell content freely. Use the placeholder button in the
+                    toolbar to insert
+                    <code>&#123;&#123; content &#125;&#125;</code> exactly once.
+                </li>
+                <li>
+                    Keep the unsubscribe + manage-preferences links at the
+                    bottom.
+                </li>
+                <li>
+                    Save. The first template you create becomes your default
+                    automatically.
+                </li>
             </ol>
         </section>
 
@@ -134,7 +157,9 @@ const { activeSection, sidebarItems } = useDocumentationSidebar('email-templates
                 syntax used everywhere else. Variables resolve per recipient at
                 send time:
             </p>
-            <pre class="rounded-md border border-border bg-muted p-4 text-sm"><code>&lt;h1&gt;Welcome, &#123;&#123; name &#125;&#125;!&lt;/h1&gt;
+            <pre
+                class="rounded-md border border-border bg-muted p-4 text-sm"
+            ><code>&lt;h1&gt;Welcome, &#123;&#123; name &#125;&#125;!&lt;/h1&gt;
 &lt;p&gt;Thanks for signing up with &#123;&#123; email &#125;&#125;.&lt;/p&gt;
 &lt;p style="font-size:12px"&gt;
   &lt;a href="&#123;&#123; unsubscribe_url &#125;&#125;"&gt;Unsubscribe&lt;/a&gt; ·
@@ -142,9 +167,13 @@ const { activeSection, sidebarItems } = useDocumentationSidebar('email-templates
 &lt;/p&gt;</code></pre>
             <p class="mt-4 text-muted-foreground">
                 Any contact attribute is available, plus
-                <code class="text-sm">&#123;&#123; unsubscribe_url &#125;&#125;</code>
+                <code class="text-sm"
+                    >&#123;&#123; unsubscribe_url &#125;&#125;</code
+                >
                 and
-                <code class="text-sm">&#123;&#123; preferences_url &#125;&#125;</code>
+                <code class="text-sm"
+                    >&#123;&#123; preferences_url &#125;&#125;</code
+                >
                 which are per-email signed URLs.
             </p>
         </section>
@@ -152,11 +181,13 @@ const { activeSection, sidebarItems } = useDocumentationSidebar('email-templates
         <section class="mb-12">
             <h2 class="mb-4 text-2xl font-bold">Liquid tags and filters</h2>
             <p class="mb-4 text-muted-foreground">
-                Subjects, preview texts and bodies use Liquid. You can show
-                text to some contacts only, repeat text for each item of a
-                list, and change a value with a filter:
+                Subjects, preview texts and bodies use Liquid. You can show text
+                to some contacts only, repeat text for each item of a list, and
+                change a value with a filter:
             </p>
-            <pre class="rounded-md border border-border bg-muted p-4 text-sm"><code>&#123;% if plan == "pro" %&#125;
+            <pre
+                class="rounded-md border border-border bg-muted p-4 text-sm"
+            ><code>&#123;% if plan == "pro" %&#125;
   &lt;p&gt;Thanks for your Pro plan.&lt;/p&gt;
 &#123;% else %&#125;
   &lt;p&gt;Try Pro free for 14 days.&lt;/p&gt;
@@ -164,13 +195,37 @@ const { activeSection, sidebarItems } = useDocumentationSidebar('email-templates
 &lt;ul&gt;&#123;% for item in interests %&#125;&lt;li&gt;&#123;&#123; item &#125;&#125;&lt;/li&gt;&#123;% endfor %&#125;&lt;/ul&gt;
 &lt;p&gt;Hi &#123;&#123; name | default: "friend" | capitalize &#125;&#125;&lt;/p&gt;</code></pre>
             <ul class="mt-4 list-disc space-y-2 pl-6 text-muted-foreground">
-                <li>Each <code>&#123;&#123; &#125;&#125;</code> output is HTML-escaped. Write HTML tags in the content, not in a variable.</li>
-                <li>A missing or empty attribute is false in <code>&#123;% if %&#125;</code>.</li>
-                <li>Attribute values are text. Compare them with text, for example <code>&#123;% if count == "5" %&#125;</code>.</li>
-                <li>A range must use two whole numbers and hold 1000 numbers or less, for example <code>(1..5)</code>.</li>
-                <li>The <code>render</code>, <code>include</code>, <code>echo</code>, <code>liquid</code> and <code>cycle</code> tags are not available.</li>
-                <li>A save refuses content that is not valid Liquid. The message names the line of the error.</li>
-                <li>Content that uses only <code>&#123;&#123; variable &#125;&#125;</code> placeholders sends the same as before.</li>
+                <li>
+                    Each <code>&#123;&#123; &#125;&#125;</code> output is
+                    HTML-escaped. Write HTML tags in the content, not in a
+                    variable.
+                </li>
+                <li>
+                    A missing or empty attribute is false in
+                    <code>&#123;% if %&#125;</code>.
+                </li>
+                <li>
+                    Attribute values are text. Compare them with text, for
+                    example <code>&#123;% if count == "5" %&#125;</code>.
+                </li>
+                <li>
+                    A range must use two whole numbers and hold 1000 numbers or
+                    less, for example <code>(1..5)</code>.
+                </li>
+                <li>
+                    The <code>render</code>, <code>include</code>,
+                    <code>echo</code>, <code>liquid</code> and
+                    <code>cycle</code> tags are not available.
+                </li>
+                <li>
+                    A save refuses content that is not valid Liquid. The message
+                    names the line of the error.
+                </li>
+                <li>
+                    Content that uses only
+                    <code>&#123;&#123; variable &#125;&#125;</code> placeholders
+                    sends the same as before.
+                </li>
             </ul>
         </section>
     </DocumentationLayout>
