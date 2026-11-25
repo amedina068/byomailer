@@ -132,7 +132,7 @@ npm run lint:changed
 
 CI runs Pint, Larastan, the PHP tests, the type check, ESLint and Prettier on the changed files, the JavaScript tests, a production build, the API documentation check, and the end-to-end tests on each pull request.
 
-CI also runs `composer audit --locked`. The audit reads `composer.lock` and reports the packages that have security advisories. At the moment the lock file has known advisories, so a failed audit shows a warning and does not fail the run. Run the same check on your computer:
+CI also runs `composer audit --locked`. The audit reads `composer.lock` and reports the packages that have security advisories. If a package has a known advisory, the audit fails the run. Update the package before you merge. Run the same check on your computer:
 
 ```bash
 composer audit --locked
