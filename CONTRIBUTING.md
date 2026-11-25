@@ -167,7 +167,10 @@ A `Client` has many users. Each resource model uses the `BelongsToClient` trait,
 - Gate each new send path with `EmailSendingGate::evaluate()`. Check the content with `SendableContentCheck::problems()` before a newsletter or a sequence step goes live. That check blocks a blank subject or a blank body.
 - Show the result of `SendableContentCheck::warnings()` to the user. It reports content without `{{ unsubscribe_url }}` and accounts without a postal address. These are the responsibility of the sender, so they never block a send.
 - If you add a route that a contact opens from an email, add its path to `RestrictHostToLinkRoutes::ALLOWED_PATHS`. Build its URL through `ContactMail::linkDomainHost()`, so it works on custom link domains.
-- Content uses `{{ variable }}` placeholders. The `DetectsTemplateVariables` and `ReplacesTemplateVariables` traits in `app/Support/` find and replace them. The mailable adds `unsubscribe_url` and `opt_in_url` when it renders the email.
+- Content uses Liquid. `App\Support\Liquid` renders it in a sandbox: no file system, no PHP objects, a time limit, an output limit and a loop limit. Each `{{ }}` output in HTML is escaped. Content with only `{{ variable }}` placeholders is plain. The old replacement (`ReplacesTemplateVariables`) still renders plain content, so its output does not change. `tests/Feature/LegacyContentRenderTest.php` locks that output.
+- Render a message through `Message::render()`. It picks Liquid or the old replacement. The mailable adds `unsubscribe_url` and `opt_in_url` when it renders the email.
+- SES bulk templates know no Liquid. A newsletter with Liquid code sends one email for each contact through the mailer.
+- Add the `ValidLiquid` rule to each new field that saves a subject, a preview text or a body.
 
 ## API changes
 
