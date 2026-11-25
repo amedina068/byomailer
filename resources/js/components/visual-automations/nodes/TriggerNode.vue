@@ -4,13 +4,15 @@ import { Handle, Position } from '@vue-flow/core';
 import { Zap } from 'lucide-vue-next';
 import { computed, inject } from 'vue';
 
+import LinkNameInput from '@/components/links/LinkNameInput.vue';
+
 import { builderKey } from '../builderContext';
 import { TRIGGER_LABELS, type SelectOption, type TriggerType } from '../types';
 
 const props = defineProps<
     NodeProps<{
         trigger_type?: TriggerType;
-        value?: number | null;
+        value?: number | string | null;
         contactCount?: number;
     }>
 >();
@@ -38,6 +40,10 @@ const optionsForTrigger = (type: TriggerType): SelectOption[] => {
 };
 
 const currentOptions = computed(() => optionsForTrigger(triggerType.value));
+const usesLinkName = computed(() => triggerType.value === 'link_clicked');
+const linkName = computed(() =>
+    typeof props.data.value === 'string' ? props.data.value : '',
+);
 const selectedValue = computed(() =>
     props.data.value != null ? String(props.data.value) : '',
 );
@@ -53,7 +59,10 @@ const availableTriggerTypes = computed<TriggerType[]>(() => {
     if (builder.sequences.length) {
         types.push('added_to_sequence', 'sequence_finished');
     }
-    return types.length ? types : (['contact_added_to_list'] as TriggerType[]);
+    return [
+        ...(types.length ? types : (['contact_added_to_list'] as const)),
+        'link_clicked',
+    ];
 });
 
 const setTriggerType = (event: Event) => {
@@ -63,6 +72,10 @@ const setTriggerType = (event: Event) => {
         trigger_type: value,
         value: options.length ? options[0].id : null,
     });
+};
+
+const setLinkName = (value: string) => {
+    builder.updateNodeData(props.id, { value });
 };
 
 const setTriggerValue = (event: Event) => {
@@ -116,7 +129,25 @@ const setTriggerValue = (event: Event) => {
             </select>
         </div>
 
-        <div v-if="currentOptions.length" class="mt-3 grid gap-2 text-sm">
+        <div v-if="usesLinkName" class="mt-3 grid gap-2 text-sm">
+            <label
+                :for="`trigger-link-name-${id}`"
+                class="text-xs font-medium text-muted-foreground"
+            >
+                Link name
+            </label>
+            <LinkNameInput
+                :id="`trigger-link-name-${id}`"
+                :model-value="linkName"
+                :link-names="builder.linkNames ?? []"
+                :disabled="!builder.isEditable"
+                hint="Set the name in the link settings of the editor."
+                class="nodrag rounded-lg border border-border bg-background px-2 py-1.5 text-sm"
+                @update:model-value="setLinkName"
+            />
+        </div>
+
+        <div v-else-if="currentOptions.length" class="mt-3 grid gap-2 text-sm">
             <label
                 :for="`trigger-target-${id}`"
                 class="text-xs font-medium text-muted-foreground"

@@ -123,7 +123,7 @@ class LinkClickedTriggerTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('visual-automations.store'), ['name' => 'Broken', 'workflow' => $this->workflow('black-friday', 'black-friday')])
-            ->assertSessionHasErrors(['workflow.nodes.1.data.value' => 'The value must be an id.']);
+            ->assertSessionHasErrors(['workflow.nodes' => 'The value of each list, tag, topic or sequence node must be an id.']);
     }
 
     public function test_visual_automation_rejects_a_link_name_with_no_letter_or_digit(): void
@@ -133,7 +133,7 @@ class LinkClickedTriggerTest extends TestCase
 
         $this->actingAs($user)
             ->post(route('visual-automations.store'), ['name' => 'Broken', 'workflow' => $this->workflow('!!!', $tag->id)])
-            ->assertSessionHasErrors(['workflow.nodes.0.data.value' => 'Enter a link name with a letter or a digit, 100 characters or fewer.']);
+            ->assertSessionHasErrors(['workflow.nodes' => 'Enter a link name for the trigger with a letter or a digit, 100 characters or fewer.']);
     }
 
     private function newsletterWithHtml(User $user, string $html): void

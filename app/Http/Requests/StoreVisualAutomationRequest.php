@@ -107,13 +107,15 @@ class StoreVisualAutomationRequest extends FormRequest
 
     /**
      * A "link clicked" trigger takes a link name. Every other node value is
-     * the id of a list, tag, topic or sequence.
+     * the id of a list, tag, topic or sequence. The errors use the
+     * `workflow.nodes` key, the same as the other node errors, because the
+     * builder shows that key.
      *
      * @param  array<int, mixed>  $nodes
      */
     private function validateNodeValues(Validator $validator, array $nodes): void
     {
-        foreach ($nodes as $index => $node) {
+        foreach ($nodes as $node) {
             $value = $node['data']['value'] ?? null;
 
             if ($value === null) {
@@ -122,14 +124,14 @@ class StoreVisualAutomationRequest extends FormRequest
 
             if (($node['data']['trigger_type'] ?? null) === AutomationDefinition::LINK_CLICKED) {
                 if (! is_string($value) || mb_strlen($value) > NamedLink::MAX_LENGTH || NamedLink::normalize($value) === null) {
-                    $validator->errors()->add("workflow.nodes.{$index}.data.value", 'Enter a link name with a letter or a digit, '.NamedLink::MAX_LENGTH.' characters or fewer.');
+                    $validator->errors()->add('workflow.nodes', 'Enter a link name for the trigger with a letter or a digit, '.NamedLink::MAX_LENGTH.' characters or fewer.');
                 }
 
                 continue;
             }
 
             if (filter_var($value, FILTER_VALIDATE_INT) === false) {
-                $validator->errors()->add("workflow.nodes.{$index}.data.value", 'The value must be an id.');
+                $validator->errors()->add('workflow.nodes', 'The value of each list, tag, topic or sequence node must be an id.');
             }
         }
     }

@@ -18,7 +18,8 @@ type ConditionType =
     | 'removed_tag'
     | 'added_to_sequence'
     | 'sequence_finished'
-    | 'attribute_changed';
+    | 'attribute_changed'
+    | 'link_clicked';
 
 type AutomationPayload = {
     id: number;
@@ -48,6 +49,7 @@ const props = defineProps<{
     tags: SelectOption[];
     sequences: SelectOption[];
     attributes: string[];
+    linkNames: string[];
     updateRoute: string;
     destroyRoute: string;
     statusRoute: string;
@@ -116,6 +118,7 @@ const breadcrumbs = [
             :tags="props.tags"
             :sequences="props.sequences"
             :attributes="props.attributes"
+            :link-names="props.linkNames"
             :automation="props.automation"
         />
 

@@ -4,7 +4,8 @@ export type TriggerType =
     | 'tag_added'
     | 'removed_tag'
     | 'added_to_sequence'
-    | 'sequence_finished';
+    | 'sequence_finished'
+    | 'link_clicked';
 
 export type ActionType =
     | 'add_tag'
@@ -39,6 +40,7 @@ export const TRIGGER_LABELS: Record<TriggerType, string> = {
     removed_tag: 'Tag removed',
     added_to_sequence: 'Added to sequence',
     sequence_finished: 'Sequence finished',
+    link_clicked: 'Link clicked',
 };
 
 export const ACTION_LABELS: Record<ActionType, string> = {

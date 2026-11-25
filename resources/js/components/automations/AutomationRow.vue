@@ -19,7 +19,8 @@ type ConditionType =
     | 'removed_tag'
     | 'added_to_sequence'
     | 'sequence_finished'
-    | 'attribute_changed';
+    | 'attribute_changed'
+    | 'link_clicked';
 
 type ActionType =
     | 'add_tag'
@@ -99,28 +100,62 @@ const resolveSequenceName = (value?: string | number | null): string => {
 interface ChipDescriptor {
     label: string;
     target: string;
-    kind: 'list' | 'tag' | 'sequence';
+    kind: 'list' | 'tag' | 'sequence' | 'link';
 }
 
 const triggerChip = computed<ChipDescriptor>(() => {
     const { type, value, attribute, operator } = props.automation.condition;
     switch (type) {
         case 'contact_added_to_list':
-            return { label: 'Added to', target: resolveListName(value), kind: 'list' };
+            return {
+                label: 'Added to',
+                target: resolveListName(value),
+                kind: 'list',
+            };
         case 'removed_from_list':
-            return { label: 'Removed from', target: resolveListName(value), kind: 'list' };
+            return {
+                label: 'Removed from',
+                target: resolveListName(value),
+                kind: 'list',
+            };
         case 'tag_added':
-            return { label: 'Tagged', target: resolveTagName(value), kind: 'tag' };
+            return {
+                label: 'Tagged',
+                target: resolveTagName(value),
+                kind: 'tag',
+            };
         case 'removed_tag':
-            return { label: 'Untagged', target: resolveTagName(value), kind: 'tag' };
+            return {
+                label: 'Untagged',
+                target: resolveTagName(value),
+                kind: 'tag',
+            };
         case 'added_to_sequence':
-            return { label: 'Joined sequence', target: resolveSequenceName(value), kind: 'sequence' };
+            return {
+                label: 'Joined sequence',
+                target: resolveSequenceName(value),
+                kind: 'sequence',
+            };
         case 'sequence_finished':
-            return { label: 'Finished sequence', target: resolveSequenceName(value), kind: 'sequence' };
+            return {
+                label: 'Finished sequence',
+                target: resolveSequenceName(value),
+                kind: 'sequence',
+            };
         case 'attribute_changed':
             return operator === 'changed_to'
-                ? { label: `${attribute} changes to`, target: `"${value ?? ''}"`, kind: 'tag' }
+                ? {
+                      label: `${attribute} changes to`,
+                      target: `"${value ?? ''}"`,
+                      kind: 'tag',
+                  }
                 : { label: `${attribute} changes`, target: '', kind: 'tag' };
+        case 'link_clicked':
+            return {
+                label: 'Clicks link',
+                target: `"${value ?? ''}"`,
+                kind: 'link',
+            };
         default:
             return { label: 'When', target: 'condition met', kind: 'tag' };
     }
@@ -130,27 +165,54 @@ const actionChips = computed<ChipDescriptor[]>(() =>
     props.automation.actions.map((action): ChipDescriptor => {
         switch (action.type) {
             case 'add_tag':
-                return { label: 'Add tag', target: resolveTagName(action.value), kind: 'tag' };
+                return {
+                    label: 'Add tag',
+                    target: resolveTagName(action.value),
+                    kind: 'tag',
+                };
             case 'remove_tag':
-                return { label: 'Remove tag', target: resolveTagName(action.value), kind: 'tag' };
+                return {
+                    label: 'Remove tag',
+                    target: resolveTagName(action.value),
+                    kind: 'tag',
+                };
             case 'add_list':
-                return { label: 'Add to', target: resolveListName(action.value), kind: 'list' };
+                return {
+                    label: 'Add to',
+                    target: resolveListName(action.value),
+                    kind: 'list',
+                };
             case 'remove_list':
-                return { label: 'Remove from', target: resolveListName(action.value), kind: 'list' };
+                return {
+                    label: 'Remove from',
+                    target: resolveListName(action.value),
+                    kind: 'list',
+                };
             case 'add_sequence':
-                return { label: 'Enroll in', target: resolveSequenceName(action.value), kind: 'sequence' };
+                return {
+                    label: 'Enroll in',
+                    target: resolveSequenceName(action.value),
+                    kind: 'sequence',
+                };
             default:
                 return { label: 'Action', target: '—', kind: 'tag' };
         }
     }),
 );
 
-const chipColor = (kind: ChipDescriptor['kind']): { bg: string; fg: string } => {
+const chipColor = (
+    kind: ChipDescriptor['kind'],
+): { bg: string; fg: string } => {
     switch (kind) {
         case 'list':
             return { bg: 'var(--bm-info-light)', fg: 'var(--bm-info)' };
         case 'sequence':
-            return { bg: 'var(--bm-accent-bright-dim)', fg: 'var(--bm-accent)' };
+            return {
+                bg: 'var(--bm-accent-bright-dim)',
+                fg: 'var(--bm-accent)',
+            };
+        case 'link':
+            return { bg: 'var(--bm-success-light)', fg: 'var(--bm-success)' };
         case 'tag':
         default:
             return { bg: 'var(--bm-warning-light)', fg: 'var(--bm-warning)' };
@@ -190,8 +252,8 @@ const onHover = (event: Event, on: boolean): void => {
     el.style.backgroundColor = on
         ? 'var(--bm-elevated)'
         : props.automation.is_live
-            ? 'var(--bm-surface)'
-            : 'var(--bm-surface-2)';
+          ? 'var(--bm-surface)'
+          : 'var(--bm-surface-2)';
 };
 </script>
 
@@ -202,7 +264,9 @@ const onHover = (event: Event, on: boolean): void => {
         role="button"
         :style="{
             borderBottom: '1px solid var(--bm-border)',
-            backgroundColor: automation.is_live ? 'var(--bm-surface)' : 'var(--bm-surface-2)',
+            backgroundColor: automation.is_live
+                ? 'var(--bm-surface)'
+                : 'var(--bm-surface-2)',
         }"
         @click="navigate"
         @keydown.enter="navigateFromKeyboard"
@@ -213,9 +277,11 @@ const onHover = (event: Event, on: boolean): void => {
         <!-- Status accent bar -->
         <span
             aria-hidden="true"
-            class="absolute left-0 top-0 h-full w-[3px]"
+            class="absolute top-0 left-0 h-full w-[3px]"
             :style="{
-                backgroundColor: automation.is_live ? 'var(--bm-success)' : 'var(--bm-border-strong)',
+                backgroundColor: automation.is_live
+                    ? 'var(--bm-success)'
+                    : 'var(--bm-border-strong)',
             }"
         />
 
@@ -224,7 +290,11 @@ const onHover = (event: Event, on: boolean): void => {
             <div class="flex flex-wrap items-center gap-2">
                 <h3
                     class="truncate text-[14px] font-semibold"
-                    :style="{ color: automation.is_live ? 'var(--bm-text-1)' : 'var(--bm-text-2)' }"
+                    :style="{
+                        color: automation.is_live
+                            ? 'var(--bm-text-1)'
+                            : 'var(--bm-text-2)',
+                    }"
                 >
                     {{ automation.name }}
                 </h3>
@@ -236,7 +306,9 @@ const onHover = (event: Event, on: boolean): void => {
                         backgroundColor: automation.is_live
                             ? 'var(--bm-success-light)'
                             : 'var(--bm-base)',
-                        color: automation.is_live ? 'var(--bm-success)' : 'var(--bm-text-3)',
+                        color: automation.is_live
+                            ? 'var(--bm-success)'
+                            : 'var(--bm-text-3)',
                         fontFamily: 'var(--bm-font-mono)',
                         fontSize: '10px',
                         fontWeight: 500,
@@ -245,7 +317,11 @@ const onHover = (event: Event, on: boolean): void => {
                         textTransform: 'uppercase',
                     }"
                 >
-                    <component :is="automation.is_live ? PhPulse : PhPause" :size="11" weight="bold" />
+                    <component
+                        :is="automation.is_live ? PhPulse : PhPause"
+                        :size="11"
+                        weight="bold"
+                    />
                     {{ automation.is_live ? 'Live' : 'Paused' }}
                 </span>
             </div>
@@ -274,11 +350,20 @@ const onHover = (event: Event, on: boolean): void => {
                         fontWeight: 500,
                     }"
                 >
-                    <span :style="{ opacity: 0.7 }">{{ triggerChip.label }}</span>
-                    <span v-if="triggerChip.target" :style="{ fontFamily: 'var(--bm-font-mono)' }">{{ triggerChip.target }}</span>
+                    <span :style="{ opacity: 0.7 }">{{
+                        triggerChip.label
+                    }}</span>
+                    <span
+                        v-if="triggerChip.target"
+                        :style="{ fontFamily: 'var(--bm-font-mono)' }"
+                        >{{ triggerChip.target }}</span
+                    >
                 </span>
 
-                <PhArrowRight :size="12" :style="{ color: 'var(--bm-text-4)' }" />
+                <PhArrowRight
+                    :size="12"
+                    :style="{ color: 'var(--bm-text-4)' }"
+                />
 
                 <span
                     class="inline-flex items-center gap-1"
@@ -303,7 +388,9 @@ const onHover = (event: Event, on: boolean): void => {
                         }"
                     >
                         <span :style="{ opacity: 0.7 }">{{ chip.label }}</span>
-                        <span :style="{ fontFamily: 'var(--bm-font-mono)' }">{{ chip.target }}</span>
+                        <span :style="{ fontFamily: 'var(--bm-font-mono)' }">{{
+                            chip.target
+                        }}</span>
                     </span>
                 </template>
                 <span
@@ -334,8 +421,17 @@ const onHover = (event: Event, on: boolean): void => {
                     <span
                         v-if="overflowProjectCount > 0"
                         class="tabular-nums"
-                        style="font-family: var(--bm-font-mono); font-size: 10px; color: var(--bm-text-4);"
-                        :title="assignedProjects.slice(2).map((p) => p.name).join(', ')"
+                        style="
+                            font-family: var(--bm-font-mono);
+                            font-size: 10px;
+                            color: var(--bm-text-4);
+                        "
+                        :title="
+                            assignedProjects
+                                .slice(2)
+                                .map((p) => p.name)
+                                .join(', ')
+                        "
                     >
                         +{{ overflowProjectCount }}
                     </span>

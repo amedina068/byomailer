@@ -69,6 +69,7 @@ const props = defineProps<{
     tags: SelectOption[];
     topics?: SelectOption[];
     sequences: SelectOption[];
+    linkNames?: string[];
     nodeStepCounts?: Record<string, number>;
 }>();
 
@@ -93,21 +94,11 @@ const defaultTriggerType = (): string => {
     return 'contact_added_to_list';
 };
 
-const triggerValueFor = (type: string): number | null => {
-    switch (type) {
-        case 'contact_added_to_list':
-        case 'removed_from_list':
-            return pickFirst(props.lists);
-        case 'tag_added':
-        case 'removed_tag':
-            return pickFirst(props.tags);
-        case 'added_to_sequence':
-        case 'sequence_finished':
-            return pickFirst(props.sequences);
-        default:
-            return null;
-    }
-};
+/** The first option of the default trigger type. */
+const defaultTriggerValue = (): number | null =>
+    pickFirst(props.lists) ??
+    pickFirst(props.tags) ??
+    pickFirst(props.sequences);
 
 const defaultActionType = (): ActionType => {
     if (props.tags.length) return 'add_tag';
@@ -174,7 +165,7 @@ const buildDefaultWorkflow = (): {
                 position: { x: 0, y: 0 },
                 data: {
                     trigger_type: tType,
-                    value: triggerValueFor(tType),
+                    value: defaultTriggerValue(),
                 },
             },
             {
@@ -284,7 +275,7 @@ const createNode = (type: WorkflowNodeType): WorkflowNode => {
                 id: generateId('trigger'),
                 type: 'trigger',
                 position: { x: 0, y: 0 },
-                data: { trigger_type: t, value: triggerValueFor(t) },
+                data: { trigger_type: t, value: defaultTriggerValue() },
             };
         }
         case 'action': {
@@ -524,6 +515,9 @@ provide<BuilderContext>(builderKey, {
     },
     get sequences() {
         return props.sequences;
+    },
+    get linkNames() {
+        return props.linkNames ?? [];
     },
     get isEditable() {
         return isEditable.value;

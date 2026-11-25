@@ -245,3 +245,69 @@ describe('AutomationForm attribute trigger', () => {
         delete formErrors['condition.value'];
     });
 });
+
+describe('AutomationForm link trigger', () => {
+    it('shows a text input with link name suggestions', async () => {
+        const wrapper = mount(AutomationForm, {
+            props: { ...baseProps, linkNames: ['black-friday', 'hero-cta'] },
+        });
+
+        await field(wrapper, 'condition[type]').setValue('link_clicked');
+
+        const value = field(wrapper, 'condition[value]');
+        expect(value.element.tagName).toBe('INPUT');
+        expect(value.attributes('aria-label')).toBe('Link name');
+        expect((value.element as HTMLInputElement).value).toBe('');
+
+        const listId = value.attributes('list');
+        const suggestions = wrapper
+            .findAll(`datalist#${listId} option`)
+            .map((option) => option.attributes('value'));
+        expect(suggestions).toEqual(['black-friday', 'hero-cta']);
+    });
+
+    it('shows the normalized name that the server matches', async () => {
+        const wrapper = mount(AutomationForm, { props: baseProps });
+
+        await field(wrapper, 'condition[type]').setValue('link_clicked');
+        await field(wrapper, 'condition[value]').setValue('Black Friday');
+
+        expect(wrapper.text()).toContain('Matches links named black-friday');
+    });
+
+    it('keeps the stored link name when editing', () => {
+        const wrapper = mount(AutomationForm, {
+            props: {
+                ...baseProps,
+                automation: {
+                    name: 'Clickers',
+                    condition: {
+                        type: 'link_clicked' as const,
+                        value: 'black-friday',
+                    },
+                    actions: [{ type: 'add_tag' as const, value: 2 }],
+                },
+            },
+        });
+
+        expect(
+            (field(wrapper, 'condition[value]').element as HTMLInputElement)
+                .value,
+        ).toBe('black-friday');
+    });
+
+    it('selects the first list again when the type changes away', async () => {
+        const wrapper = mount(AutomationForm, { props: baseProps });
+
+        await field(wrapper, 'condition[type]').setValue('link_clicked');
+        await field(wrapper, 'condition[value]').setValue('black-friday');
+        await field(wrapper, 'condition[type]').setValue(
+            'contact_added_to_list',
+        );
+
+        expect(
+            (field(wrapper, 'condition[value]').element as HTMLSelectElement)
+                .value,
+        ).toBe('1');
+    });
+});
