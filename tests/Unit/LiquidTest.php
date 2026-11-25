@@ -161,6 +161,6 @@ class LiquidTest extends TestCase
             .'{{ unsubscribe_url }} {{ postal_address }} {{ profile.links[0] }} {{ profile }} {{ note }}',
         );
 
-        $this->assertSame(['address.city', 'items', 'name', 'profile', 'vip'], $variables);
+        $this->assertSame(['address.city', 'items', 'name', 'postal_address', 'profile', 'unsubscribe_url', 'vip'], $variables);
     }
 }

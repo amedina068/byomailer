@@ -16,10 +16,10 @@ use App\Services\SesClientManager;
 use Aws\Result;
 use Aws\SesV2\SesV2Client;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Mail\SentMessage;
 use Illuminate\Support\Facades\Mail;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use Symfony\Component\Mailer\SentMessage;
 use Symfony\Component\Mime\Email;
 use Tests\TestCase;
 

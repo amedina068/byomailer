@@ -45,13 +45,6 @@ class Liquid
     public const MAX_RANGE_LENGTH = 1000;
 
     /**
-     * Variables that BYOMailer fills. They are not contact data.
-     *
-     * @var list<string>
-     */
-    public const RESERVED_VARIABLES = ['content', 'unsubscribe_url', 'preferences_url', 'opt_in_url', 'postal_address'];
-
-    /**
      * `render` reads files. `echo`, `liquid` and `cycle` print values that
      * the output escaping does not see.
      *
@@ -132,9 +125,9 @@ class Liquid
     }
 
     /**
-     * The contact variables that the content reads, as paths like `name` or
-     * `address.city`. Loop variables, assigned variables and the variables
-     * that BYOMailer fills are not in the list.
+     * The variables that the content reads, as paths like `name` or
+     * `address.city`. Loop variables and assigned variables are not in the
+     * list.
      *
      * @return list<string>
      *
@@ -143,7 +136,7 @@ class Liquid
     public static function variables(string $content): array
     {
         $paths = [];
-        $bound = ['forloop', 'tablerowloop', 'block', ...self::RESERVED_VARIABLES];
+        $bound = ['forloop', 'tablerowloop', 'block'];
 
         foreach (self::nodes(self::parse($content, html: true)->root) as $node) {
             if ($node instanceof VariableLookup) {

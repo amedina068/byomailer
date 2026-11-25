@@ -550,4 +550,27 @@ class Contact extends Model
 
         return $default;
     }
+
+    /**
+     * The value of a variable for Liquid content. A list attribute stays a
+     * list, so a `{% for %}` loop can read it. A missing or empty value is
+     * null, because Liquid reads an empty string as true in `{% if %}`.
+     * Other values are the text of getTemplateAttribute().
+     *
+     * @return string|array<mixed>|null
+     */
+    public function getTemplateValue(string $attribute): string|array|null
+    {
+        $key = trim($attribute);
+        $column = $key === '' ? null : $this->getAttributeValue($key);
+        $extra = data_get($this->extra_attributes ?? [], $key);
+
+        if (($column === null || $column === '' || is_array($column)) && is_array($extra)) {
+            return $extra;
+        }
+
+        $value = $this->getTemplateAttribute($attribute);
+
+        return $value === '' ? null : $value;
+    }
 }
