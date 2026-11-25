@@ -6,6 +6,8 @@ use App\Models\ContactMail;
 use App\Models\ContactMailClick;
 use App\Models\Sequence;
 use App\Models\SequenceStep;
+use Closure;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -304,9 +306,10 @@ class SequenceAnalyticsService
     /**
      * @param  Collection<int, int>  $contactIds
      * @param  Collection<int, int>  $stepIds
+     * @param  (Closure(Builder<ContactMailClick>): mixed)|null  $clickConstraint  Keeps only the clicks on one link.
      * @return array<int, array<int, array{url: string|null, clicked_at: string|null}>>
      */
-    public function contactClicks(Collection $contactIds, Collection $stepIds): array
+    public function contactClicks(Collection $contactIds, Collection $stepIds, ?Closure $clickConstraint = null): array
     {
         if ($contactIds->isEmpty() || $stepIds->isEmpty()) {
             return [];
@@ -325,6 +328,7 @@ class SequenceAnalyticsService
         return ContactMailClick::query()
             ->whereIn('contact_id', $contactIds)
             ->whereIn('contact_mail_id', $contactMailIds)
+            ->when($clickConstraint, fn (Builder $query) => $clickConstraint($query))
             ->orderByDesc('clicked_at')
             ->get()
             ->groupBy('contact_id')

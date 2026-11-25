@@ -26,6 +26,7 @@ use App\Models\Project;
 use App\Models\Topic;
 use App\Services\ContactFilterService;
 use App\Services\FilterPreparationService;
+use App\Services\LinkClickReport;
 use App\Services\NewsletterScheduleService;
 use App\Services\SesPermissionChecker;
 use Illuminate\Http\JsonResponse;
@@ -66,9 +67,10 @@ class NewsletterController extends Controller
         ]);
     }
 
-    public function show(Request $request, $newsletterId): Response
+    public function show(Request $request, $newsletterId, LinkClickReport $linkClickReport): Response
     {
         $statusFilter = (string) $request->query('status', 'all');
+        $linkFilter = LinkClickReport::isValidKey($request->query('link')) ? (string) $request->query('link') : null;
 
         $newsletter = Newsletter::query()
             ->with(['message.template', 'messageB.template', 'emailIdentity', 'segment'])
@@ -82,6 +84,10 @@ class NewsletterController extends Controller
             $recipientQuery->where('status', $statusFilter);
         }
 
+        if ($linkFilter !== null) {
+            $linkClickReport->filterContactMails($recipientQuery->getQuery(), $newsletter, $linkFilter);
+        }
+
         $recipients = $recipientQuery
             ->latest('id')
             ->paginate(15)
@@ -90,6 +96,8 @@ class NewsletterController extends Controller
                 return [
                     ...ContactResource::make($contactMail->contact)->resolve($request),
                     'contact_mail_status' => $contactMail->status,
+                    'link_clicks_count' => $contactMail->getAttribute('link_clicks_count'),
+                    'link_first_clicked_at' => $contactMail->getAttribute('link_first_clicked_at'),
                 ];
             });
 
@@ -111,6 +119,8 @@ class NewsletterController extends Controller
             'recipients' => $recipients,
             'recipientStatusFilter' => $statusFilter,
             'recipientStatusOptions' => $statusOptions,
+            'recipientLinkFilter' => $linkFilter,
+            'linkClicks' => Inertia::defer(fn (): array => $linkClickReport->summary($newsletter)),
         ]);
     }
 
