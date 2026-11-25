@@ -1,53 +1,27 @@
 <script setup lang="ts">
-import { Head, Link, router, usePoll } from '@inertiajs/vue3';
-import {
-    PhCaretLeft,
-    PhCaretRight,
-    PhDownloadSimple,
-    PhPencilSimple,
-    PhUploadSimple,
-} from '@phosphor-icons/vue';
+import { Head, router, usePoll } from '@inertiajs/vue3';
+import { PhPencilSimple } from '@phosphor-icons/vue';
 import { computed, nextTick, ref, watch } from 'vue';
 
 import { updateTitle as newsletterUpdateTitle } from '@/actions/App/Http/Controllers/NewsletterController';
-import NewsletterMailExportController from '@/actions/App/Http/Controllers/NewsletterMailExportController';
 import AbTestResults from '@/components/newsletters/AbTestResults.vue';
 import NewsletterActions from '@/components/newsletters/NewsletterActions.vue';
+import NewsletterRecipients, {
+    type PaginatedRecipients,
+} from '@/components/newsletters/NewsletterRecipients.vue';
 import HtmlPreview from '@/components/templates/HtmlPreview.vue';
-import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
 import {
     filterToSentence,
     type FilterSentenceContext,
 } from '@/lib/filterSentence';
-import { importMethod as contactsImport, show as contactShow } from '@/routes/contacts';
+import type { LinkClickSummary } from '@/lib/linkClicks';
+import { importMethod as contactsImport } from '@/routes/contacts';
 import { show as newsletterShow } from '@/routes/newsletters';
-import type { NewsletterFilter as Filter, NewsletterStatusOption } from '@/types/newsletters';
-
-interface Contact {
-    id: number;
-    name: string;
-    email: string;
-    contact_mail_status: string;
-}
-
-interface PaginationLink {
-    url: string | null;
-    label: string;
-    active: boolean;
-}
-
-interface PaginatedRecipients {
-    data: Contact[];
-    links: PaginationLink[];
-    current_page: number;
-    last_page: number;
-    from: number | null;
-    to: number | null;
-    total: number;
-    prev_page_url: string | null;
-    next_page_url: string | null;
-}
+import type {
+    NewsletterFilter as Filter,
+    NewsletterStatusOption,
+} from '@/types/newsletters';
 
 interface NewsletterMetrics {
     total: number;
@@ -107,38 +81,16 @@ const props = defineProps<{
     recipients: PaginatedRecipients;
     recipientStatusFilter: string;
     recipientStatusOptions: string[];
+    recipientLinkFilter?: string | null;
+    linkClicks?: LinkClickSummary;
 }>();
-
-const selectedRecipientStatus = ref(props.recipientStatusFilter);
-
-const recipientStatusFilters = computed(() => ['all', ...props.recipientStatusOptions]);
-
-const recipientExportUrl = computed(() =>
-    NewsletterMailExportController.url(props.newsletter.id, {
-        query: selectedRecipientStatus.value === 'all' ? {} : { status: selectedRecipientStatus.value },
-    }),
-);
-
-const onRecipientStatusFilterChange = (): void => {
-    const nextFilter = selectedRecipientStatus.value;
-    const query = nextFilter === 'all' ? {} : { status: nextFilter };
-
-    router.visit(newsletterShow(props.newsletter.id, { query }).url, {
-        preserveState: true,
-        preserveScroll: true,
-        only: ['recipients', 'recipientStatusFilter', 'recipientStatusOptions'],
-    });
-};
-
-const formattedRecipientStatus = (status: string): string =>
-    status
-        .split('_')
-        .map((segment) => segment.charAt(0).toUpperCase() + segment.slice(1))
-        .join(' ');
 
 const breadcrumbs = [
     { title: 'Newsletters', href: newsletterShow(props.newsletter.id).url },
-    { title: props.newsletter.title || props.newsletter.subject, href: newsletterShow(props.newsletter.id).url },
+    {
+        title: props.newsletter.title || props.newsletter.subject,
+        href: newsletterShow(props.newsletter.id).url,
+    },
 ];
 
 const editingTitle = ref(false);
@@ -160,15 +112,19 @@ const saveTitle = (): void => {
         return;
     }
 
-    router.patch(newsletterUpdateTitle(props.newsletter.id).url, { title: newTitle }, {
-        preserveScroll: true,
-        onSuccess: () => {
-            editingTitle.value = false;
+    router.patch(
+        newsletterUpdateTitle(props.newsletter.id).url,
+        { title: newTitle },
+        {
+            preserveScroll: true,
+            onSuccess: () => {
+                editingTitle.value = false;
+            },
+            onError: () => {
+                editingTitle.value = false;
+            },
         },
-        onError: () => {
-            editingTitle.value = false;
-        },
-    });
+    );
 };
 
 const cancelEditingTitle = (): void => {
@@ -231,9 +187,14 @@ const NEWSLETTER_STATUS_COLORS: Record<string, { fg: string; bg: string }> = {
 
 const newsletterStatusMeta = computed(() => {
     const status = props.newsletter.status;
-    const label = props.newsletterStatuses.find((option) => option.value === status)?.label ?? status;
+    const label =
+        props.newsletterStatuses.find((option) => option.value === status)
+            ?.label ?? status;
 
-    return { label, ...(NEWSLETTER_STATUS_COLORS[status] ?? NEWSLETTER_STATUS_COLORS.draft) };
+    return {
+        label,
+        ...(NEWSLETTER_STATUS_COLORS[status] ?? NEWSLETTER_STATUS_COLORS.draft),
+    };
 });
 
 const metricCards = computed(() => [
@@ -247,7 +208,9 @@ const metricCards = computed(() => [
     { label: 'Complained', value: formatNumber(metrics.value.complained) },
 ]);
 
-const listId = computed(() => props.newsletter.list?.id ?? props.newsletter.list?.data?.id);
+const listId = computed(
+    () => props.newsletter.list?.id ?? props.newsletter.list?.data?.id,
+);
 
 const filterSentenceContext = computed((): FilterSentenceContext => {
     const list = props.newsletter.list?.data ?? props.newsletter.list;
@@ -265,28 +228,6 @@ const importUrl = computed(() => {
     }
     return contactsImport({ query: { list_id: listId.value } }).url;
 });
-
-const recipientStatusMeta = (status?: string | null): { fg: string; bg: string } => {
-    const normalized = status?.toLowerCase() ?? '';
-
-    if (normalized === 'opened' || normalized === 'clicked') {
-        return { fg: 'var(--bm-success)', bg: 'var(--bm-success-dim)' };
-    }
-
-    if (normalized === 'delivered') {
-        return { fg: 'var(--bm-info)', bg: 'var(--bm-info-dim)' };
-    }
-
-    if (normalized === 'sent') {
-        return { fg: 'var(--bm-text-2)', bg: 'var(--bm-surface-2)' };
-    }
-
-    if (normalized === 'bounced' || normalized === 'complained' || normalized === 'unsubscribed') {
-        return { fg: 'var(--bm-error)', bg: 'var(--bm-error-dim)' };
-    }
-
-    return { fg: 'var(--bm-text-3)', bg: 'var(--bm-surface-2)' };
-};
 
 // While a send is in flight, poll the server so metrics and recipient
 // statuses update live. Stops automatically once the newsletter settles —
@@ -326,16 +267,22 @@ watch(
             <!-- Header -->
             <div
                 class="rounded-[var(--bm-radius-md)] border"
-                style="background-color: var(--bm-surface); border-color: var(--bm-border); box-shadow: var(--bm-shadow-xs);"
+                style="
+                    background-color: var(--bm-surface);
+                    border-color: var(--bm-border);
+                    box-shadow: var(--bm-shadow-xs);
+                "
             >
                 <div class="flex items-start justify-between gap-4 p-5">
                     <div class="min-w-0 flex-1">
                         <p
-                            class="text-[10px] font-semibold uppercase tracking-widest"
-                            style="color: var(--bm-text-3);"
+                            class="text-[10px] font-semibold tracking-widest uppercase"
+                            style="color: var(--bm-text-3)"
                         >
                             Title
-                            <span style="color: var(--bm-text-4);">· internal</span>
+                            <span style="color: var(--bm-text-4)"
+                                >· internal</span
+                            >
                         </p>
                         <div class="group mt-1 flex items-center gap-2">
                             <template v-if="editingTitle">
@@ -344,7 +291,11 @@ watch(
                                     v-model="titleValue"
                                     type="text"
                                     class="w-full max-w-md rounded-[var(--bm-radius)] border px-2.5 py-1 text-xl font-semibold focus-visible:outline-none"
-                                    style="background-color: var(--bm-base); border-color: var(--bm-border); color: var(--bm-text-1);"
+                                    style="
+                                        background-color: var(--bm-base);
+                                        border-color: var(--bm-border);
+                                        color: var(--bm-text-1);
+                                    "
                                     @blur="saveTitle"
                                     @keyup.enter="saveTitle"
                                     @keyup.escape="cancelEditingTitle"
@@ -353,7 +304,7 @@ watch(
                             <template v-else>
                                 <h1
                                     class="truncate text-xl font-semibold"
-                                    style="color: var(--bm-text-1);"
+                                    style="color: var(--bm-text-1)"
                                 >
                                     {{ newsletter.title || '—' }}
                                 </h1>
@@ -365,7 +316,7 @@ watch(
                                 >
                                     <PhPencilSimple
                                         :size="16"
-                                        style="color: var(--bm-text-3);"
+                                        style="color: var(--bm-text-3)"
                                     />
                                     <span class="sr-only">Edit title</span>
                                 </button>
@@ -373,14 +324,14 @@ watch(
                         </div>
                         <p
                             class="mt-1.5 truncate text-sm"
-                            style="color: var(--bm-text-3);"
+                            style="color: var(--bm-text-3)"
                         >
                             {{ newsletter.subject }}
                         </p>
                         <p
                             v-if="newsletter.preview_text"
                             class="mt-0.5 truncate text-xs"
-                            style="color: var(--bm-text-3); opacity: 0.7;"
+                            style="color: var(--bm-text-3); opacity: 0.7"
                             :title="newsletter.preview_text"
                         >
                             Preview: {{ newsletter.preview_text }}
@@ -400,7 +351,9 @@ watch(
                         >
                             <span
                                 class="size-1.5 rounded-full"
-                                :style="{ backgroundColor: newsletterStatusMeta.fg }"
+                                :style="{
+                                    backgroundColor: newsletterStatusMeta.fg,
+                                }"
                             ></span>
                             {{ newsletterStatusMeta.label }}
                         </span>
@@ -414,61 +367,77 @@ watch(
                 <!-- Meta row -->
                 <dl
                     class="grid grid-cols-2 border-t lg:grid-cols-3"
-                    style="border-color: var(--bm-border);"
+                    style="border-color: var(--bm-border)"
                 >
                     <div
                         class="px-5 py-3.5"
-                        style="border-color: var(--bm-border);"
+                        style="border-color: var(--bm-border)"
                     >
                         <dt
-                            class="text-[10px] font-semibold uppercase tracking-widest"
-                            style="color: var(--bm-text-3);"
+                            class="text-[10px] font-semibold tracking-widest uppercase"
+                            style="color: var(--bm-text-3)"
                         >
                             Sent at
                         </dt>
                         <dd
                             class="mt-1 truncate text-sm tabular-nums"
-                            style="font-family: var(--bm-font-mono); color: var(--bm-text-1);"
+                            style="
+                                font-family: var(--bm-font-mono);
+                                color: var(--bm-text-1);
+                            "
                         >
                             {{ formatDateTime(newsletter.sent_at) }}
                         </dd>
                     </div>
                     <div
                         class="border-l px-5 py-3.5"
-                        style="border-color: var(--bm-border);"
+                        style="border-color: var(--bm-border)"
                     >
                         <dt
-                            class="text-[10px] font-semibold uppercase tracking-widest"
-                            style="color: var(--bm-text-3);"
+                            class="text-[10px] font-semibold tracking-widest uppercase"
+                            style="color: var(--bm-text-3)"
                         >
                             From
                         </dt>
                         <dd
                             class="mt-1 truncate text-sm"
-                            style="color: var(--bm-text-1);"
+                            style="color: var(--bm-text-1)"
                         >
-                            {{ newsletter.from_name ?? newsletter.email_identity?.name ?? '—' }}
-                            <span style="color: var(--bm-text-3);">
-                                &lt;{{ newsletter.from_email ?? newsletter.email_identity?.email ?? '—' }}&gt;
+                            {{
+                                newsletter.from_name ??
+                                newsletter.email_identity?.name ??
+                                '—'
+                            }}
+                            <span style="color: var(--bm-text-3)">
+                                &lt;{{
+                                    newsletter.from_email ??
+                                    newsletter.email_identity?.email ??
+                                    '—'
+                                }}&gt;
                             </span>
                         </dd>
                     </div>
                     <div
                         class="border-t px-5 py-3.5 lg:border-t-0 lg:border-l"
-                        style="border-color: var(--bm-border);"
+                        style="border-color: var(--bm-border)"
                     >
                         <dt
-                            class="text-[10px] font-semibold uppercase tracking-widest"
-                            style="color: var(--bm-text-3);"
+                            class="text-[10px] font-semibold tracking-widest uppercase"
+                            style="color: var(--bm-text-3)"
                         >
                             Unsubscribes
                         </dt>
                         <dd
                             class="mt-1 text-sm tabular-nums"
-                            style="font-family: var(--bm-font-mono); color: var(--bm-text-1);"
+                            style="
+                                font-family: var(--bm-font-mono);
+                                color: var(--bm-text-1);
+                            "
                         >
                             {{ formatNumber(unsubscribedCount) }}
-                            <span style="color: var(--bm-text-3);">/ {{ formatNumber(totalRecipients) }}</span>
+                            <span style="color: var(--bm-text-3)"
+                                >/ {{ formatNumber(totalRecipients) }}</span
+                            >
                         </dd>
                     </div>
                 </dl>
@@ -477,51 +446,68 @@ watch(
             <!-- Delivery progress -->
             <div
                 class="rounded-[var(--bm-radius-md)] border p-5"
-                style="background-color: var(--bm-surface); border-color: var(--bm-border); box-shadow: var(--bm-shadow-xs);"
+                style="
+                    background-color: var(--bm-surface);
+                    border-color: var(--bm-border);
+                    box-shadow: var(--bm-shadow-xs);
+                "
             >
                 <div class="flex items-baseline justify-between gap-4">
                     <p
-                        class="text-[10px] font-semibold uppercase tracking-widest"
-                        style="color: var(--bm-text-3);"
+                        class="text-[10px] font-semibold tracking-widest uppercase"
+                        style="color: var(--bm-text-3)"
                     >
                         Delivery progress
                     </p>
                     <p
                         class="text-xs tabular-nums"
-                        style="font-family: var(--bm-font-mono); color: var(--bm-text-3);"
+                        style="
+                            font-family: var(--bm-font-mono);
+                            color: var(--bm-text-3);
+                        "
                     >
-                        {{ formatNumber(metrics.sent) }} / {{ formatNumber(metrics.total) }}
+                        {{ formatNumber(metrics.sent) }} /
+                        {{ formatNumber(metrics.total) }}
                     </p>
                 </div>
                 <div
                     class="mt-2 h-1.5 w-full overflow-hidden rounded-full"
-                    style="background-color: var(--bm-elevated);"
+                    style="background-color: var(--bm-elevated)"
                 >
                     <div
                         class="h-full rounded-full transition-all"
-                        style="background-color: var(--bm-accent);"
+                        style="background-color: var(--bm-accent)"
                         :style="{ width: `${progressPercent}%` }"
                     ></div>
                 </div>
             </div>
 
             <!-- Metrics -->
-            <div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8">
+            <div
+                class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-8"
+            >
                 <div
                     v-for="card in metricCards"
                     :key="card.label"
                     class="rounded-[var(--bm-radius)] border px-3.5 py-3"
-                    style="background-color: var(--bm-surface); border-color: var(--bm-border); box-shadow: var(--bm-shadow-xs);"
+                    style="
+                        background-color: var(--bm-surface);
+                        border-color: var(--bm-border);
+                        box-shadow: var(--bm-shadow-xs);
+                    "
                 >
                     <p
-                        class="truncate text-[10px] font-semibold uppercase tracking-widest"
-                        style="color: var(--bm-text-3);"
+                        class="truncate text-[10px] font-semibold tracking-widest uppercase"
+                        style="color: var(--bm-text-3)"
                     >
                         {{ card.label }}
                     </p>
                     <p
                         class="mt-1.5 text-xl font-semibold tabular-nums"
-                        style="font-family: var(--bm-font-mono); color: var(--bm-text-1);"
+                        style="
+                            font-family: var(--bm-font-mono);
+                            color: var(--bm-text-1);
+                        "
                     >
                         {{ card.value }}
                     </p>
@@ -540,11 +526,19 @@ watch(
             <!-- Content -->
             <div
                 class="rounded-[var(--bm-radius-md)] border"
-                style="background-color: var(--bm-surface); border-color: var(--bm-border); box-shadow: var(--bm-shadow-xs); overflow: hidden;"
+                style="
+                    background-color: var(--bm-surface);
+                    border-color: var(--bm-border);
+                    box-shadow: var(--bm-shadow-xs);
+                    overflow: hidden;
+                "
             >
                 <p
-                    class="border-b px-5 py-3 text-[10px] font-semibold uppercase tracking-widest"
-                    style="border-color: var(--bm-border); color: var(--bm-text-3);"
+                    class="border-b px-5 py-3 text-[10px] font-semibold tracking-widest uppercase"
+                    style="
+                        border-color: var(--bm-border);
+                        color: var(--bm-text-3);
+                    "
                 >
                     Content
                 </p>
@@ -557,12 +551,19 @@ watch(
             <div
                 v-if="newsletter.filters?.length"
                 class="rounded-[var(--bm-radius-md)] border p-5"
-                style="background-color: var(--bm-surface); border-color: var(--bm-border); box-shadow: var(--bm-shadow-xs);"
+                style="
+                    background-color: var(--bm-surface);
+                    border-color: var(--bm-border);
+                    box-shadow: var(--bm-shadow-xs);
+                "
             >
-                <h2 class="text-sm font-semibold" style="color: var(--bm-text-1);">
+                <h2
+                    class="text-sm font-semibold"
+                    style="color: var(--bm-text-1)"
+                >
                     Filters
                 </h2>
-                <p class="mt-0.5 text-sm" style="color: var(--bm-text-3);">
+                <p class="mt-0.5 text-sm" style="color: var(--bm-text-3)">
                     Recipients were narrowed down using these filters.
                 </p>
                 <div class="mt-3 space-y-2">
@@ -570,233 +571,33 @@ watch(
                         v-for="(filter, index) in newsletter.filters"
                         :key="index"
                         class="rounded-[var(--bm-radius)] border px-3.5 py-2.5 text-sm"
-                        style="background-color: var(--bm-base); border-color: var(--bm-border); color: var(--bm-text-2);"
+                        style="
+                            background-color: var(--bm-base);
+                            border-color: var(--bm-border);
+                            color: var(--bm-text-2);
+                        "
                     >
-                        {{ filterToSentence(filter, index, filterSentenceContext) }}
+                        {{
+                            filterToSentence(
+                                filter,
+                                index,
+                                filterSentenceContext,
+                            )
+                        }}
                     </div>
                 </div>
             </div>
 
-            <!-- Recipients -->
-            <div
-                class="rounded-[var(--bm-radius-md)] border"
-                style="background-color: var(--bm-surface); border-color: var(--bm-border); box-shadow: var(--bm-shadow-xs); overflow: hidden;"
-            >
-                <div
-                    class="flex flex-wrap items-center justify-between gap-3 border-b px-5 py-3"
-                    style="border-color: var(--bm-border);"
-                >
-                    <div class="flex items-center gap-2">
-                        <h2 class="text-sm font-semibold" style="color: var(--bm-text-1);">
-                            Recipients
-                        </h2>
-                        <span
-                            class="px-1.5 py-0.5 text-[10px] tabular-nums"
-                            style="font-family: var(--bm-font-mono); background-color: var(--bm-base); border: 1px solid var(--bm-border); color: var(--bm-text-3); border-radius: 3px;"
-                        >
-                            {{ formatNumber(recipients.total) }}
-                        </span>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-3">
-                        <div
-                            class="flex items-center"
-                            style="background-color: var(--bm-base); border: 1px solid var(--bm-border); border-radius: var(--bm-radius);"
-                        >
-                            <label
-                                for="recipient-status-filter"
-                                class="pl-2.5 text-[10px] font-semibold uppercase tracking-widest"
-                                style="color: var(--bm-text-3);"
-                            >
-                                Status
-                            </label>
-                            <select
-                                id="recipient-status-filter"
-                                v-model="selectedRecipientStatus"
-                                class="bg-transparent px-2 py-1.5 text-sm focus-visible:outline-none"
-                                style="color: var(--bm-text-1);"
-                                @change="onRecipientStatusFilterChange"
-                            >
-                                <option
-                                    v-for="status in recipientStatusFilters"
-                                    :key="status"
-                                    :value="status"
-                                >
-                                    {{ status === 'all' ? 'All statuses' : formattedRecipientStatus(status) }}
-                                </option>
-                            </select>
-                        </div>
-                        <Button as-child variant="outline" size="sm">
-                            <a :href="recipientExportUrl">
-                                <PhDownloadSimple :size="14" class="mr-1.5" />
-                                Export CSV
-                            </a>
-                        </Button>
-                        <Button v-if="listId" as-child variant="outline" size="sm">
-                            <Link :href="importUrl">
-                                <PhUploadSimple :size="14" class="mr-1.5" />
-                                Import contacts
-                            </Link>
-                        </Button>
-                    </div>
-                </div>
-
-                <table class="min-w-full text-sm">
-                    <thead>
-                        <tr
-                            style="background-color: var(--bm-surface-2); border-bottom: 1px solid var(--bm-border-strong);"
-                        >
-                            <th
-                                class="px-5 py-2.5 text-left text-[10px] font-semibold uppercase tracking-widest"
-                                style="color: var(--bm-text-3);"
-                            >
-                                Recipient
-                            </th>
-                            <th
-                                class="px-5 py-2.5 text-right text-[10px] font-semibold uppercase tracking-widest"
-                                style="color: var(--bm-text-3);"
-                            >
-                                Status
-                            </th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr
-                            v-for="recipient in recipients.data"
-                            :key="recipient.id"
-                            class="cursor-pointer transition-colors hover:bg-[var(--bm-surface-2)] focus-visible:outline-none"
-                            style="border-bottom: 1px solid var(--bm-border);"
-                            role="button"
-                            tabindex="0"
-                            @click="router.visit(contactShow(recipient.id).url)"
-                            @keydown.enter.prevent="router.visit(contactShow(recipient.id).url)"
-                            @keydown.space.prevent="router.visit(contactShow(recipient.id).url)"
-                        >
-                            <td class="px-5 py-3">
-                                <p
-                                    class="truncate text-[13px] font-medium"
-                                    style="color: var(--bm-text-1);"
-                                >
-                                    {{ recipient.email }}
-                                </p>
-                                <p
-                                    v-if="recipient.name"
-                                    class="truncate text-xs"
-                                    style="color: var(--bm-text-3);"
-                                >
-                                    {{ recipient.name }}
-                                </p>
-                            </td>
-                            <td class="px-5 py-3 text-right">
-                                <span
-                                    class="inline-flex items-center gap-1.5 px-2 py-0.5"
-                                    :style="{
-                                        backgroundColor: recipientStatusMeta(recipient.contact_mail_status).bg,
-                                        color: recipientStatusMeta(recipient.contact_mail_status).fg,
-                                        fontFamily: 'var(--bm-font-mono)',
-                                        fontSize: '10px',
-                                        fontWeight: 500,
-                                        borderRadius: '3px',
-                                    }"
-                                >
-                                    <span
-                                        class="size-1.5 rounded-full"
-                                        :style="{ backgroundColor: recipientStatusMeta(recipient.contact_mail_status).fg }"
-                                    ></span>
-                                    {{ formattedRecipientStatus(recipient.contact_mail_status) }}
-                                </span>
-                            </td>
-                        </tr>
-                        <tr v-if="!recipients.data.length">
-                            <td
-                                colspan="2"
-                                class="px-5 py-10 text-center text-sm"
-                                style="color: var(--bm-text-3);"
-                            >
-                                No recipients yet.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-
-                <div
-                    v-if="recipients.last_page > 1"
-                    class="flex items-center justify-between gap-4 border-t px-5 py-3"
-                    style="border-color: var(--bm-border);"
-                >
-                    <p
-                        class="text-xs tabular-nums"
-                        style="font-family: var(--bm-font-mono); color: var(--bm-text-3);"
-                    >
-                        {{ recipients.from }}–{{ recipients.to }} of {{ formatNumber(recipients.total) }}
-                    </p>
-                    <div class="flex items-center gap-1">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            :disabled="!recipients.prev_page_url"
-                            @click="
-                                recipients.prev_page_url &&
-                                    router.visit(recipients.prev_page_url, {
-                                        preserveState: true,
-                                        preserveScroll: true,
-                                    })
-                            "
-                        >
-                            <PhCaretLeft :size="14" />
-                            <span class="sr-only">Previous</span>
-                        </Button>
-                        <template
-                            v-for="(link, index) in recipients.links"
-                            :key="index"
-                        >
-                            <Button
-                                v-if="
-                                    !link.label.includes('Previous') &&
-                                    !link.label.includes('Next')
-                                "
-                                variant="outline"
-                                size="sm"
-                                class="hidden tabular-nums sm:inline-flex"
-                                :style="
-                                    link.active
-                                        ? {
-                                              backgroundColor: 'var(--bm-accent)',
-                                              color: 'var(--bm-accent-text)',
-                                              borderColor: 'var(--bm-accent)',
-                                          }
-                                        : {}
-                                "
-                                :disabled="!link.url"
-                                @click="
-                                    link.url &&
-                                        router.visit(link.url, {
-                                            preserveState: true,
-                                            preserveScroll: true,
-                                        })
-                                "
-                            >
-                                {{ link.label }}
-                            </Button>
-                        </template>
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            :disabled="!recipients.next_page_url"
-                            @click="
-                                recipients.next_page_url &&
-                                    router.visit(recipients.next_page_url, {
-                                        preserveState: true,
-                                        preserveScroll: true,
-                                    })
-                            "
-                        >
-                            <PhCaretRight :size="14" />
-                            <span class="sr-only">Next</span>
-                        </Button>
-                    </div>
-                </div>
-            </div>
+            <!-- Links and recipients -->
+            <NewsletterRecipients
+                :newsletter-id="newsletter.id"
+                :recipients="recipients"
+                :status-filter="recipientStatusFilter"
+                :status-options="recipientStatusOptions"
+                :link-filter="recipientLinkFilter"
+                :link-clicks="linkClicks"
+                :import-url="listId ? importUrl : null"
+            />
         </section>
-
     </AppLayout>
 </template>

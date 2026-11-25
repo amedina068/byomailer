@@ -74,6 +74,7 @@ class SequenceStepContactController extends Controller
             'contacts' => $contacts,
             'filter' => $filter,
             'linkFilter' => $linkFilter,
+            'linkClicks' => Inertia::defer(fn (): array => $this->linkClickReport->summary($sequenceStep)),
             'stats' => $this->sequenceAnalytics->statsForStep($sequenceStep),
             'stepIndex' => $stepIndex === false ? null : $stepIndex + 1,
         ]);

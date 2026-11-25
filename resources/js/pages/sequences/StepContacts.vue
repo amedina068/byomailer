@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Head, usePage } from '@inertiajs/vue3';
+import { Head, router, usePage } from '@inertiajs/vue3';
 import { PhDownloadSimple } from '@phosphor-icons/vue';
 import { computed } from 'vue';
 
@@ -8,8 +8,11 @@ import type {
     PaginatedContacts,
 } from '@/components/contacts/PaginatedContactsTable.vue';
 import PaginatedContactsTable from '@/components/contacts/PaginatedContactsTable.vue';
+import LinkClicksPanel from '@/components/links/LinkClicksPanel.vue';
+import LinkFilterChip from '@/components/links/LinkFilterChip.vue';
 import { Button } from '@/components/ui/button';
 import AppLayout from '@/layouts/AppLayout.vue';
+import type { LinkClickSummary } from '@/lib/linkClicks';
 import {
     show as sequenceShow,
     index as sequencesIndex,
@@ -139,6 +142,8 @@ const props = defineProps<{
     stepIndex?: number | null;
     contacts: PaginatedContacts & { data: SequenceContact[] };
     filter: ContactFilter;
+    linkFilter?: string | null;
+    linkClicks?: LinkClickSummary;
     stats: StatTotals;
 }>();
 
@@ -186,17 +191,27 @@ const filterOptions: FilterOption[] = [
     },
 ];
 
-const filterLink = (filter: string): string => {
-    const args: [number, number] = [props.sequence.id, props.step.id];
-
-    if (filter === 'all') {
-        return stepContacts.index(args).url;
-    }
-
-    return stepContacts.index(args, {
-        query: { filter },
+const contactsUrl = (filter: string, link?: string | null): string =>
+    stepContacts.index([props.sequence.id, props.step.id], {
+        query: {
+            ...(filter === 'all' ? {} : { filter }),
+            ...(link ? { link } : {}),
+        },
     }).url;
+
+/**
+ * The filter tabs keep the active link filter. The stat cards count the
+ * whole step, so their links do not keep it.
+ */
+const filterLink = (filter: string): string =>
+    contactsUrl(filter, props.linkFilter);
+
+const visitLink = (link: string | null): void => {
+    router.visit(contactsUrl(props.filter, link), { preserveScroll: true });
 };
+
+const selectLink = (key: string): void =>
+    visitLink(key === props.linkFilter ? null : key);
 
 const statCards = computed(() => [
     {
@@ -204,25 +219,27 @@ const statCards = computed(() => [
         label: 'Contacts in this step',
         description: 'Emailed or scheduled',
         value: props.stats.contacts,
-        href: filterLink('all'),
+        href: contactsUrl('all'),
     },
     {
         key: 'unsubscribed',
         label: 'Unsubscribed here',
         description: 'Stopped after this step',
         value: props.stats.unsubscribed,
-        href: filterLink('unsubscribed'),
+        href: contactsUrl('unsubscribed'),
     },
     {
         key: 'clicked',
         label: 'Clicked a link',
         description: 'Engaged at this step',
         value: props.stats.clicked,
-        href: filterLink('clicked'),
+        href: contactsUrl('clicked'),
     },
 ]);
 
-const showClickColumn = computed(() => props.filter === 'clicked');
+const showClickColumn = computed(
+    () => props.filter === 'clicked' || Boolean(props.linkFilter),
+);
 
 const exportUrl = computed(
     () =>
@@ -285,6 +302,19 @@ const formatDateTime = (value?: string | null): string =>
                         </a>
                     </Button>
                 </div>
+                <LinkClicksPanel
+                    class="mt-6"
+                    :link-clicks="linkClicks"
+                    :active-key="linkFilter"
+                    select-hint="Select a link to see the contacts who clicked it."
+                    @select="selectLink"
+                />
+                <LinkFilterChip
+                    v-if="linkFilter"
+                    class="mt-4"
+                    :link-key="linkFilter"
+                    @clear="visitLink(null)"
+                />
             </template>
 
             <template #extra-headers>
@@ -293,7 +323,7 @@ const formatDateTime = (value?: string | null): string =>
                     class="px-4 py-2.5 text-left text-[10px] font-semibold tracking-widest uppercase"
                     style="color: var(--bm-text-3)"
                 >
-                    Link
+                    {{ linkFilter ? 'Last click' : 'Link' }}
                 </th>
                 <th
                     class="px-4 py-2.5 text-left text-[10px] font-semibold tracking-widest uppercase"

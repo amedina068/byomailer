@@ -55,7 +55,7 @@ class LinkClickPagesTest extends TestCase
             );
     }
 
-    public function test_step_show_defers_the_link_report(): void
+    public function test_step_contacts_defer_the_link_report(): void
     {
         $user = User::factory()->create();
         $sequence = Sequence::factory()->for($user)->create();
@@ -63,7 +63,7 @@ class LinkClickPagesTest extends TestCase
         $this->click($this->mailFor($user, $step, 'ana@example.com'), 'https://example.com/pricing?utm_source=x');
 
         $this->actingAs($user)
-            ->get(route('sequences.steps.show', ['sequence' => $sequence->id, 'sequenceStep' => $step->id]))
+            ->get(route('sequences.steps.contacts.index', ['sequence' => $sequence->id, 'sequenceStep' => $step->id]))
             ->assertInertia(fn (Assert $page) => $page
                 ->missing('linkClicks')
                 ->loadDeferredProps(fn (Assert $reload) => $reload

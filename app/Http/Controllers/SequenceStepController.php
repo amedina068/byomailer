@@ -17,7 +17,6 @@ use App\Models\EmailTemplate;
 use App\Models\Sequence;
 use App\Models\SequenceStep;
 use App\Services\FilterPreparationService;
-use App\Services\LinkClickReport;
 use App\Services\SequenceAnalyticsService;
 use App\Services\SequenceStatusService;
 use Illuminate\Http\RedirectResponse;
@@ -36,7 +35,6 @@ class SequenceStepController extends Controller
         SequenceAnalyticsService $sequenceAnalytics,
         FilterPreparationService $filterPreparationService,
         SequenceStatusService $sequenceStatusService,
-        LinkClickReport $linkClickReport,
     ): Response {
         $sequence = Sequence::query()
             ->with(['steps.message.emailIdentity', 'steps.message.template'])
@@ -71,7 +69,6 @@ class SequenceStepController extends Controller
             'emailIdentities' => EmailIdentityResource::collection($emailIdentities)->resolve($request),
             'stepStats' => $stepStats,
             'stepMailMetrics' => $stepMailMetrics,
-            'linkClicks' => Inertia::defer(fn (): array => $linkClickReport->summary($step)),
             'defaultTemplate' => $defaultTemplate
                 ? EmailTemplateResource::make($defaultTemplate)->resolve($request)
                 : null,
