@@ -1231,12 +1231,6 @@ parameters:
 			path: app/Services/AutomationRunner.php
 
 		-
-			message: '#^Strict comparison using \=\=\= between string and null will always evaluate to false\.$#'
-			identifier: identical.alwaysFalse
-			count: 1
-			path: app/Services/ContactMailExport.php
-
-		-
 			message: '#^Access to an undefined property Illuminate\\Database\\Eloquent\\Relations\\Pivot\:\:\$opted_in_at\.$#'
 			identifier: property.notFound
 			count: 1
