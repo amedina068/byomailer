@@ -110,6 +110,22 @@ class TopicDeleteGuardTest extends TestCase
         $this->assertApiDestroyIsBlockedBy('Branch on topic');
     }
 
+    public function test_api_destroy_is_blocked_while_a_visual_automation_exit_condition_uses_the_topic(): void
+    {
+        VisualAutomation::factory()->for($this->user)->create([
+            'name' => 'Exit on topic',
+            'workflow' => [
+                'nodes' => [
+                    ['id' => 'trigger-1', 'type' => 'trigger', 'position' => ['x' => 0, 'y' => 0], 'data' => ['trigger_type' => 'tag_added', 'value' => 999]],
+                ],
+                'edges' => [],
+                'exit_conditions' => [['type' => 'subscribed_to_topic', 'value' => $this->topic->id]],
+            ],
+        ]);
+
+        $this->assertApiDestroyIsBlockedBy('Exit on topic');
+    }
+
     public function test_api_destroy_is_allowed_when_only_sent_newsletters_and_the_list_are_used(): void
     {
         Newsletter::factory()->for($this->user)
