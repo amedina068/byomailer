@@ -4,6 +4,7 @@ use App\Http\Controllers\Admin\SettingsController as AdminSettingsController;
 use App\Http\Controllers\Admin\UserController as AdminUserController;
 use App\Http\Controllers\Admin\UserDeactivationController;
 use App\Http\Controllers\AttributeDefaultController;
+use App\Http\Controllers\Auth\GoogleSignInController;
 use App\Http\Controllers\AutomationController;
 use App\Http\Controllers\AutomationProjectController;
 use App\Http\Controllers\AutomationStatusController;
@@ -93,6 +94,12 @@ Route::get('/', function () {
 Route::middleware(['guest', 'throttle:10,1'])->group(function () {
     Route::get('setup', [SetupController::class, 'show'])->name('setup.show');
     Route::post('setup', [SetupController::class, 'store'])->name('setup.store');
+});
+
+// Google sign-in. The routes answer 404 until the operator sets the Google client in `.env`.
+Route::middleware(['guest', 'throttle:10,1'])->prefix('auth/google')->name('google.')->group(function () {
+    Route::get('redirect', [GoogleSignInController::class, 'redirect'])->name('redirect');
+    Route::get('callback', [GoogleSignInController::class, 'callback'])->name('callback');
 });
 
 Route::get('tls/ask', TlsAskController::class)
