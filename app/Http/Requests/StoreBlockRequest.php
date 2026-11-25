@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use App\Rules\SafeHtml;
+use App\Rules\ValidLiquid;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -27,7 +28,7 @@ class StoreBlockRequest extends FormRequest
                 Rule::unique('blocks', 'name')
                     ->where(fn ($query) => $query->where('client_id', $this->user()->client_id)),
             ],
-            'html_content' => ['required', 'string', new SafeHtml],
+            'html_content' => ['required', 'string', new SafeHtml, new ValidLiquid],
         ];
     }
 

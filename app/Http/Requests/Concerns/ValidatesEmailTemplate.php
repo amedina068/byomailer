@@ -4,6 +4,7 @@ namespace App\Http\Requests\Concerns;
 
 use App\Rules\ContainsContentSlot;
 use App\Rules\SafeHtml;
+use App\Rules\ValidLiquid;
 use Illuminate\Contracts\Validation\Validator;
 
 trait ValidatesEmailTemplate
@@ -17,7 +18,7 @@ trait ValidatesEmailTemplate
     {
         return [
             'name' => ['required', 'string', 'max:255'],
-            'html_content' => ['required', 'string', new SafeHtml, new ContainsContentSlot],
+            'html_content' => ['required', 'string', new SafeHtml, new ContainsContentSlot, new ValidLiquid],
             'confirmed_no_unsubscribe' => ['nullable', 'boolean'],
         ];
     }

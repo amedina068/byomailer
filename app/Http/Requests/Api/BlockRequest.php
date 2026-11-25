@@ -3,6 +3,7 @@
 namespace App\Http\Requests\Api;
 
 use App\Rules\SafeHtml;
+use App\Rules\ValidLiquid;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -31,7 +32,7 @@ class BlockRequest extends FormRequest
                     ->where(fn ($query) => $query->where('client_id', $clientId))
                     ->ignore($blockId),
             ],
-            'html_content' => ['required', 'string', new SafeHtml],
+            'html_content' => ['required', 'string', new SafeHtml, new ValidLiquid],
         ];
     }
 

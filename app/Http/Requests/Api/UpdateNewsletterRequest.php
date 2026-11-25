@@ -8,6 +8,7 @@ use App\Http\Requests\Concerns\ValidatesProjectIds;
 use App\Rules\NotInPast;
 use App\Rules\SafeHtml;
 use App\Rules\SafeTemplatedHtml;
+use App\Rules\ValidLiquid;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
@@ -29,9 +30,9 @@ class UpdateNewsletterRequest extends FormRequest
     {
         return [
             'title' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'subject' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'preview_text' => ['sometimes', 'nullable', 'string', 'max:255', new SafeHtml],
-            'html_content' => ['sometimes', 'nullable', 'string', 'max:524288', new SafeTemplatedHtml],
+            'subject' => ['sometimes', 'nullable', 'string', 'max:255', new ValidLiquid],
+            'preview_text' => ['sometimes', 'nullable', 'string', 'max:255', new SafeHtml, new ValidLiquid],
+            'html_content' => ['sometimes', 'nullable', 'string', 'max:524288', new SafeTemplatedHtml, new ValidLiquid],
             'status' => ['sometimes', 'string', 'in:draft,live'],
             'scheduled_at' => ['required_if:status,live', 'prohibited_unless:status,live', 'nullable', 'date', new NotInPast],
             'email_identity_id' => [

@@ -9,6 +9,7 @@ use App\Models\EmailIdentity;
 use App\Models\Sequence;
 use App\Models\User;
 use App\Rules\SafeHtml;
+use App\Rules\ValidLiquid;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Validation\Rule;
 use Laravel\Mcp\Request;
@@ -35,9 +36,9 @@ class CreateSequenceStepTool extends Tool
                 'required', 'integer',
                 Rule::exists('email_identities', 'id')->where('client_id', $user->client_id),
             ],
-            'subject' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'preview_text' => ['sometimes', 'nullable', 'string', 'max:255', new SafeHtml],
-            'html_content' => ['sometimes', 'nullable', 'string', 'max:524288', new SafeHtml],
+            'subject' => ['sometimes', 'nullable', 'string', 'max:255', new ValidLiquid],
+            'preview_text' => ['sometimes', 'nullable', 'string', 'max:255', new SafeHtml, new ValidLiquid],
+            'html_content' => ['sometimes', 'nullable', 'string', 'max:524288', new SafeHtml, new ValidLiquid],
             ...$this->filterValidationRules(),
         ]);
 

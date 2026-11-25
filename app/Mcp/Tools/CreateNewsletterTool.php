@@ -10,6 +10,7 @@ use App\Models\Newsletter;
 use App\Models\User;
 use App\Rules\SafeHtml;
 use App\Rules\SafeTemplatedHtml;
+use App\Rules\ValidLiquid;
 use App\Support\ContentVariables;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Support\Arr;
@@ -34,9 +35,9 @@ class CreateNewsletterTool extends Tool
 
         $validated = $request->validate([
             'title' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'subject' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'preview_text' => ['sometimes', 'nullable', 'string', 'max:255', new SafeHtml],
-            'html_content' => ['sometimes', 'nullable', 'string', 'max:524288', new SafeTemplatedHtml],
+            'subject' => ['sometimes', 'nullable', 'string', 'max:255', new ValidLiquid],
+            'preview_text' => ['sometimes', 'nullable', 'string', 'max:255', new SafeHtml, new ValidLiquid],
+            'html_content' => ['sometimes', 'nullable', 'string', 'max:524288', new SafeTemplatedHtml, new ValidLiquid],
             'email_identity_id' => [
                 'sometimes', 'nullable', 'integer',
                 Rule::exists('email_identities', 'id')->where('client_id', $user->client_id),

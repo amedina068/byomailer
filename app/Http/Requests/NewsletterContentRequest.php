@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Http\Requests\Concerns\ValidatesClientTemplate;
 use App\Rules\SafeHtml;
 use App\Rules\SafeTemplatedHtml;
+use App\Rules\ValidLiquid;
 use App\Support\ContentSlot;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
@@ -26,9 +27,9 @@ class NewsletterContentRequest extends FormRequest
     {
         return [
             'title' => ['required', 'string', 'max:255'],
-            'subject' => ['required', 'string', 'max:255'],
-            'preview_text' => ['nullable', 'string', 'max:255', new SafeHtml],
-            'html_content' => ['required', 'string', 'max:524288', new SafeTemplatedHtml],
+            'subject' => ['required', 'string', 'max:255', new ValidLiquid],
+            'preview_text' => ['nullable', 'string', 'max:255', new SafeHtml, new ValidLiquid],
+            'html_content' => ['required', 'string', 'max:524288', new SafeTemplatedHtml, new ValidLiquid],
             'email_template_id' => ['nullable', 'integer', $this->clientTemplateExistsRule()],
             'template_slot_content' => ['nullable', 'string'],
             'ab_test_enabled' => ['sometimes', 'boolean'],

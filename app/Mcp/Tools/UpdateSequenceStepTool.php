@@ -11,6 +11,7 @@ use App\Models\EmailTemplate;
 use App\Models\SequenceStep;
 use App\Models\User;
 use App\Rules\SafeHtml;
+use App\Rules\ValidLiquid;
 use App\Support\ContentSlot;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Database\Eloquent\Model;
@@ -45,9 +46,9 @@ class UpdateSequenceStepTool extends Tool
                 'sometimes', 'nullable', 'integer',
                 Rule::exists('email_templates', 'id')->where('client_id', $user->client_id),
             ],
-            'subject' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'preview_text' => ['sometimes', 'nullable', 'string', 'max:255', new SafeHtml],
-            'html_content' => ['sometimes', 'nullable', 'string', 'max:524288', new SafeHtml],
+            'subject' => ['sometimes', 'nullable', 'string', 'max:255', new ValidLiquid],
+            'preview_text' => ['sometimes', 'nullable', 'string', 'max:255', new SafeHtml, new ValidLiquid],
+            'html_content' => ['sometimes', 'nullable', 'string', 'max:524288', new SafeHtml, new ValidLiquid],
             ...$this->filterValidationRules(),
             ...$this->confirmLiveValidationRules(),
         ]);
