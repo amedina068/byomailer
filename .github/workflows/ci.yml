@@ -93,10 +93,8 @@ jobs:
           coverage: none
 
       # The audit reads composer.lock only, so the job does not install the packages.
-      # TODO: composer.lock on main has known advisories. Until a "composer update"
-      # removes them, a failed audit shows a warning and does not fail the run.
+      # A package with a known advisory fails the job.
       - name: Check the locked packages for security advisories
-        continue-on-error: true
         run: composer audit --locked --no-interaction
 
   php-tests:
