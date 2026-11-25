@@ -122,6 +122,7 @@ The default tag is `latest`. To stay on one version, set `BYOMAILER_VERSION` in 
 | `ADMIN_EMAILS` | Only for the update of an older install. The update makes the users in this comma-separated list owners, if their email is verified. Only the owner can open Horizon at `/horizon`. |
 | `MAIL_MAILER`, `MAIL_*` | The mailer for invites and password resets. Campaigns do not use it. |
 | `PLATFORM_AWS_*`, `SES_EVENTS_SQS_QUEUE_*` | The SQS queue for the SES events. See [SES events](#ses-events-sqs). |
+| `SES_ROLE_*` | Optional. Lets an account connect AWS through an IAM role in place of access keys. See [IAM role connection](#iam-role-connection). |
 
 The integrations below are optional. When their variables are empty, the feature is off and BYOMailer makes no network call for it.
 
@@ -203,6 +204,33 @@ Each account connects its own AWS account in the dashboard. The guides in the ap
 4. In BYOMailer, open the AWS onboarding. Enter the access key, the secret key, and the region.
 5. In Settings, Identities, add a sending domain. Publish the DNS records that BYOMailer shows.
 6. If the SES account is in the sandbox, request production access in the SES console.
+
+An account can also connect through an IAM role in place of an access key. The operator must turn on the [IAM role connection](#iam-role-connection) first.
+
+### IAM role connection
+
+With the role connection, an account gives BYOMailer no access keys. The account makes a CloudFormation stack from `public/aws/byomailer-ses-role.json`. The stack makes an IAM role that BYOMailer assumes with STS. The role trusts only the principal of your server, and only with the external ID of the account. BYOMailer makes each external ID from random bytes, and the account cannot change it.
+
+The role connection is off by default. To turn it on:
+
+1. In the AWS account that runs BYOMailer, create an IAM user or an IAM role for the server. This principal assumes the roles of the accounts.
+2. Give the principal `sts:AssumeRole` on `arn:aws:iam::*:role/byomailer-ses`. If you change `SES_ROLE_NAME`, use that name.
+3. In `.env`, set the ARN of the principal:
+
+   ```dotenv
+   SES_ROLE_PRINCIPAL_ARN=arn:aws:iam::111111111111:user/byomailer
+   SES_ROLE_ACCESS_KEY_ID=...
+   SES_ROLE_SECRET_ACCESS_KEY=...
+   ```
+
+   If the server runs with an instance role, set the instance role ARN and leave the 2 key variables empty. The AWS SDK then finds the credentials itself.
+
+4. Optional: upload `public/aws/byomailer-ses-role.json` to an S3 bucket that AWS can read. Set `SES_ROLE_TEMPLATE_URL` to the S3 URL of the file. The onboarding page then shows a link that opens the stack in the CloudFormation console with all values filled in. A quick-create link accepts only a template in Amazon S3. Without it, the account downloads the template and uploads it in the console.
+5. Restart the app and the queue workers.
+
+The other variables have defaults. `SES_ROLE_NAME` is the name of the role in each account (`byomailer-ses`). `SES_ROLE_STS_REGION` is the region of the STS calls and of the console link (`us-east-1`).
+
+BYOMailer keeps the temporary credentials of a role encrypted in the cache, for less than 1 hour. It gets new credentials 5 minutes before they expire.
 
 ### SES events (SQS)
 
