@@ -7,6 +7,7 @@ use App\Models\EmailIdentity;
 use App\Services\LinkDomainProbe;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Probes each verified custom link domain through the domain and reports each
@@ -52,7 +53,7 @@ class ProbeVerifiedLinkDomains extends Command
 
         $unhealthy = 0;
 
-        $this->verified()->chunkById(100, function ($identities) use (&$unhealthy): void {
+        $this->verified()->chunkById(100, function (Collection $identities) use (&$unhealthy): void {
             foreach ($identities as $identity) {
                 $result = $this->probe->check($identity->custom_link_domain);
 
@@ -76,6 +77,8 @@ class ProbeVerifiedLinkDomains extends Command
 
     /**
      * Custom link domains that the app puts into sent mail now.
+     *
+     * @return Builder<EmailIdentity>
      */
     private function verified(): Builder
     {
