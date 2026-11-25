@@ -132,7 +132,6 @@ class ConventionsTest extends TestCase
         'App\Services\ContactMailQuery::forUser' => 83,
         'App\Services\EmailIdentityProvisioningService::provision' => 93,
         'App\Services\SendNewsletterService::send' => 138,
-        'App\Services\VisualAutomationEngine::processEnrollment' => 82,
     ];
 
     /**

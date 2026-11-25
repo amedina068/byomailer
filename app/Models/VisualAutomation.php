@@ -21,6 +21,13 @@ class VisualAutomation extends Model
     const STATUS_LIVE = 'live';
 
     /**
+     * The condition types that a goal or an exit condition can use.
+     *
+     * @var list<string>
+     */
+    const RULE_TYPES = ['has_tag', 'in_list', 'subscribed_to_topic', 'in_sequence'];
+
+    /**
      * @var list<string>
      */
     protected $guarded = [];
@@ -120,6 +127,31 @@ class VisualAutomation extends Model
 
             return true;
         }));
+    }
+
+    /**
+     * The goals. A contact that meets one leaves the automation as a conversion.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function goals(): array
+    {
+        return $this->workflow['goals'] ?? [];
+    }
+
+    /**
+     * The exit conditions. A contact that meets one leaves the automation.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function exitConditions(): array
+    {
+        return $this->workflow['exit_conditions'] ?? [];
+    }
+
+    public function hasGoalsOrExitConditions(): bool
+    {
+        return $this->goals() !== [] || $this->exitConditions() !== [];
     }
 
     /**
