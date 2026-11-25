@@ -14,6 +14,7 @@
 - [ ] `npm run types` and `npm run lint:changed` pass (when the frontend changes).
 - [ ] `php artisan migrate:fresh --seed` passes (when a migration changes).
 - [ ] `php artisan scramble:analyze` reports no errors, and `public/docs/openapi.json` is up to date (when the API changes).
+- [ ] The PR title follows Conventional Commits (`feat:`, `fix:`, `docs:`, `chore:` and similar).
 
 ## Compatibility
 
