@@ -1,1 +1,0 @@
-- A failed newsletter no longer blocks the rename or the delete of a tag that its filters use.

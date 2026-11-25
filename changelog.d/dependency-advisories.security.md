@@ -1,1 +1,0 @@
-- Dependency update for known advisories: Laravel 13.43, Guzzle 7.16, the Symfony 8.1 components, CommonMark 2.10, Laravel Excel 3.1.70, Vue 3.5.45, and the `npm audit fix` set. The audience preview routes use the new `EnforceReadAccess` middleware.

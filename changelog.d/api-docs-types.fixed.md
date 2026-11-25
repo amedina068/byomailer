@@ -1,1 +1,0 @@
-- API reference: the sequence and sequence step stats responses show `id`, `sequence_id` and `delay_days` as integers. The newsletter `filters` items show as objects.

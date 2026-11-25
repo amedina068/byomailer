@@ -1,1 +1,0 @@
-- The newsletter list, the newsletter page and the dashboard show the same label for each newsletter status. An A/B test shows "A/B testing" everywhere.

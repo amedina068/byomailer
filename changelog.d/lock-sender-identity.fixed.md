@@ -1,1 +1,0 @@
-- A newsletter cannot be scheduled or sent from an email identity that is being removed at the same time.

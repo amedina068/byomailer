@@ -1,1 +1,0 @@
-- The API and MCP sequence list filter `status=paused` returns the paused sequences. A paused sequence has the status `draft`.

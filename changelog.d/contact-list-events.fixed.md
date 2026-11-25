@@ -1,1 +1,0 @@
-- A list removal through the API or the MCP server now runs the list automations and the sequence list filters. An add to a list never changes the subscription. An unsubscribed contact stays unsubscribed. Before, the API list upsert and MCP create-contact subscribed a contact again after an admin unsubscribe.

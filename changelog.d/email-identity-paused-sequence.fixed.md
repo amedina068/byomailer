@@ -1,1 +1,0 @@
-- Email identities: you cannot remove an email identity while a paused sequence has a live step that sends from it. Before, the check missed paused sequences, and the step failed to send when the sequence went live again.

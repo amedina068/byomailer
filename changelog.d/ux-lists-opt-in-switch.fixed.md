@@ -1,1 +1,0 @@
-- Lists: the double opt-in switch on the edit page turns on and shows its fields. **View contacts** on a list opens the contacts of that list. The list pages say "list", not "segment".

@@ -1,1 +1,0 @@
-- The opt-in email no longer goes to a suppressed address, or from an account that the sending gate blocks.
