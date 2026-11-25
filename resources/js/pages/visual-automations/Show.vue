@@ -18,6 +18,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
+import AutomationRulesPanel from '@/components/visual-automations/AutomationRulesPanel.vue';
 import {
     type AddStepContext,
     type BuilderContext,
@@ -35,11 +36,13 @@ import ConditionNode from '@/components/visual-automations/nodes/ConditionNode.v
 import DelayNode from '@/components/visual-automations/nodes/DelayNode.vue';
 import InsertStepNode from '@/components/visual-automations/nodes/InsertStepNode.vue';
 import TriggerNode from '@/components/visual-automations/nodes/TriggerNode.vue';
-import type {
-    ActionType,
-    ConditionBranchType,
-    SelectOption,
-    WorkflowNodeType,
+import {
+    type ActionType,
+    type AutomationWorkflow,
+    type ConditionBranchType,
+    optionsForConditionType,
+    type SelectOption,
+    type WorkflowNodeType,
 } from '@/components/visual-automations/types';
 import { useStatusToggle } from '@/composables/useStatusToggle';
 import AppLayout from '@/layouts/AppLayout.vue';
@@ -58,7 +61,7 @@ interface Automation {
     id: number;
     name: string;
     status: string;
-    workflow: { nodes: WorkflowNode[]; edges: WorkflowEdge[] };
+    workflow: AutomationWorkflow;
     enrollments_count: number;
 }
 
@@ -139,31 +142,12 @@ const defaultConditionType = (): ConditionBranchType => {
     return 'has_tag';
 };
 
-const conditionValueFor = (type: ConditionBranchType): number | null => {
-    switch (type) {
-        case 'has_tag':
-        case 'not_has_tag':
-            return pickFirst(props.tags);
-        case 'in_list':
-        case 'not_in_list':
-            return pickFirst(props.lists);
-        case 'subscribed_to_topic':
-        case 'not_subscribed_to_topic':
-            return pickFirst(props.topics ?? []);
-        case 'in_sequence':
-        case 'not_in_sequence':
-            return pickFirst(props.sequences);
-        default:
-            return null;
-    }
-};
+const conditionValueFor = (type: ConditionBranchType): number | null =>
+    pickFirst(optionsForConditionType(type, props));
 
 // --- workflow state ---
 
-const buildDefaultWorkflow = (): {
-    nodes: WorkflowNode[];
-    edges: WorkflowEdge[];
-} => {
+const buildDefaultWorkflow = (): AutomationWorkflow => {
     const tType = defaultTriggerType();
     const aType = defaultActionType();
     return {
@@ -199,6 +183,8 @@ const workflowNodes = ref<WorkflowNode[]>(
 const workflowEdges = ref<WorkflowEdge[]>(
     JSON.parse(JSON.stringify(initial.edges)),
 );
+const goals = ref([...(initial.goals ?? [])]);
+const exitConditions = ref([...(initial.exit_conditions ?? [])]);
 
 // --- layout computation ---
 
@@ -512,7 +498,7 @@ const addableStepOptions: Array<{
 
 // --- provide builder context ---
 
-provide<BuilderContext>(builderKey, {
+const builder: BuilderContext = {
     get lists() {
         return props.lists;
     },
@@ -535,13 +521,17 @@ provide<BuilderContext>(builderKey, {
     updateNodeData,
     confirmRemoveNode,
     openAddStepModal,
-});
+};
+
+provide(builderKey, builder);
 
 // --- form submission ---
 
-const workflowFormData = (): { nodes: object[]; edges: object[] } => ({
+const workflowFormData = (): Record<string, object[]> => ({
     nodes: workflowNodes.value,
     edges: workflowEdges.value,
+    goals: goals.value,
+    exit_conditions: exitConditions.value,
 });
 
 const form = useForm({
@@ -744,6 +734,14 @@ const submit = () => {
             <InputError
                 v-if="draftSequenceFormError"
                 :message="draftSequenceFormError"
+            />
+
+            <AutomationRulesPanel
+                v-model:goals="goals"
+                v-model:exit-conditions="exitConditions"
+                :catalogs="builder"
+                :disabled="!isEditable"
+                :errors="form.errors"
             />
 
             <div class="flex items-center justify-between">

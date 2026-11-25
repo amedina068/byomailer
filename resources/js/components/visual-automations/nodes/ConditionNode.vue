@@ -9,7 +9,8 @@ import { builderKey } from '../builderContext';
 import {
     CONDITION_LABELS,
     type ConditionBranchType,
-    type SelectOption,
+    optionLabel,
+    optionsForConditionType,
 } from '../types';
 
 const props = defineProps<
@@ -49,34 +50,10 @@ const conditionType = computed<ConditionBranchType>(() => {
     return availableConditionTypes.value[0];
 });
 
-const optionsForType = (type: ConditionBranchType): SelectOption[] => {
-    switch (type) {
-        case 'has_tag':
-        case 'not_has_tag':
-            return builder.tags;
-        case 'in_list':
-        case 'not_in_list':
-            return builder.lists;
-        case 'subscribed_to_topic':
-        case 'not_subscribed_to_topic':
-            return builder.topics ?? [];
-        case 'in_sequence':
-        case 'not_in_sequence':
-            return builder.sequences;
-        default:
-            return [];
-    }
-};
+const conditionOptions = computed(() =>
+    optionsForConditionType(conditionType.value, builder),
+);
 
-const conditionOptions = computed(() => optionsForType(conditionType.value));
-
-const optionLabel = (option: SelectOption): string => {
-    const topicLike = option as SelectOption & { list_name?: string | null };
-    if (topicLike.list_name) {
-        return `${option.name} (${topicLike.list_name})`;
-    }
-    return option.name;
-};
 const selectedValue = computed(() =>
     props.data.value != null ? String(props.data.value) : '',
 );
@@ -84,7 +61,7 @@ const selectedValue = computed(() =>
 const setConditionType = (event: Event) => {
     const value = (event.target as HTMLSelectElement)
         .value as ConditionBranchType;
-    const options = optionsForType(value);
+    const options = optionsForConditionType(value, builder);
     builder.updateNodeData(props.id, {
         condition_type: value,
         value: options.length ? options[0].id : null,

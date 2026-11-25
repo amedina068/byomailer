@@ -2,15 +2,15 @@
 import { Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
-import PaginatedContactsTable from '@/components/contacts/PaginatedContactsTable.vue';
 import type {
     FilterOption,
     PaginatedContacts,
 } from '@/components/contacts/PaginatedContactsTable.vue';
+import PaginatedContactsTable from '@/components/contacts/PaginatedContactsTable.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import {
-    index as automationsIndex,
     show as automationShow,
+    index as automationsIndex,
 } from '@/routes/visual-automations';
 import automationContacts from '@/routes/visual-automations/contacts';
 import type { BreadcrumbItem } from '@/types';

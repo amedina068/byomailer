@@ -112,7 +112,7 @@ class ConventionsTest extends TestCase
         'resources/js/pages/newsletters/Show.vue' => 983,
         'resources/js/pages/sequences/Show.vue' => 886,
         'resources/js/pages/sequences/steps/Show.vue' => 785,
-        'resources/js/pages/visual-automations/Show.vue' => 871,
+        'resources/js/pages/visual-automations/Show.vue' => 869,
     ];
 
     /**
