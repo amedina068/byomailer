@@ -10,6 +10,7 @@ use App\Models\ContactMailClick;
 use App\Models\EmailCredential;
 use App\Services\GeoIpService;
 use App\Services\SequenceStepScheduler;
+use App\Support\NamedLink;
 use App\Support\Tenant;
 use Aws\Sns\Exception\InvalidSnsMessageException;
 use Aws\Sns\Message;
@@ -346,7 +347,7 @@ class ProcessSesEventJob implements ShouldQueue
             'delivered_at' => $contactMail->delivered_at ?: $timestamp,
         ];
 
-        $this->recordClick($contactMail, data_get($event, 'click.link'), $timestamp);
+        $this->recordClick($contactMail, (array) data_get($event, 'click', []), $timestamp);
         $this->recordEngagement($contactMail, $timestamp);
 
         return $updates;
@@ -539,20 +540,35 @@ class ProcessSesEventJob implements ShouldQueue
     /**
      * The mail, the link and the click time identify one click. A duplicate
      * SQS message carries the same three values, so it adds no second row.
+     *
+     * The link name comes from the SES link tag of the anchor. The user agent
+     * and the IP address are kept for a later bot filter, because link
+     * scanners (Safe Links, Mimecast) also click.
+     *
+     * @param  array<string, mixed>  $click
      */
-    private function recordClick(ContactMail $contactMail, ?string $link, CarbonImmutable $timestamp): void
+    private function recordClick(ContactMail $contactMail, array $click, CarbonImmutable $timestamp): void
     {
         if (! $contactMail->contact_id) {
             return;
         }
 
+        $link = data_get($click, 'link');
+        $userAgent = data_get($click, 'userAgent');
+        $ipAddress = data_get($click, 'ipAddress');
+
         ContactMailClick::query()->firstOrCreate(
             [
                 'contact_mail_id' => $contactMail->id,
-                'link' => $link,
+                'link' => is_string($link) ? $link : null,
                 'clicked_at' => $timestamp,
             ],
-            ['contact_id' => $contactMail->contact_id],
+            [
+                'contact_id' => $contactMail->contact_id,
+                'link_name' => NamedLink::fromSesClick($click),
+                'user_agent' => is_string($userAgent) ? Str::limit($userAgent, 512, '') : null,
+                'ip_address' => is_string($ipAddress) ? Str::limit($ipAddress, 45, '') : null,
+            ],
         );
     }
 
