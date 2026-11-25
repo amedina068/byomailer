@@ -7,6 +7,7 @@ use App\Models\MailList;
 use App\Models\Sequence;
 use App\Models\Tag;
 use App\Models\Topic;
+use App\Models\VisualAutomation;
 use App\Rules\SequenceMustBeLive;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
@@ -16,6 +17,30 @@ use Illuminate\Validation\Rule;
 class StoreVisualAutomationRequest extends FormRequest
 {
     use ValidatesProjectIds;
+
+    /**
+     * The model of each category of resource that a workflow can use.
+     *
+     * @var array<string, class-string<Tag|MailList|Topic|Sequence>>
+     */
+    private const RESOURCE_MODELS = [
+        'tags' => Tag::class,
+        'lists' => MailList::class,
+        'topics' => Topic::class,
+        'sequences' => Sequence::class,
+    ];
+
+    /**
+     * The resource category of each trigger, action and condition type.
+     *
+     * @var array<string, string>
+     */
+    private const TYPE_CATEGORIES = [
+        'add_tag' => 'tags', 'remove_tag' => 'tags', 'has_tag' => 'tags', 'not_has_tag' => 'tags', 'tag_added' => 'tags', 'removed_tag' => 'tags',
+        'add_list' => 'lists', 'remove_list' => 'lists', 'in_list' => 'lists', 'not_in_list' => 'lists', 'contact_added_to_list' => 'lists', 'removed_from_list' => 'lists',
+        'subscribed_to_topic' => 'topics', 'not_subscribed_to_topic' => 'topics',
+        'add_sequence' => 'sequences', 'in_sequence' => 'sequences', 'not_in_sequence' => 'sequences', 'added_to_sequence' => 'sequences', 'sequence_finished' => 'sequences',
+    ];
 
     /**
      * Determine if the user is authorized to make this request.
@@ -67,7 +92,39 @@ class StoreVisualAutomationRequest extends FormRequest
             'workflow.edges.*.target' => ['required', 'string'],
             'workflow.edges.*.sourceHandle' => ['nullable', 'string'],
             'workflow.edges.*.targetHandle' => ['nullable', 'string'],
+            ...$this->ruleRules('goals'),
+            ...$this->ruleRules('exit_conditions'),
             ...$this->projectIdRules(),
+        ];
+    }
+
+    /**
+     * The rules for the goals or the exit conditions of the workflow.
+     *
+     * @return array<string, array<mixed>>
+     */
+    private function ruleRules(string $key): array
+    {
+        return [
+            "workflow.{$key}" => ['nullable', 'array', 'max:10'],
+            "workflow.{$key}.*" => ['array'],
+            "workflow.{$key}.*.type" => ['required', 'string', Rule::in(VisualAutomation::RULE_TYPES)],
+            "workflow.{$key}.*.value" => ['required', 'integer'],
+        ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function attributes(): array
+    {
+        return [
+            'workflow.goals' => 'goals',
+            'workflow.goals.*.type' => 'goal type',
+            'workflow.goals.*.value' => 'goal value',
+            'workflow.exit_conditions' => 'exit conditions',
+            'workflow.exit_conditions.*.type' => 'exit condition type',
+            'workflow.exit_conditions.*.value' => 'exit condition value',
         ];
     }
 
@@ -102,7 +159,8 @@ class StoreVisualAutomationRequest extends FormRequest
     }
 
     /**
-     * Validate that resource IDs (tags, lists, sequences) referenced in nodes belong to the authenticated user.
+     * Validate that the tags, lists, topics and sequences of the nodes, the
+     * goals and the exit conditions belong to the client of the user.
      */
     private function validateResourceOwnership(Validator $validator, array $nodes): void
     {
@@ -111,51 +169,13 @@ class StoreVisualAutomationRequest extends FormRequest
             return;
         }
 
-        $tagIds = [];
-        $listIds = [];
-        $topicIds = [];
-        $sequenceIds = [];
+        $this->validateOwnedIds($validator, 'workflow.nodes', $user->client_id, array_map(
+            fn (mixed $node): array => (array) (is_array($node) ? ($node['data'] ?? []) : []),
+            $nodes,
+        ));
 
-        foreach ($nodes as $node) {
-            $data = $node['data'] ?? [];
-            $value = $data['value'] ?? null;
-
-            if ($value === null) {
-                continue;
-            }
-
-            $value = (int) $value;
-            $type = $data['action_type'] ?? $data['condition_type'] ?? $data['trigger_type'] ?? '';
-
-            match ($type) {
-                'add_tag', 'remove_tag', 'has_tag', 'not_has_tag', 'tag_added', 'removed_tag' => $tagIds[] = $value,
-                'add_list', 'remove_list', 'in_list', 'not_in_list', 'contact_added_to_list', 'removed_from_list' => $listIds[] = $value,
-                'subscribed_to_topic', 'not_subscribed_to_topic' => $topicIds[] = $value,
-                'add_sequence', 'in_sequence', 'not_in_sequence', 'added_to_sequence', 'sequence_finished' => $sequenceIds[] = $value,
-                default => null,
-            };
-        }
-
-        if ($tagIds && Tag::query()->where('client_id', $user->client_id)->whereIn('tags.id', array_unique($tagIds))->count() !== count(array_unique($tagIds))) {
-            $validator->errors()->add('workflow.nodes', 'One or more selected tags do not belong to your account.');
-        }
-
-        if ($listIds && MailList::query()->where('client_id', $user->client_id)->whereIn('lists.id', array_unique($listIds))->count() !== count(array_unique($listIds))) {
-            $validator->errors()->add('workflow.nodes', 'One or more selected lists do not belong to your account.');
-        }
-
-        if ($topicIds) {
-            $ownedTopicCount = Topic::query()
-                ->where('client_id', $user->client_id)
-                ->whereIn('id', array_unique($topicIds))
-                ->count();
-            if ($ownedTopicCount !== count(array_unique($topicIds))) {
-                $validator->errors()->add('workflow.nodes', 'One or more selected topics do not belong to your account.');
-            }
-        }
-
-        if ($sequenceIds && Sequence::query()->where('client_id', $user->client_id)->whereIn('sequences.id', array_unique($sequenceIds))->count() !== count(array_unique($sequenceIds))) {
-            $validator->errors()->add('workflow.nodes', 'One or more selected sequences do not belong to your account.');
+        foreach (['workflow.goals', 'workflow.exit_conditions'] as $key) {
+            $this->validateOwnedIds($validator, $key, $user->client_id, (array) $this->input($key, []));
         }
 
         $addSequenceIds = [];
@@ -168,6 +188,38 @@ class StoreVisualAutomationRequest extends FormRequest
 
         if ($addSequenceIds && ! SequenceMustBeLive::allLive($addSequenceIds)) {
             $validator->errors()->add('workflow.nodes', SequenceMustBeLive::MESSAGE);
+        }
+    }
+
+    /**
+     * Add an error to the key for each category with an id of another client.
+     * Each step is the data of a node, a goal, or an exit condition.
+     *
+     * @param  array<int, mixed>  $steps
+     */
+    private function validateOwnedIds(Validator $validator, string $key, int $clientId, array $steps): void
+    {
+        $idsByCategory = [];
+
+        foreach ($steps as $step) {
+            if (! is_array($step) || ! is_numeric($step['value'] ?? null)) {
+                continue;
+            }
+
+            $type = $step['action_type'] ?? $step['condition_type'] ?? $step['trigger_type'] ?? $step['type'] ?? '';
+
+            if (is_string($type) && isset(self::TYPE_CATEGORIES[$type])) {
+                $idsByCategory[self::TYPE_CATEGORIES[$type]][] = (int) $step['value'];
+            }
+        }
+
+        foreach ($idsByCategory as $category => $ids) {
+            $ids = array_values(array_unique($ids));
+            $ownedCount = self::RESOURCE_MODELS[$category]::query()->where('client_id', $clientId)->whereKey($ids)->count();
+
+            if ($ownedCount !== count($ids)) {
+                $validator->errors()->add($key, "One or more selected {$category} do not belong to your account.");
+            }
         }
     }
 }
