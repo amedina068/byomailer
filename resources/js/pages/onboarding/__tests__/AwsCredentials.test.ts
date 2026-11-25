@@ -5,6 +5,12 @@ import { defineComponent, nextTick } from 'vue';
 vi.mock('@inertiajs/vue3', () => ({
     Head: defineComponent({ template: '<span />' }),
     router: { post: vi.fn() },
+    useForm: (data: Record<string, unknown>) => ({
+        ...data,
+        errors: {},
+        processing: false,
+        post: vi.fn(),
+    }),
 }));
 vi.mock('@/layouts/onboarding/OnboardingLayout.vue', () => ({
     default: defineComponent({ template: '<main><slot /></main>' }),
@@ -13,6 +19,32 @@ vi.mock('@/layouts/onboarding/OnboardingLayout.vue', () => ({
 import AwsCredentials from '../AwsCredentials.vue';
 
 describe('AWS onboarding page', () => {
+    it('offers the IAM role before the access keys when the server has a role principal', () => {
+        const wrapper = mount(AwsCredentials, {
+            props: {
+                roleConnection: {
+                    externalId: 'a'.repeat(64),
+                    principalArn: 'arn:aws:iam::111122223333:user/byomailer',
+                    roleName: 'byomailer-ses',
+                    templateUrl:
+                        'https://byomailer.example/aws/byomailer-ses-role.json',
+                    quickCreateUrl: null,
+                },
+            },
+        });
+
+        expect(wrapper.text()).toContain('Connect with an IAM role');
+        expect(wrapper.text()).toContain('Or connect with the access keys');
+    });
+
+    it('shows only the access keys when the server has no role principal', () => {
+        const wrapper = mount(AwsCredentials, {
+            props: { roleConnection: null },
+        });
+
+        expect(wrapper.text()).not.toContain('Connect with an IAM role');
+    });
+
     it('does not ask for a webhook URL in the credentials step', async () => {
         const wrapper = mount(AwsCredentials);
 

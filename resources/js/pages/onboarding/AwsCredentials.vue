@@ -11,6 +11,9 @@ import { computed, ref } from 'vue';
 
 import AwsOnboardingController from '@/actions/App/Http/Controllers/Onboarding/AwsOnboardingController';
 import InputError from '@/components/InputError.vue';
+import AwsRoleConnect, {
+    type RoleConnection,
+} from '@/components/onboarding/AwsRoleConnect.vue';
 import StepIndicator from '@/components/onboarding/StepIndicator.vue';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -21,6 +24,7 @@ import OnboardingLayout from '@/layouts/onboarding/OnboardingLayout.vue';
 
 defineProps<{
     hasCredentials?: boolean;
+    roleConnection?: RoleConnection | null;
 }>();
 
 const steps = [
@@ -147,6 +151,13 @@ const copyToClipboard = async (text: string): Promise<void> => {
         <Head title="AWS SES Setup" />
 
         <div class="space-y-8">
+            <template v-if="roleConnection && currentStep < 4">
+                <AwsRoleConnect :role-connection="roleConnection" />
+                <p class="text-center text-sm text-muted-foreground">
+                    Or connect with the access keys of an IAM user:
+                </p>
+            </template>
+
             <StepIndicator :steps="steps" :current-step="currentStep" />
 
             <!-- Step 1: Create IAM User -->
