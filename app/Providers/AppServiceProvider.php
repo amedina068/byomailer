@@ -10,6 +10,7 @@ use App\Observers\ContactObserver;
 use App\Scopes\ClientScope;
 use App\Services\SesBulkEmailService;
 use App\Services\SesClientManager;
+use App\Services\SesCredentials;
 use App\Services\SesTenantService;
 use Aws\Ses\SesClient;
 use Aws\Sns\MessageValidator;
@@ -38,7 +39,8 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         if (class_exists(SesClient::class)) {
-            $this->app->scoped(SesClientManager::class, fn ($app) => new SesClientManager($app['config']));
+            $this->app->scoped(SesCredentials::class, fn ($app) => new SesCredentials($app['config']));
+            $this->app->scoped(SesClientManager::class, fn ($app) => new SesClientManager($app['config'], $app->make(SesCredentials::class)));
             $this->app->scoped(SesBulkEmailService::class, fn ($app) => new SesBulkEmailService($app->make(SesClientManager::class), $app->make(SesTenantService::class)));
         }
 
