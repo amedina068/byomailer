@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue';
+import type { Editor } from '@tiptap/core';
+import { computed, ref, toRaw, watch } from 'vue';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -11,24 +12,32 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
+import { LINK_NAME_MAX_LENGTH, normalizeLinkName } from '@/lib/linkClicks';
 
 const props = defineProps<{
     isOpen: boolean;
-    initialUrl?: string;
+    editor?: Editor;
 }>();
 
 const emit = defineEmits<{
     'update:isOpen': [value: boolean];
-    confirm: [url: string];
 }>();
 
 const linkUrl = ref('');
+const linkName = ref('');
+
+const normalizedName = computed(() => normalizeLinkName(linkName.value));
+
+/** A reactive proxy of the editor breaks its transactions. */
+const editor = (): Editor | undefined => toRaw(props.editor);
 
 watch(
     () => props.isOpen,
     (open) => {
         if (open) {
-            linkUrl.value = props.initialUrl ?? '';
+            const attributes = editor()?.getAttributes('link') ?? {};
+            linkUrl.value = attributes.href ?? '';
+            linkName.value = attributes.linkName ?? '';
         }
     },
 );
@@ -40,7 +49,13 @@ const submit = (): void => {
         return;
     }
 
-    emit('confirm', url);
+    editor()
+        ?.chain()
+        .focus()
+        .extendMarkRange('link')
+        .setLink({ href: url })
+        .updateAttributes('link', { linkName: normalizedName.value })
+        .run();
     emit('update:isOpen', false);
 };
 </script>
@@ -65,6 +80,39 @@ const submit = (): void => {
                         class="rounded-lg border border-border bg-background px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
                         placeholder="https://example.com"
                     />
+                </div>
+
+                <div class="grid gap-1.5">
+                    <Label for="link-name">
+                        Link name
+                        <span class="font-normal text-muted-foreground">
+                            (optional)
+                        </span>
+                    </Label>
+                    <input
+                        id="link-name"
+                        v-model="linkName"
+                        type="text"
+                        :maxlength="LINK_NAME_MAX_LENGTH"
+                        class="rounded-lg border border-border bg-background px-3 py-2 font-(family-name:--bm-font-mono) text-sm focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+                        placeholder="black-friday-cta"
+                    />
+                    <p class="text-xs text-muted-foreground">
+                        Name a link to track its clicks in reports and
+                        automations. Links with the same name in different
+                        emails count together.
+                    </p>
+                    <p
+                        v-if="
+                            normalizedName && normalizedName !== linkName.trim()
+                        "
+                        class="text-xs text-muted-foreground"
+                    >
+                        Saved as
+                        <span class="font-(family-name:--bm-font-mono)">{{
+                            normalizedName
+                        }}</span>
+                    </p>
                 </div>
 
                 <p class="text-xs text-muted-foreground">

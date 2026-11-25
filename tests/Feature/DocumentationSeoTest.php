@@ -28,7 +28,7 @@ class DocumentationSeoTest extends TestCase
             $descriptions[] = $description[1];
         }
 
-        $this->assertCount(24, $titles);
+        $this->assertCount(25, $titles);
         $this->assertSame(count($titles), count(array_unique($titles)), 'Two documentation pages share a title.');
         $this->assertSame(count($descriptions), count(array_unique($descriptions)), 'Two documentation pages share a meta description.');
     }

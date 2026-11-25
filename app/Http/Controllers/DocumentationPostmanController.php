@@ -61,8 +61,8 @@ class DocumentationPostmanController extends Controller
             $this->tagsFolder(),
             $this->topicsFolder(),
             $this->blocksFolder(),
-            $this->newslettersFolder(),
-            $this->sequencesFolder(),
+            $this->withLinkRequests($this->newslettersFolder(), 'Newsletter', 'api/v1/newsletters/:newsletterId', 'a newsletter', 'black-friday', 'https://example.com/blog'),
+            $this->withLinkRequests($this->sequencesFolder(), 'Sequence Step', 'api/v1/sequences/:sequenceId/steps/:sequenceStepId', 'a sequence step', 'pricing', 'https://example.com/pricing'),
             $this->projectsFolder(),
             $this->emailIdentitiesFolder(),
             $this->emailTemplatesFolder(),
@@ -721,6 +721,41 @@ class DocumentationPostmanController extends Controller
     }
 
     /**
+     * Add the link report requests of a newsletter or a sequence step to its folder.
+     *
+     * @param  array<string, mixed>  $folder
+     * @return array<string, mixed>
+     */
+    private function withLinkRequests(array $folder, string $resource, string $path, string $subject, string $exampleName, string $exampleUrl): array
+    {
+        $folder['item'] = [
+            ...$folder['item'],
+            $this->buildRequest(
+                "Get {$resource} Links",
+                'GET',
+                "{$path}/links",
+                "List the links of {$subject} with their clicks: link key, link name, URL, unique contacts, total clicks and click rate (unique contacts / delivered * 100, null when no mail is delivered). A named link (data-bm-link attribute) groups by its link name. Any other link groups by its URL without utm_* parameters and without the #fragment. Clicks can include link scanners, for example Microsoft Safe Links."
+            ),
+            $this->buildRequest(
+                "List {$resource} Link Contacts (named link)",
+                'GET',
+                "{$path}/links/contacts",
+                "List the contacts who clicked one link of {$subject}, cursor-paginated (per_page 1-200, default 50, cursor). The link parameter is required and must be a link key from the link list. A named link has the key name:<link name>.",
+                query: ['link' => "name:{$exampleName}", 'per_page' => '50'],
+            ),
+            $this->buildRequest(
+                "List {$resource} Link Contacts (URL link)",
+                'GET',
+                "{$path}/links/contacts",
+                "List the contacts who clicked an unnamed link of {$subject}. An unnamed link has the key url:<url>, with the URL from the link list.",
+                query: ['link' => "url:{$exampleUrl}"],
+            ),
+        ];
+
+        return $folder;
+    }
+
+    /**
      * @return array<string, mixed>
      */
     private function emailIdentitiesFolder(): array
@@ -803,9 +838,10 @@ class DocumentationPostmanController extends Controller
 
     /**
      * @param  array<string, mixed>|null  $body
+     * @param  array<string, string>  $query
      * @return array<string, mixed>
      */
-    private function buildRequest(string $name, string $method, string $path, string $description, ?array $body = null): array
+    private function buildRequest(string $name, string $method, string $path, string $description, ?array $body = null, array $query = []): array
     {
         $pathSegments = explode('/', $path);
         $variables = [];
@@ -849,6 +885,11 @@ class DocumentationPostmanController extends Controller
 
         if (! empty($variables)) {
             $request['request']['url']['variable'] = $variables;
+        }
+
+        if ($query !== []) {
+            $request['request']['url']['raw'] .= '?'.collect($query)->map(fn (string $value, string $key): string => "{$key}={$value}")->implode('&');
+            $request['request']['url']['query'] = collect($query)->map(fn (string $value, string $key): array => ['key' => $key, 'value' => $value])->values()->all();
         }
 
         if ($body !== null && in_array($method, ['POST', 'PUT', 'PATCH'])) {

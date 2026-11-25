@@ -15,6 +15,7 @@ const props = defineProps<{
     tags: SelectOption[];
     sequences: SelectOption[];
     attributes: string[];
+    linkNames: string[];
     storeRoute: string;
 }>();
 
@@ -35,6 +36,7 @@ const breadcrumbs = [
             :tags="props.tags"
             :sequences="props.sequences"
             :attributes="props.attributes"
+            :link-names="props.linkNames"
         />
     </AppLayout>
 </template>

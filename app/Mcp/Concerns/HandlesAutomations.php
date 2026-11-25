@@ -74,7 +74,7 @@ trait HandlesAutomations
                     ->enum(AutomationDefinition::CONDITION_TYPES)
                     ->description('The event that starts the automation.'),
                 'value' => $schema->string()
-                    ->description('The list, tag or sequence id of the event. For "attribute_changed" with operator "changed_to", the new attribute value.'),
+                    ->description('The list, tag or sequence id of the event. For "attribute_changed" with operator "changed_to", the new attribute value. For "link_clicked", the link name.'),
                 'attribute' => $schema->string()
                     ->description('Only for "attribute_changed": the contact attribute name.'),
                 'operator' => $schema->string()

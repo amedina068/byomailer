@@ -13,6 +13,7 @@ use App\Models\Tag;
 use App\Models\Topic;
 use App\Models\VisualAutomation;
 use App\Models\VisualAutomationContactStep;
+use App\Support\LinkNameCatalog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -113,7 +114,8 @@ class VisualAutomationController extends Controller
      * @return array{
      *     lists: array<int, array{id: int, name: string}>,
      *     tags: array<int, array{id: int, name: string}>,
-     *     sequences: array<int, array{id: int, name: string, status: string}>
+     *     sequences: array<int, array{id: int, name: string, status: string}>,
+     *     linkNames: list<string>
      * }
      */
     private function catalogOptions(Request $request): array
@@ -135,6 +137,7 @@ class VisualAutomationController extends Controller
                 'name' => $sequence->name,
                 'status' => $sequence->status->value,
             ])->all(),
+            'linkNames' => LinkNameCatalog::names(),
         ];
     }
 }

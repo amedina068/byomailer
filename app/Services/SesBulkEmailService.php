@@ -8,6 +8,7 @@ use App\Models\Newsletter;
 use App\Models\User;
 use App\Support\ContentSlot;
 use App\Support\HtmlToText;
+use App\Support\NamedLink;
 use App\Support\Preheader;
 use App\Support\QueryStringJoiner;
 use App\Support\ReplacesBlockVariables;
@@ -50,6 +51,9 @@ class SesBulkEmailService
         // A link that starts with a variable gets its UTM parameters from the
         // per-recipient data, because SES fills the variable at send time.
         $htmlContent = self::pointVariableLinksAtUtmValues($htmlContent);
+
+        // SES returns the link tag of each anchor in the Click event.
+        $htmlContent = NamedLink::toSesTags($htmlContent);
 
         // A stored plain body gets the text rendering of the block, never its
         // HTML. Otherwise `text/plain` ships with tags in it.

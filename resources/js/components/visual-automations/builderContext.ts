@@ -14,12 +14,10 @@ export interface BuilderContext {
     readonly tags: SelectOption[];
     readonly topics?: SelectOption[];
     readonly sequences: SelectOption[];
+    readonly linkNames?: string[];
     isEditable: boolean;
     nodeContactsUrl: ((nodeId: string) => string) | null;
-    updateNodeData: (
-        nodeId: string,
-        updates: Record<string, unknown>,
-    ) => void;
+    updateNodeData: (nodeId: string, updates: Record<string, unknown>) => void;
     confirmRemoveNode: (nodeId: string) => void;
     openAddStepModal: (context: AddStepContext) => void;
 }

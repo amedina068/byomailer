@@ -9,14 +9,19 @@ use App\Models\Contact;
 use App\Models\ContactMail;
 use App\Models\Sequence;
 use App\Models\SequenceStep;
+use App\Services\LinkClickReport;
 use App\Services\SequenceAnalyticsService;
+use Closure;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class SequenceStepContactController extends Controller
 {
-    public function __construct(private SequenceAnalyticsService $sequenceAnalytics) {}
+    public function __construct(
+        private SequenceAnalyticsService $sequenceAnalytics,
+        private LinkClickReport $linkClickReport,
+    ) {}
 
     public function index(Request $request, $sequenceId, $sequenceStepId): Response
     {
@@ -31,15 +36,18 @@ class SequenceStepContactController extends Controller
             ->findOrFail($sequenceStepId);
 
         $filter = $this->resolveFilter((string) $request->query('filter'));
+        $linkFilter = LinkClickReport::isValidKey($request->query('link')) ? (string) $request->query('link') : null;
+        $matchingClicks = $linkFilter === null ? null : $this->linkClickReport->matchingClicks($sequenceStep, $linkFilter);
 
-        $contacts = $this->contactsQuery($request, $sequenceStep, $filter)
+        $contacts = $this->contactsQuery($request, $sequenceStep, $filter, $matchingClicks)
             ->paginate(20)
             ->withQueryString();
 
-        $clickDetails = $filter === 'clicked'
+        $clickDetails = $filter === 'clicked' || $matchingClicks !== null
             ? $this->sequenceAnalytics->contactClicks(
                 $contacts->getCollection()->pluck('id'),
                 collect([$sequenceStep->id]),
+                $matchingClicks,
             )
             : [];
 
@@ -65,12 +73,14 @@ class SequenceStepContactController extends Controller
             'step' => SequenceStepResource::make($sequenceStep)->resolve($request),
             'contacts' => $contacts,
             'filter' => $filter,
+            'linkFilter' => $linkFilter,
+            'linkClicks' => Inertia::defer(fn (): array => $this->linkClickReport->summary($sequenceStep)),
             'stats' => $this->sequenceAnalytics->statsForStep($sequenceStep),
             'stepIndex' => $stepIndex === false ? null : $stepIndex + 1,
         ]);
     }
 
-    private function contactsQuery(Request $request, SequenceStep $sequenceStep, string $filter)
+    private function contactsQuery(Request $request, SequenceStep $sequenceStep, string $filter, ?Closure $matchingClicks)
     {
         $stepMailColumn = fn (string $column) => ContactMail::query()
             ->select($column)
@@ -94,8 +104,12 @@ class SequenceStepContactController extends Controller
                 'step_complained_at' => $stepMailColumn('complained_at'),
                 'step_unsubscribed_at' => $stepMailColumn('unsubscribed_at'),
             ])
-            ->whereHas('mails', function ($mailQuery) use ($sequenceStep, $filter): void {
+            ->whereHas('mails', function ($mailQuery) use ($sequenceStep, $filter, $matchingClicks): void {
                 $mailQuery->exclusiveToStep($sequenceStep);
+
+                if ($matchingClicks !== null) {
+                    $mailQuery->whereHas('clicks', $matchingClicks);
+                }
 
                 if ($filter === 'unsubscribed') {
                     $mailQuery->whereNotNull('unsubscribed_at');

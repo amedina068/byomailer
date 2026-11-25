@@ -76,6 +76,38 @@ describe('AutomationRow attribute trigger chip', () => {
     });
 });
 
+describe('AutomationRow link trigger chip', () => {
+    it('labels a link_clicked condition with the link name', () => {
+        const wrapper = mount(AutomationRow, {
+            props: {
+                automation: {
+                    id: 2,
+                    name: 'Black Friday clickers',
+                    type: 'simple',
+                    condition: {
+                        type: 'link_clicked' as const,
+                        value: 'black-friday',
+                    },
+                    actions: [{ type: 'add_tag' as const, value: 2 }],
+                    is_live: true,
+                },
+                editUrl: '/automations/2/edit',
+                listNames: {},
+                tagNames: { '2': 'VIP' },
+                sequenceNames: {},
+            },
+        });
+
+        const chip = wrapper
+            .findAll('span')
+            .find((span) => span.text().startsWith('Clicks link'));
+
+        expect(
+            (chip?.findAll('span') ?? []).map((part) => part.text()).join(' '),
+        ).toBe('Clicks link "black-friday"');
+    });
+});
+
 describe('AutomationRow keyboard', () => {
     beforeEach(() => visit.mockReset());
 

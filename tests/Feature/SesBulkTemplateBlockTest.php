@@ -92,6 +92,21 @@ class SesBulkTemplateBlockTest extends TestCase
         $this->assertStringContainsString('https://example.com/post', $captured['TemplateContent']['Text']);
     }
 
+    public function test_a_named_link_reaches_the_ses_template_as_a_link_tag(): void
+    {
+        [$user, $newsletter] = $this->makeNewsletter();
+
+        $newsletter->message->update([
+            'html_content' => '<p><a href="https://example.com/sale" data-bm-link="pricing">Buy</a></p>',
+            'text_content' => null,
+        ]);
+
+        $captured = $this->captureCreatedTemplate($user, $newsletter);
+
+        $this->assertStringContainsString('ses:tags="bm_link:pricing;"', $captured['TemplateContent']['Html']);
+        $this->assertStringNotContainsString('data-bm-link', $captured['TemplateContent']['Html']);
+    }
+
     /**
      * @return array{0: User, 1: Newsletter}
      */

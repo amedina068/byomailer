@@ -2,7 +2,9 @@
 import { Form, usePage } from '@inertiajs/vue3';
 import { computed, ref, watch } from 'vue';
 
+import AttributeConditionFields from '@/components/automations/AttributeConditionFields.vue';
 import InputError from '@/components/InputError.vue';
+import LinkNameInput from '@/components/links/LinkNameInput.vue';
 import CreateTagModal from '@/components/tags/CreateTagModal.vue';
 import { Button } from '@/components/ui/button';
 
@@ -13,7 +15,8 @@ type ConditionType =
     | 'removed_tag'
     | 'added_to_sequence'
     | 'sequence_finished'
-    | 'attribute_changed';
+    | 'attribute_changed'
+    | 'link_clicked';
 type AttributeOperator = 'changed_to' | 'changed';
 type ActionType =
     | 'add_tag'
@@ -53,9 +56,10 @@ const props = withDefaults(
         tags: SelectOption[];
         sequences: SelectOption[];
         attributes?: string[];
+        linkNames?: string[];
         automation?: AutomationData | null;
     }>(),
-    { attributes: () => [] },
+    { attributes: () => [], linkNames: () => [] },
 );
 
 const showCreateTagModal = ref(false);
@@ -88,6 +92,9 @@ const conditionOperator = ref<AttributeOperator>(
 const usesAttributeCondition = computed(
     () => conditionType.value === 'attribute_changed',
 );
+const usesLinkCondition = computed(
+    () => conditionType.value === 'link_clicked',
+);
 const attributeOptions = computed(() => {
     const stored = initialAutomation?.condition.attribute;
 
@@ -107,7 +114,7 @@ const usesSequenceCondition = computed(() =>
     ['added_to_sequence', 'sequence_finished'].includes(conditionType.value),
 );
 const conditionValueOptions = computed(() => {
-    if (usesAttributeCondition.value) {
+    if (usesAttributeCondition.value || usesLinkCondition.value) {
         return [];
     }
 
@@ -121,12 +128,15 @@ const conditionValueOptions = computed(() => {
 watch(
     [conditionType, conditionValueOptions],
     ([type, options], previous) => {
-        if (type === 'attribute_changed') {
+        if (type === 'attribute_changed' || type === 'link_clicked') {
             if (previous?.[0] && previous[0] !== type) {
                 conditionValue.value = '';
             }
 
-            if (!attributeOptions.value.includes(conditionAttribute.value)) {
+            if (
+                type === 'attribute_changed' &&
+                !attributeOptions.value.includes(conditionAttribute.value)
+            ) {
                 conditionAttribute.value = attributeOptions.value[0] ?? '';
             }
 
@@ -152,12 +162,6 @@ watch(
     },
     { immediate: true },
 );
-
-watch(conditionOperator, (operator) => {
-    if (operator === 'changed') {
-        conditionValue.value = '';
-    }
-});
 
 const initialAction = initialAutomation?.actions?.[0];
 const defaultActionType = (): ActionType => {
@@ -323,6 +327,7 @@ const handleTagCreated = () => {
                         >
                             Attribute changes
                         </option>
+                        <option value="link_clicked">Link clicked</option>
                     </select>
                     <InputError :message="errors['condition.type']" />
                 </div>
@@ -342,6 +347,18 @@ const handleTagCreated = () => {
                         </option>
                     </select>
                     <InputError :message="errors['condition.attribute']" />
+                </div>
+                <div v-else-if="usesLinkCondition">
+                    <LinkNameInput
+                        id="automation-link-name"
+                        v-model="conditionValue"
+                        name="condition[value]"
+                        :link-names="props.linkNames"
+                        hint="Runs when a contact clicks a link with this name in an email. Set the name in the link settings of the editor."
+                        class="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
+                        required
+                    />
+                    <InputError :message="errors['condition.value']" />
                 </div>
                 <div v-else>
                     <select
@@ -376,41 +393,12 @@ const handleTagCreated = () => {
                     <InputError :message="errors['condition.value']" />
                 </div>
             </div>
-            <div v-if="usesAttributeCondition" class="grid grid-cols-2 gap-2">
-                <div>
-                    <select
-                        name="condition[operator]"
-                        aria-label="Change type"
-                        class="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                        v-model="conditionOperator"
-                    >
-                        <option value="changed_to">changes to</option>
-                        <option value="changed">changes</option>
-                    </select>
-                    <InputError :message="errors['condition.operator']" />
-                </div>
-                <div v-if="conditionOperator === 'changed_to'">
-                    <input
-                        name="condition[value]"
-                        type="text"
-                        aria-label="Attribute value"
-                        class="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm"
-                        placeholder="pro"
-                        v-model="conditionValue"
-                    />
-                    <p class="mt-1 text-xs text-muted-foreground">
-                        Exact match, case-sensitive.
-                    </p>
-                    <InputError :message="errors['condition.value']" />
-                </div>
-            </div>
-            <p
+            <AttributeConditionFields
                 v-if="usesAttributeCondition"
-                class="text-xs text-muted-foreground"
-            >
-                Runs when a contact's attribute changes after this automation is
-                live. Contacts that already have the value are not included.
-            </p>
+                v-model:operator="conditionOperator"
+                v-model:value="conditionValue"
+                :errors="errors"
+            />
             <p
                 v-if="!attributeOptions.length"
                 class="text-xs text-muted-foreground"

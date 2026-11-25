@@ -1,9 +1,18 @@
 import { mount } from '@vue/test-utils';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { defineComponent } from 'vue';
 
+const visit = vi.fn();
+
 vi.mock('@inertiajs/vue3', () => ({
+    Deferred: defineComponent({
+        setup:
+            (_, { slots }) =>
+            () =>
+                slots.fallback?.(),
+    }),
     Head: defineComponent({ template: '<span />' }),
+    router: { visit: (...args: unknown[]) => visit(...args) },
     usePage: () => ({ props: { auth: { timezone: 'UTC' } } }),
 }));
 vi.mock('@/layouts/AppLayout.vue', () => ({
@@ -22,6 +31,8 @@ vi.mock('@/components/contacts/PaginatedContactsTable.vue', () => ({
         </div>`,
     }),
 }));
+
+import LinkClicksPanel from '@/components/links/LinkClicksPanel.vue';
 
 import StepContacts from '../sequences/StepContacts.vue';
 
@@ -114,5 +125,79 @@ describe('Sequence step contacts status', () => {
 
         expect(wrapper.text()).toContain('Pending');
         expect(wrapper.find('p[title]').exists()).toBe(false);
+    });
+});
+
+describe('Sequence step contacts link filter', () => {
+    const mountWithLink = (
+        filter: 'all' | 'clicked' | 'unsubscribed',
+        linkFilter: string | null,
+    ) =>
+        mount(StepContacts, {
+            props: {
+                sequence: { id: 12, name: 'Onboarding' },
+                step: { id: 34, message: { subject: 'Welcome' } },
+                filter,
+                linkFilter,
+                stats: { contacts: 0, clicked: 0, unsubscribed: 0 },
+                contacts: {
+                    data: [],
+                    links: [],
+                    total: 0,
+                    last_page: 1,
+                    from: null,
+                    to: null,
+                    prev_page_url: null,
+                    next_page_url: null,
+                },
+            },
+        });
+
+    const visitedUrl = (): string => decodeURIComponent(visit.mock.calls[0][0]);
+
+    beforeEach(() => visit.mockClear());
+
+    it('shows no chip without a link filter', () => {
+        const wrapper = mountWithLink('all', null);
+
+        expect(wrapper.find('[data-testid="link-filter-chip"]').exists()).toBe(
+            false,
+        );
+    });
+
+    it.each([
+        ['name:black-friday', 'black-friday'],
+        ['url:https://example.com/sale', 'https://example.com/sale'],
+    ])('labels the chip for %s without the key prefix', (key, label) => {
+        const chip = mountWithLink('all', key).get(
+            '[data-testid="link-filter-chip"]',
+        );
+
+        expect(chip.text()).toContain(label);
+        expect(chip.text()).not.toContain(key.split(':')[0] + ':');
+    });
+
+    it('clears only the link and keeps the active filter', async () => {
+        const wrapper = mountWithLink('clicked', 'name:black-friday');
+
+        await wrapper
+            .get('button[aria-label="Clear link filter"]')
+            .trigger('click');
+
+        expect(visitedUrl()).toBe(
+            '/sequences/12/steps/34/contacts?filter=clicked',
+        );
+    });
+
+    it('filters the contacts by the link that the panel selects', () => {
+        const wrapper = mountWithLink('clicked', null);
+
+        wrapper
+            .findComponent(LinkClicksPanel)
+            .vm.$emit('select', 'name:pricing');
+
+        expect(visitedUrl()).toBe(
+            '/sequences/12/steps/34/contacts?filter=clicked&link=name:pricing',
+        );
     });
 });

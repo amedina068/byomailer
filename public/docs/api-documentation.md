@@ -1286,6 +1286,97 @@ Replace the content variable defaults of a draft or scheduled newsletter. The `c
 
 **Errors:** `422` when `content_variables` is missing, when a default is longer than 255 characters, or when the newsletter is sending or sent. `404` when the newsletter does not belong to your account.
 
+### Link clicks
+
+The link endpoints report who clicked which link in a newsletter or a sequence step.
+
+- **Named links:** add a `data-bm-link` attribute to an `<a>` tag, for example `<a href="https://example.com/sale" data-bm-link="black-friday">`. A named link groups all clicks under its link name, also when the URL changes.
+- BYOMailer changes a link name to lowercase letters, digits and dashes. For example, "Black Friday" becomes `black-friday`. The maximum length is 100 characters.
+- Only emails that you send after you give the link a name carry the link name.
+- **Unnamed links** group by URL. The URL has no `utm_*` parameters and no `#fragment`.
+- Each link has a **link key**: `name:<link name>` or `url:<url>`. Use the link key to list the contacts who clicked that link.
+- `click_rate` is the unique contacts divided by the delivered mails, times 100. If no mail is delivered, `click_rate` is `null`.
+- **Bot clicks:** BYOMailer does not filter bot clicks yet. The clicks can include link scanners, for example Microsoft Safe Links and Mimecast.
+
+### GET `/api/v1/newsletters/{newsletterId}/links`
+
+List the links of a newsletter with their clicks. The links with the most unique contacts come first.
+
+**Response – 200**
+
+```json
+{
+  "data": {
+    "delivered": 3,
+    "links": [
+      {
+        "key": "name:black-friday",
+        "name": "black-friday",
+        "url": "https://example.com/sale",
+        "unique_contacts": 2,
+        "total_clicks": 3,
+        "click_rate": 66.67
+      },
+      {
+        "key": "url:https://example.com/blog",
+        "name": null,
+        "url": "https://example.com/blog",
+        "unique_contacts": 1,
+        "total_clicks": 1,
+        "click_rate": 33.33
+      }
+    ]
+  }
+}
+```
+
+**Errors:** `404` when the newsletter does not belong to your account.
+
+### GET `/api/v1/newsletters/{newsletterId}/links/contacts`
+
+List the contacts who clicked one link of a newsletter, cursor-paginated.
+
+Query Parameters
+
+| Parameter | Type   | Description |
+|-----------|--------|-------------|
+| link      | string | Required. A link key from the link list, for example `name:black-friday` or `url:https://example.com/blog`. |
+| per_page  | int    | Results per page (default 50, max 200). |
+| cursor    | string | Cursor for the next/previous page (see Pagination section). |
+
+**Example:** `GET /api/v1/newsletters/12/links/contacts?link=name:black-friday&per_page=50`
+
+**Response – 200**
+
+```json
+{
+  "data": [
+    {
+      "contact_mail_id": 9081,
+      "contact_id": 42,
+      "email": "john@example.com",
+      "name": "John Doe",
+      "clicks": 2,
+      "first_clicked_at": "2026-10-27T14:05:12+00:00"
+    }
+  ],
+  "links": {
+    "first": null,
+    "last": null,
+    "prev": null,
+    "next": "https://byomailer.example/api/v1/newsletters/12/links/contacts?link=name%3Ablack-friday&per_page=50&cursor=eyJpZCI6OTA4MSwiX3BvaW50c1RvTmV4dEl0ZW1zIjp0cnVlfQ"
+  },
+  "meta": {
+    "path": "https://byomailer.example/api/v1/newsletters/12/links/contacts",
+    "per_page": 50,
+    "next_cursor": "eyJpZCI6OTA4MSwiX3BvaW50c1RvTmV4dEl0ZW1zIjp0cnVlfQ",
+    "prev_cursor": null
+  }
+}
+```
+
+**Errors:** `422` when `link` is missing, or when `link` does not start with `name:` or `url:` ("The link must be a key from the link list."). `404` when the newsletter does not belong to your account.
+
 ## Sequences
 
 Sequences are automated, multi-step email flows. These endpoints are read-only — sequences are built and managed through the dashboard. They mirror the BYOMailer MCP server's sequence tools, so the same data is available to both REST and AI clients.
@@ -1489,6 +1580,77 @@ Get delivery and engagement stats for a single sequence step. Contacts are count
   }
 }
 ```
+
+### GET `/api/v1/sequences/{sequenceId}/steps/{sequenceStepId}/links`
+
+List the links of a sequence step with their clicks. The response has the same shape as `GET /api/v1/newsletters/{newsletterId}/links`. For named links, link keys and bot clicks, see [Link clicks](#link-clicks).
+
+**Response – 200**
+
+```json
+{
+  "data": {
+    "delivered": 316,
+    "links": [
+      {
+        "key": "name:pricing",
+        "name": "pricing",
+        "url": "https://example.com/pricing",
+        "unique_contacts": 64,
+        "total_clicks": 81,
+        "click_rate": 20.25
+      }
+    ]
+  }
+}
+```
+
+**Errors:** `404` when the step does not belong to the sequence or to your account.
+
+### GET `/api/v1/sequences/{sequenceId}/steps/{sequenceStepId}/links/contacts`
+
+List the contacts who clicked one link of a sequence step, cursor-paginated. The query parameters and the response have the same shape as `GET /api/v1/newsletters/{newsletterId}/links/contacts`.
+
+Query Parameters
+
+| Parameter | Type   | Description |
+|-----------|--------|-------------|
+| link      | string | Required. A link key from the link list, for example `name:pricing`. |
+| per_page  | int    | Results per page (default 50, max 200). |
+| cursor    | string | Cursor for the next/previous page (see Pagination section). |
+
+**Example:** `GET /api/v1/sequences/7/steps/31/links/contacts?link=name:pricing`
+
+**Response – 200**
+
+```json
+{
+  "data": [
+    {
+      "contact_mail_id": 5520,
+      "contact_id": 42,
+      "email": "john@example.com",
+      "name": "John Doe",
+      "clicks": 1,
+      "first_clicked_at": "2026-10-27T09:12:40+00:00"
+    }
+  ],
+  "links": {
+    "first": null,
+    "last": null,
+    "prev": null,
+    "next": null
+  },
+  "meta": {
+    "path": "https://byomailer.example/api/v1/sequences/7/steps/31/links/contacts",
+    "per_page": 50,
+    "next_cursor": null,
+    "prev_cursor": null
+  }
+}
+```
+
+**Errors:** `422` when `link` is missing, or when `link` is not a link key. `404` when the step does not belong to the sequence or to your account.
 
 ## Projects
 

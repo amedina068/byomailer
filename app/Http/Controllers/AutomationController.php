@@ -13,6 +13,7 @@ use App\Models\MailList;
 use App\Models\Project;
 use App\Models\Sequence;
 use App\Models\Tag;
+use App\Support\LinkNameCatalog;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
@@ -100,7 +101,8 @@ class AutomationController extends Controller
      *     lists: array<int, array{id: int, name: string}>,
      *     tags: array<int, array{id: int, name: string}>,
      *     sequences: array<int, array{id: int, name: string, status: string}>,
-     *     attributes: list<string>
+     *     attributes: list<string>,
+     *     linkNames: list<string>
      * }
      */
     private function catalogOptions(Request $request): array
@@ -124,6 +126,7 @@ class AutomationController extends Controller
                 'status' => $sequence->status->value,
             ])->all(),
             'attributes' => $attributes->all(),
+            'linkNames' => LinkNameCatalog::names(),
         ];
     }
 }

@@ -8,6 +8,7 @@ use App\Models\Sequence;
 use App\Models\Tag;
 use App\Models\User;
 use App\Support\AutomationDefinition;
+use App\Support\LinkNameCatalog;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
@@ -17,7 +18,7 @@ use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
 #[IsReadOnly]
-#[Description('Describe the building blocks of an automation for the authenticated account: the trigger condition types, the action types, and the lists, tags, sequences and contact attributes that a condition or action can reference by id or name. Use the result to assemble the "condition" and "actions" for create-automation and update-automation. A paused automation can use a draft sequence in an "add_sequence" action. The automation can go live only when that sequence is live.')]
+#[Description('Describe the building blocks of an automation for the authenticated account: the trigger condition types, the action types, and the lists, tags, sequences, contact attributes and link names that a condition or action can reference by id or name. Use the result to assemble the "condition" and "actions" for create-automation and update-automation. A paused automation can use a draft sequence in an "add_sequence" action. The automation can go live only when that sequence is live.')]
 class ViewAutomationOptionsTool extends Tool
 {
     protected string $name = 'view-automation-options';
@@ -33,6 +34,7 @@ class ViewAutomationOptionsTool extends Tool
         'added_to_sequence' => 'A contact is added to the sequence. value = sequence id.',
         'sequence_finished' => 'A contact finishes the sequence. value = sequence id.',
         'attribute_changed' => 'A contact attribute changes. attribute = attribute name, operator = "changed_to" (value = the new value) or "changed" (no value).',
+        'link_clicked' => 'A contact clicks a named link in an email. value = link name. Name a link with the data-bm-link attribute on its <a> tag, for example <a href="https://example.com/sale" data-bm-link="black-friday">. Only emails sent after the link got its name carry the name.',
     ];
 
     /**
@@ -70,6 +72,7 @@ class ViewAutomationOptionsTool extends Tool
                     ->orderBy('name')
                     ->pluck('name')
                     ->all(),
+                'link_names' => LinkNameCatalog::names(),
             ],
         ]);
     }

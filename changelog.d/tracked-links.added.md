@@ -1,0 +1,3 @@
+- Link report: newsletters and sequence steps show the clicks of each link and the contacts who clicked it. Give a link a name in the Link name field of the editor or with the `data-bm-link` attribute. A named link keeps its clicks together when its URL changes.
+- A "Link clicked" trigger for simple and visual automations. It runs when a contact clicks a named link.
+- API: `GET /api/v1/newsletters/{newsletterId}/links`, `GET /api/v1/sequences/{sequenceId}/steps/{sequenceStepId}/links` and their `/links/contacts` endpoints. MCP: `link-clicks-tool`, and the `link_clicked` condition in the automation tools.

@@ -9,6 +9,7 @@ use App\Models\Newsletter;
 use App\Models\SequenceStep;
 use App\Models\TestMail;
 use App\Services\SequenceStepScheduler;
+use App\Support\NamedLink;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -62,6 +63,8 @@ class NewsletterMail extends Mailable
         if ($utmParams !== []) {
             $htmlContent = self::addUtmParametersToHtml($htmlContent, $utmParams);
         }
+
+        $htmlContent = NamedLink::toSesTags($htmlContent);
 
         return new Content(
             html: 'emails.newsletter',

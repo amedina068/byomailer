@@ -102,17 +102,17 @@ class ConventionsTest extends TestCase
      */
     private const LONG_VUE_FILES = [
         'resources/js/components/newsletters/FiltersForm.vue' => 673,
-        'resources/js/components/TiptapEditor.vue' => 783,
+        'resources/js/components/TiptapEditor.vue' => 772,
         'resources/js/pages/contacts/Show.vue' => 1453,
         'resources/js/pages/Dashboard.vue' => 1035,
         'resources/js/pages/documentation/api/Newsletters.vue' => 1129,
         'resources/js/pages/documentation/Api.vue' => 737,
         'resources/js/pages/documentation/guides/McpServer.vue' => 1266,
         'resources/js/pages/newsletters/Create.vue' => 1526,
-        'resources/js/pages/newsletters/Show.vue' => 983,
+        'resources/js/pages/newsletters/Show.vue' => 603,
         'resources/js/pages/sequences/Show.vue' => 886,
         'resources/js/pages/sequences/steps/Show.vue' => 785,
-        'resources/js/pages/visual-automations/Show.vue' => 871,
+        'resources/js/pages/visual-automations/Show.vue' => 865,
     ];
 
     /**

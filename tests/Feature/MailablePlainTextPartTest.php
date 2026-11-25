@@ -60,6 +60,20 @@ class MailablePlainTextPartTest extends TestCase
         $this->assertStringContainsString('<p>Acme Inc, 1 Main St</p>', $html);
     }
 
+    public function test_a_named_link_reaches_ses_as_a_link_tag(): void
+    {
+        $contactMail = $this->makeContactMail(
+            '<p><a href="https://example.com/sale" data-bm-link="Black Friday">Buy</a></p>',
+            textContent: null,
+        );
+
+        $html = (string) (new NewsletterMail($contactMail))->content()->with['htmlContent'];
+
+        $this->assertStringContainsString('ses:tags="bm_link:black-friday;"', $html);
+        $this->assertStringContainsString('utm_campaign=newsletter', $html);
+        $this->assertStringNotContainsString('data-bm-link', $html);
+    }
+
     public function test_a_block_in_the_subject_resolves_to_text(): void
     {
         $contactMail = $this->makeContactMail('<p>Hello</p>', textContent: null);

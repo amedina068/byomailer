@@ -17,6 +17,8 @@ class AutomationDefinition
 {
     public const ATTRIBUTE_CHANGED = 'attribute_changed';
 
+    public const LINK_CLICKED = 'link_clicked';
+
     public const CONDITION_TYPES = [
         'contact_added_to_list',
         'removed_from_list',
@@ -25,6 +27,7 @@ class AutomationDefinition
         'added_to_sequence',
         'sequence_finished',
         self::ATTRIBUTE_CHANGED,
+        self::LINK_CLICKED,
     ];
 
     public const ACTION_TYPES = ['add_tag', 'add_list', 'remove_tag', 'remove_list', 'add_sequence'];
@@ -62,6 +65,7 @@ class AutomationDefinition
             'actions.*.type' => ['required', Rule::in(self::ACTION_TYPES)],
             'actions.*.value' => ['nullable', 'integer'],
             ...self::attributeConditionRules($user, $input),
+            ...self::linkConditionRules($input),
         ];
     }
 
@@ -79,6 +83,11 @@ class AutomationDefinition
 
         if (data_get($input, 'condition.type') === self::ATTRIBUTE_CHANGED) {
             $messages['condition.value.required'] = 'Enter the value that the attribute changes to.';
+        }
+
+        if (data_get($input, 'condition.type') === self::LINK_CLICKED) {
+            $messages['condition.value.required'] = 'Enter the name of the link.';
+            $messages['condition.value.max'] = 'The link name must be '.NamedLink::MAX_LENGTH.' characters or fewer.';
         }
 
         return $messages;
@@ -109,6 +118,10 @@ class AutomationDefinition
 
         if (in_array($conditionType, ['added_to_sequence', 'sequence_finished'], true) && ! self::valueExists('sequences', $conditionValue, $user->client_id)) {
             $validator->errors()->add('condition.value', 'Selected sequence is invalid.');
+        }
+
+        if ($conditionType === self::LINK_CLICKED && is_string($conditionValue) && NamedLink::normalize($conditionValue) === null) {
+            $validator->errors()->add('condition.value', 'The link name must contain a letter or a digit.');
         }
 
         $actions = $input['actions'] ?? [];
@@ -145,23 +158,30 @@ class AutomationDefinition
      * Keep only the condition keys of its type, and store each list, tag and
      * sequence id as an integer. The dashboard form sends the ids as strings.
      * The automation listeners compare the stored JSON value with integer ids.
+     * A link name is stored in the form that the click events carry, so
+     * "Black Friday" matches the link named "black-friday".
      *
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
      */
     public static function normalize(array $data): array
     {
-        $data['condition'] = $data['condition']['type'] === self::ATTRIBUTE_CHANGED
-            ? [
+        $data['condition'] = match ($data['condition']['type']) {
+            self::ATTRIBUTE_CHANGED => [
                 'type' => self::ATTRIBUTE_CHANGED,
                 'attribute' => $data['condition']['attribute'],
                 'operator' => $data['condition']['operator'],
                 'value' => $data['condition']['operator'] === 'changed_to' ? $data['condition']['value'] : null,
-            ]
-            : [
+            ],
+            self::LINK_CLICKED => [
+                'type' => self::LINK_CLICKED,
+                'value' => NamedLink::normalize($data['condition']['value']),
+            ],
+            default => [
                 'type' => $data['condition']['type'],
                 'value' => (int) $data['condition']['value'],
-            ];
+            ],
+        };
 
         $data['actions'] = array_map(fn (array $action): array => [
             'type' => $action['type'],
@@ -194,6 +214,23 @@ class AutomationDefinition
             ],
             'condition.operator' => ['required', 'in:changed_to,changed'],
             'condition.value' => $valueRules,
+        ];
+    }
+
+    /**
+     * A link name is free text, not an id.
+     *
+     * @param  array<string, mixed>  $input
+     * @return array<string, array<mixed>>
+     */
+    private static function linkConditionRules(array $input): array
+    {
+        if (data_get($input, 'condition.type') !== self::LINK_CLICKED) {
+            return [];
+        }
+
+        return [
+            'condition.value' => ['required', 'string', 'max:'.NamedLink::MAX_LENGTH],
         ];
     }
 

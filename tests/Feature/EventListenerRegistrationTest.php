@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Events\ContactAttributesChanged;
+use App\Events\ContactClickedLink;
 use App\Events\ContactListsSynced;
 use App\Events\ContactResubscribed;
 use App\Events\ContactSequenceFinished;
@@ -48,6 +49,7 @@ class EventListenerRegistrationTest extends TestCase
             'sequences synced' => [ContactSequencesSynced::class, 3],
             'sequence finished' => [ContactSequenceFinished::class, 4],
             'attributes changed' => [ContactAttributesChanged::class, 1],
+            'link clicked' => [ContactClickedLink::class, 2],
             'subscribed' => [ContactSubscribed::class, 1],
             'unsubscribed' => [ContactUnsubscribed::class, 1],
             'resubscribed' => [ContactResubscribed::class, 1],
