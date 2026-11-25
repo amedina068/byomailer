@@ -4,10 +4,6 @@ BYOMailer is an email marketing app that sends through your own Amazon SES accou
 
 BYOMailer is a Laravel 13 app with an Inertia and Vue 3 dashboard. You can run it with Docker on one server.
 
-![BYOMailer dashboard](docs/screenshots/dashboard.png)
-
-> The screenshots are not in the repository yet.
-
 ## Features
 
 - **Newsletters.** Write in a block editor, select the audience with filters or saved segments, then send now or schedule. Do A/B tests on the subject or the content.
