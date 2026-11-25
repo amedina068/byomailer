@@ -50,10 +50,11 @@ class SesConfigurationSetService
         string $name,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $client->createConfigurationSet([
                 'ConfigurationSetName' => $name,
@@ -81,10 +82,11 @@ class SesConfigurationSetService
         array $eventTypes,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $client->createConfigurationSetEventDestination([
                 'ConfigurationSetName' => $configSetName,
@@ -120,10 +122,11 @@ class SesConfigurationSetService
         array $eventTypes,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $client->updateConfigurationSetEventDestination([
                 'ConfigurationSetName' => $configSetName,
@@ -155,10 +158,11 @@ class SesConfigurationSetService
         string $name,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $client->getConfigurationSet([
                 'ConfigurationSetName' => $name,
@@ -212,10 +216,11 @@ class SesConfigurationSetService
         string $configSetName,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $response = $client->getConfigurationSetEventDestinations([
                 'ConfigurationSetName' => $configSetName,
@@ -254,10 +259,11 @@ class SesConfigurationSetService
         string $configSetName,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $response = $client->getConfigurationSetEventDestinations([
                 'ConfigurationSetName' => $configSetName,
@@ -302,10 +308,11 @@ class SesConfigurationSetService
         string $customDomain,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $client->putConfigurationSetTrackingOptions([
                 'ConfigurationSetName' => $configSetName,
@@ -334,10 +341,11 @@ class SesConfigurationSetService
         string $configSetName,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createV1Client($accessKey, $secretKey, $region);
+            $client = $this->createV1Client($accessKey, $secretKey, $region, $sessionToken);
 
             $client->deleteConfigurationSetTrackingOptions([
                 'ConfigurationSetName' => $configSetName,
@@ -361,10 +369,11 @@ class SesConfigurationSetService
         string $name,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $client->deleteConfigurationSet([
                 'ConfigurationSetName' => $name,
@@ -379,15 +388,16 @@ class SesConfigurationSetService
         }
     }
 
-    private function createClient(string $accessKey, string $secretKey, string $region): SesV2Client
+    private function createClient(string $accessKey, string $secretKey, string $region, ?string $sessionToken = null): SesV2Client
     {
         $config = [
             'version' => '2019-09-27',
             'region' => $region,
-            'credentials' => [
+            'credentials' => array_filter([
                 'key' => $accessKey,
                 'secret' => $secretKey,
-            ],
+                'token' => $sessionToken,
+            ]),
         ];
 
         if ($this->clientFactory) {
@@ -397,15 +407,16 @@ class SesConfigurationSetService
         return new SesV2Client($config);
     }
 
-    private function createV1Client(string $accessKey, string $secretKey, string $region): SesClient
+    private function createV1Client(string $accessKey, string $secretKey, string $region, ?string $sessionToken = null): SesClient
     {
         $config = [
             'version' => '2010-12-01',
             'region' => $region,
-            'credentials' => [
+            'credentials' => array_filter([
                 'key' => $accessKey,
                 'secret' => $secretKey,
-            ],
+                'token' => $sessionToken,
+            ]),
         ];
 
         if ($this->v1ClientFactory) {

@@ -437,4 +437,24 @@ class SesDomainIdentityServiceTest extends TestCase
         $this->assertSame('SUCCESS', $result['dkim_status']);
         $this->assertSame('SUCCESS', $result['mail_from_status']);
     }
+
+    public function test_a_session_token_signs_the_call_of_a_role(): void
+    {
+        $configs = [];
+        $mockClient = Mockery::mock(SesV2Client::class);
+        $mockClient->shouldReceive('getEmailIdentity')->twice()->andReturn(new Result(['VerificationStatus' => 'SUCCESS']));
+
+        $service = new SesDomainIdentityService;
+        $service->setClientFactory(function (array $config) use (&$configs, $mockClient) {
+            $configs[] = $config;
+
+            return $mockClient;
+        });
+
+        $service->getIdentityStatus('example.com', 'ASIAIOSFODNN7EXAMPLE', 'temporary-secret-EXAMPLE', 'us-east-1', 'temporary-token-EXAMPLE');
+        $service->getIdentityStatus('example.com', 'AKIAIOSFODNN7EXAMPLE', 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY', 'us-east-1');
+
+        $this->assertSame('temporary-token-EXAMPLE', $configs[0]['credentials']['token']);
+        $this->assertArrayNotHasKey('token', $configs[1]['credentials']);
+    }
 }

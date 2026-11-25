@@ -360,4 +360,24 @@ class SesConfigurationSetServiceTest extends TestCase
         $this->assertFalse($result['success']);
         $this->assertSame('Configuration set does not exist', $result['error']);
     }
+
+    public function test_a_session_token_signs_the_call_of_a_role(): void
+    {
+        $configs = [];
+        $mockClient = Mockery::mock(SesV2Client::class);
+        $mockClient->shouldReceive('getConfigurationSet')->twice()->andReturn(new Result([]));
+
+        $service = new SesConfigurationSetService;
+        $service->setClientFactory(function (array $config) use (&$configs, $mockClient) {
+            $configs[] = $config;
+
+            return $mockClient;
+        });
+
+        $service->getConfigurationSet('byomailer-1', 'ASIAIOSFODNN7EXAMPLE', 'temporary-secret-EXAMPLE', 'us-east-1', 'temporary-token-EXAMPLE');
+        $service->getConfigurationSet('byomailer-1', 'AKIAIOSFODNN7EXAMPLE', 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY', 'us-east-1');
+
+        $this->assertSame('temporary-token-EXAMPLE', $configs[0]['credentials']['token']);
+        $this->assertArrayNotHasKey('token', $configs[1]['credentials']);
+    }
 }

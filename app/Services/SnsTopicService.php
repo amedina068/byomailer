@@ -25,10 +25,11 @@ class SnsTopicService
         string $name,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
             $result = $client->createTopic(['Name' => $name]);
 
             return [
@@ -51,10 +52,11 @@ class SnsTopicService
         string $endpointUrl,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
             $protocol = $this->protocolForEndpoint($endpointUrl);
 
             $result = $client->subscribe([
@@ -84,10 +86,11 @@ class SnsTopicService
         string $sqsQueueArn,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $result = $client->subscribe([
                 'TopicArn' => $topicArn,
@@ -115,10 +118,11 @@ class SnsTopicService
         string $subscriptionArn,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
             $client->unsubscribe(['SubscriptionArn' => $subscriptionArn]);
 
             return ['success' => true];
@@ -137,10 +141,11 @@ class SnsTopicService
         string $topicArn,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
             $client->deleteTopic(['TopicArn' => $topicArn]);
 
             return ['success' => true];
@@ -159,15 +164,16 @@ class SnsTopicService
         return $scheme === 'http' ? 'http' : 'https';
     }
 
-    private function createClient(string $accessKey, string $secretKey, string $region): SnsClient
+    private function createClient(string $accessKey, string $secretKey, string $region, ?string $sessionToken = null): SnsClient
     {
         $config = [
             'version' => '2010-03-31',
             'region' => $region,
-            'credentials' => [
+            'credentials' => array_filter([
                 'key' => $accessKey,
                 'secret' => $secretKey,
-            ],
+                'token' => $sessionToken,
+            ]),
         ];
 
         if ($this->clientFactory) {
