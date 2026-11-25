@@ -68,14 +68,7 @@ class MigrateSnsToSqsCommand extends Command
             try {
                 $aws = $sesCredentials->for($credential);
 
-                $subscribeResult = $snsTopicService->subscribeSqsEndpoint(
-                    $credential->sns_topic_arn,
-                    $sqsQueueArn,
-                    $aws->getAccessKeyId(),
-                    $aws->getSecretKey(),
-                    $credential->region,
-                    $aws->getSecurityToken()
-                );
+                $subscribeResult = $snsTopicService->subscribeSqsEndpoint($credential->sns_topic_arn, $sqsQueueArn, $aws->getAccessKeyId(), $aws->getSecretKey(), $credential->region, $aws->getSecurityToken());
 
                 if (! $subscribeResult['success']) {
                     $this->error("  {$label}: Failed to subscribe SQS — {$subscribeResult['error']}");
@@ -92,13 +85,7 @@ class MigrateSnsToSqsCommand extends Command
                 ])->save();
 
                 if ($oldSubscriptionArn && ! str_starts_with($oldSubscriptionArn, 'pending')) {
-                    $unsubResult = $snsTopicService->unsubscribe(
-                        $oldSubscriptionArn,
-                        $aws->getAccessKeyId(),
-                        $aws->getSecretKey(),
-                        $credential->region,
-                        $aws->getSecurityToken()
-                    );
+                    $unsubResult = $snsTopicService->unsubscribe($oldSubscriptionArn, $aws->getAccessKeyId(), $aws->getSecretKey(), $credential->region, $aws->getSecurityToken());
 
                     if (! $unsubResult['success']) {
                         $this->warn("  {$label}: SQS subscribed but failed to unsubscribe old HTTPS — {$unsubResult['error']}");

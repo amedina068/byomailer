@@ -7,6 +7,7 @@ use App\Exceptions\SesSetupException;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ValidateAwsCredentialsRequest;
 use App\Services\AwsCredentialValidator;
+use App\Support\AwsRoleSetup;
 use Aws\Credentials\Credentials;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,6 +28,7 @@ class AwsOnboardingController extends Controller
 
         return Inertia::render('onboarding/AwsCredentials', [
             'hasCredentials' => $hasCredentials,
+            'roleConnection' => AwsRoleSetup::for($user->client),
         ]);
     }
 

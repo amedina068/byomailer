@@ -46,6 +46,7 @@ use App\Http\Controllers\NewsletterTestMailController;
 use App\Http\Controllers\NewsletterUnscheduleController;
 use App\Http\Controllers\NewsletterVariablesController;
 use App\Http\Controllers\Onboarding\AwsOnboardingController;
+use App\Http\Controllers\Onboarding\ConnectAwsRoleController;
 use App\Http\Controllers\OneClickUnsubscribeController;
 use App\Http\Controllers\OptInController;
 use App\Http\Controllers\PreferenceCenterController;
@@ -371,6 +372,7 @@ Route::middleware(['auth', EnsureUserIsActive::class, 'verified', EnforceAccessL
     Route::prefix('onboarding')->name('onboarding.')->group(function () {
         Route::get('aws', [AwsOnboardingController::class, 'show'])->name('aws');
         Route::post('aws/credentials', [AwsOnboardingController::class, 'storeCredentials'])->name('aws.credentials');
+        Route::post('aws/role', ConnectAwsRoleController::class)->middleware('throttle:6,1')->name('aws.role');
     });
 });
 

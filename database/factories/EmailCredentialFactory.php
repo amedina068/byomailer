@@ -92,10 +92,10 @@ class EmailCredentialFactory extends Factory
      */
     public function role(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn () => [
             'access_key' => null,
             'secret_key' => null,
-            'role_arn' => 'arn:aws:iam::'.$attributes['aws_account_id'].':role/byomailer-ses',
+            'role_arn' => fn (array $attributes) => 'arn:aws:iam::'.$attributes['aws_account_id'].':role/byomailer-ses',
             'tenant_name' => 'byomailer',
         ]);
     }

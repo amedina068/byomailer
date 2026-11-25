@@ -58,13 +58,7 @@ class EmailIdentityProvisioningService
         $awsStatusForApply = null;
 
         if ($isExistingAws) {
-            $awsStatusForApply = $this->domainIdentityService->getIdentityStatus(
-                $originalDomain,
-                $aws->getAccessKeyId(),
-                $aws->getSecretKey(),
-                $credential->region,
-                $aws->getSecurityToken()
-            );
+            $awsStatusForApply = $this->domainIdentityService->getIdentityStatus($originalDomain, $aws->getAccessKeyId(), $aws->getSecretKey(), $credential->region, $aws->getSecurityToken());
 
             if (! ($awsStatusForApply['success'] ?? false)) {
                 throw EmailIdentityProvisioningException::awsFailed(
@@ -81,13 +75,7 @@ class EmailIdentityProvisioningService
                 $this->setMailFromDomain($originalDomain, $mailFromSubdomain, $credential);
             }
         } else {
-            $createResult = $this->domainIdentityService->createDomainIdentity(
-                $originalDomain,
-                $aws->getAccessKeyId(),
-                $aws->getSecretKey(),
-                $credential->region,
-                $aws->getSecurityToken()
-            );
+            $createResult = $this->domainIdentityService->createDomainIdentity($originalDomain, $aws->getAccessKeyId(), $aws->getSecretKey(), $credential->region, $aws->getSecurityToken());
 
             if (! $createResult['success']) {
                 throw EmailIdentityProvisioningException::awsFailed($createResult['error'] ?? 'Failed to create domain identity.');
