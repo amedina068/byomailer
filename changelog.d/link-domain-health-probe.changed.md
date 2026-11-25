@@ -1,0 +1,1 @@
+- A custom link domain becomes active only when a request through the domain reaches BYOMailer. Before, an active Cloudflare certificate was enough. An hourly check reports each active link domain that stops reaching the app.
