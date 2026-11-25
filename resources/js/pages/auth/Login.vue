@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { Form, Head } from '@inertiajs/vue3';
+import { PhGoogleLogo } from '@phosphor-icons/vue';
 
 import InputError from '@/components/InputError.vue';
 import TextLink from '@/components/TextLink.vue';
@@ -10,6 +11,7 @@ import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
 import AuthBase from '@/layouts/AuthLayout.vue';
 import { register } from '@/routes';
+import { redirect as googleRedirect } from '@/routes/google';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
@@ -17,6 +19,8 @@ defineProps<{
     status?: string;
     canResetPassword: boolean;
     canRegister?: boolean;
+    canUseGoogle?: boolean;
+    googleError?: string;
 }>();
 </script>
 
@@ -34,6 +38,8 @@ defineProps<{
             >
                 {{ status }}
             </div>
+
+            <InputError :message="googleError" class="mb-4 text-center" />
 
             <Form
                 :action="store().url"
@@ -105,6 +111,22 @@ defineProps<{
                     >
                         <Spinner v-if="processing" />
                         Log in
+                    </Button>
+
+                    <Button
+                        v-if="canUseGoogle"
+                        as-child
+                        variant="outline"
+                        class="w-full"
+                    >
+                        <a
+                            :href="googleRedirect().url"
+                            :tabindex="5"
+                            data-test="google-login-button"
+                        >
+                            <PhGoogleLogo :size="16" />
+                            Log in with Google
+                        </a>
                     </Button>
                 </div>
 
