@@ -14,6 +14,7 @@ use App\Models\SequenceStep;
 use App\Models\User;
 use App\Services\SesBulkEmailService;
 use App\Services\SesClientManager;
+use App\Services\SesCredentials;
 use App\Services\SesTenantService;
 use App\Support\ContentSlot;
 use Aws\Result;
@@ -296,7 +297,7 @@ class MessageTemplateResyncTest extends TestCase
         });
         $clients = Mockery::mock(SesClientManager::class);
         $clients->shouldReceive('v2ClientFor')->with($user)->andReturn($ses);
-        $service = new SesBulkEmailService($clients, Mockery::mock(SesTenantService::class));
+        $service = new SesBulkEmailService($clients, Mockery::mock(SesTenantService::class), app(SesCredentials::class));
 
         $service->createNewsletterTemplate($newsletter, $user);
 

@@ -2,6 +2,9 @@
 
 namespace App\Exceptions;
 
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use RuntimeException;
 
 /**
@@ -10,5 +13,12 @@ use RuntimeException;
  */
 class AwsCredentialsException extends RuntimeException
 {
-    //
+    public function render(Request $request): JsonResponse|RedirectResponse
+    {
+        if ($request->expectsJson()) {
+            return response()->json(['success' => false, 'error' => $this->getMessage()], 422);
+        }
+
+        return back()->with('error', $this->getMessage());
+    }
 }

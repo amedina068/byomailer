@@ -4,9 +4,11 @@ namespace App\Console\Commands;
 
 use App\Enums\DnsRecordPurpose;
 use App\Enums\IdentityStatus;
+use App\Exceptions\AwsCredentialsException;
 use App\Models\EmailIdentity;
 use App\Services\DmarcVerifier;
 use App\Services\EmailIdentityStatusSyncService;
+use App\Services\SesCredentials;
 use App\Services\SesDomainIdentityService;
 use App\Support\Tenant;
 use Illuminate\Console\Command;
@@ -32,6 +34,7 @@ class RefreshEmailIdentityDnsStatus extends Command
         private SesDomainIdentityService $domainIdentityService,
         private DmarcVerifier $dmarcVerifier,
         private EmailIdentityStatusSyncService $statusSyncService,
+        private SesCredentials $sesCredentials,
     ) {
         parent::__construct();
     }
@@ -99,11 +102,20 @@ class RefreshEmailIdentityDnsStatus extends Command
             return;
         }
 
+        try {
+            $aws = $this->sesCredentials->for($credential);
+        } catch (AwsCredentialsException $exception) {
+            $this->error("{$identity->email}: {$exception->getMessage()}");
+
+            return;
+        }
+
         $result = $this->domainIdentityService->getIdentityStatus(
             $identity->domain,
-            $credential->access_key,
-            $credential->secret_key,
-            $credential->region
+            $aws->getAccessKeyId(),
+            $aws->getSecretKey(),
+            $credential->region,
+            $aws->getSecurityToken()
         );
 
         if (! $result['success']) {

@@ -50,7 +50,8 @@ class MigrateSnsToSqsCommandTest extends TestCase
                 'arn:aws:sqs:us-east-1:999999999999:ses-events',
                 Mockery::type('string'),
                 Mockery::type('string'),
-                Mockery::type('string')
+                Mockery::type('string'),
+                null
             )
             ->andReturn([
                 'success' => true,
@@ -63,7 +64,8 @@ class MigrateSnsToSqsCommandTest extends TestCase
                 'arn:aws:sns:us-east-1:123456789012:mailautomation:old-sub',
                 Mockery::type('string'),
                 Mockery::type('string'),
-                Mockery::type('string')
+                Mockery::type('string'),
+                null
             )
             ->andReturn(['success' => true]);
 

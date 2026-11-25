@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\UpdateCustomTrackingDomainRequest;
 use App\Models\EmailIdentity;
 use App\Services\SesConfigurationSetService;
+use App\Services\SesCredentials;
 use App\Services\TrackingDomainVerifier;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
@@ -15,7 +16,8 @@ class CustomTrackingDomainController extends Controller
     public function update(
         UpdateCustomTrackingDomainRequest $request,
         EmailIdentity $emailIdentity,
-        SesConfigurationSetService $configService
+        SesConfigurationSetService $configService,
+        SesCredentials $sesCredentials,
     ): JsonResponse {
         $user = $request->user();
         $credential = $user->sesCredential;
@@ -28,6 +30,7 @@ class CustomTrackingDomainController extends Controller
             return response()->json(['error' => 'No configuration set found for this identity.'], 404);
         }
 
+        $aws = $sesCredentials->for($credential);
         $cacheKey = "tracking-domain-check:{$emailIdentity->id}";
         $previousDomain = $emailIdentity->custom_tracking_domain;
 
@@ -37,9 +40,10 @@ class CustomTrackingDomainController extends Controller
             if ($emailIdentity->custom_tracking_domain_verified_at && $previousDomain !== $domain) {
                 $configService->removeTrackingOptions(
                     $emailIdentity->configuration_set_name,
-                    $credential->access_key,
-                    $credential->secret_key,
-                    $credential->region
+                    $aws->getAccessKeyId(),
+                    $aws->getSecretKey(),
+                    $credential->region,
+                    $aws->getSecurityToken()
                 );
             }
 
@@ -63,9 +67,10 @@ class CustomTrackingDomainController extends Controller
         if ($emailIdentity->custom_tracking_domain_verified_at) {
             $result = $configService->removeTrackingOptions(
                 $emailIdentity->configuration_set_name,
-                $credential->access_key,
-                $credential->secret_key,
-                $credential->region
+                $aws->getAccessKeyId(),
+                $aws->getSecretKey(),
+                $credential->region,
+                $aws->getSecurityToken()
             );
 
             if (! $result['success']) {

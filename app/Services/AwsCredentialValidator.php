@@ -49,10 +49,10 @@ class AwsCredentialValidator
     /**
      * Fetch the AWS account ID for the given credentials.
      */
-    public function fetchAccountId(string $accessKey, string $secretKey, string $region): ?string
+    public function fetchAccountId(string $accessKey, string $secretKey, string $region, ?string $sessionToken = null): ?string
     {
         try {
-            $stsClient = $this->createStsClient($accessKey, $secretKey, $region);
+            $stsClient = $this->createStsClient($accessKey, $secretKey, $region, $sessionToken);
             $result = $stsClient->getCallerIdentity();
 
             return $result['Account'] ?? null;
@@ -64,10 +64,10 @@ class AwsCredentialValidator
     /**
      * @return array{valid: bool, account_id?: string, error?: string}
      */
-    public function validate(string $accessKey, string $secretKey, string $region): array
+    public function validate(string $accessKey, string $secretKey, string $region, ?string $sessionToken = null): array
     {
         try {
-            $stsClient = $this->createStsClient($accessKey, $secretKey, $region);
+            $stsClient = $this->createStsClient($accessKey, $secretKey, $region, $sessionToken);
             $result = $stsClient->getCallerIdentity();
             $accountId = $result['Account'];
         } catch (AwsException $e) {
@@ -78,7 +78,7 @@ class AwsCredentialValidator
         }
 
         try {
-            $sesV2Client = $this->createSesV2Client($accessKey, $secretKey, $region);
+            $sesV2Client = $this->createSesV2Client($accessKey, $secretKey, $region, $sessionToken);
             $sesV2Client->listConfigurationSets(['PageSize' => 1]);
         } catch (AwsException $e) {
             return [
@@ -92,7 +92,7 @@ class AwsCredentialValidator
         }
 
         try {
-            $sesV1Client = $this->createSesV1Client($accessKey, $secretKey, $region);
+            $sesV1Client = $this->createSesV1Client($accessKey, $secretKey, $region, $sessionToken);
             $sesV1Client->listTemplates(['MaxItems' => 1]);
         } catch (AwsException $e) {
             return [
@@ -108,15 +108,16 @@ class AwsCredentialValidator
         ];
     }
 
-    private function createStsClient(string $accessKey, string $secretKey, string $region): StsClient
+    private function createStsClient(string $accessKey, string $secretKey, string $region, ?string $sessionToken = null): StsClient
     {
         $config = [
             'version' => '2011-06-15',
             'region' => $region,
-            'credentials' => [
+            'credentials' => array_filter([
                 'key' => $accessKey,
                 'secret' => $secretKey,
-            ],
+                'token' => $sessionToken,
+            ]),
         ];
 
         if ($this->stsClientFactory) {
@@ -126,15 +127,16 @@ class AwsCredentialValidator
         return new StsClient($config);
     }
 
-    private function createSesV2Client(string $accessKey, string $secretKey, string $region): SesV2Client
+    private function createSesV2Client(string $accessKey, string $secretKey, string $region, ?string $sessionToken = null): SesV2Client
     {
         $config = [
             'version' => '2019-09-27',
             'region' => $region,
-            'credentials' => [
+            'credentials' => array_filter([
                 'key' => $accessKey,
                 'secret' => $secretKey,
-            ],
+                'token' => $sessionToken,
+            ]),
         ];
 
         if ($this->sesV2ClientFactory) {
@@ -144,15 +146,16 @@ class AwsCredentialValidator
         return new SesV2Client($config);
     }
 
-    private function createSesV1Client(string $accessKey, string $secretKey, string $region): SesClient
+    private function createSesV1Client(string $accessKey, string $secretKey, string $region, ?string $sessionToken = null): SesClient
     {
         $config = [
             'version' => '2010-12-01',
             'region' => $region,
-            'credentials' => [
+            'credentials' => array_filter([
                 'key' => $accessKey,
                 'secret' => $secretKey,
-            ],
+                'token' => $sessionToken,
+            ]),
         ];
 
         if ($this->sesV1ClientFactory) {

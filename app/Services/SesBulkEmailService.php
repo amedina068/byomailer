@@ -24,6 +24,7 @@ class SesBulkEmailService
     public function __construct(
         private SesClientManager $clients,
         private SesTenantService $tenantService,
+        private SesCredentials $credentials,
     ) {}
 
     public function createNewsletterTemplate(Newsletter $newsletter, User $user, ?Message $messageOverride = null): string
@@ -70,13 +71,15 @@ class SesBulkEmailService
 
         if ($credential?->tenant_name && $credential->aws_account_id) {
             $templateArn = SesTenantService::buildTemplateArn($credential->region, $credential->aws_account_id, $templateName);
+            $aws = $this->credentials->for($credential);
 
             $this->tenantService->associateResource(
                 $credential->tenant_name,
                 $templateArn,
-                $credential->access_key,
-                $credential->secret_key,
+                $aws->getAccessKeyId(),
+                $aws->getSecretKey(),
                 $credential->region,
+                $aws->getSecurityToken(),
             );
         }
 
@@ -173,13 +176,15 @@ class SesBulkEmailService
 
         if ($credential?->tenant_name && $credential->aws_account_id) {
             $templateArn = SesTenantService::buildTemplateArn($credential->region, $credential->aws_account_id, $templateName);
+            $aws = $this->credentials->for($credential);
 
             $result = $this->tenantService->dissociateResource(
                 $credential->tenant_name,
                 $templateArn,
-                $credential->access_key,
-                $credential->secret_key,
+                $aws->getAccessKeyId(),
+                $aws->getSecretKey(),
                 $credential->region,
+                $aws->getSecurityToken(),
             );
 
             if (! $result['success']) {

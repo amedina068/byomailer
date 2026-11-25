@@ -9,6 +9,7 @@ use App\Models\Newsletter;
 use App\Models\User;
 use App\Services\SesBulkEmailService;
 use App\Services\SesClientManager;
+use App\Services\SesCredentials;
 use App\Services\SesTenantService;
 use Aws\Result;
 use Aws\SesV2\SesV2Client;
@@ -135,7 +136,7 @@ class SesBulkTemplateBlockTest extends TestCase
             ->with(Mockery::on(fn ($u) => $u->is($user)))
             ->andReturn($mockV2Client);
 
-        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class));
+        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class), app(SesCredentials::class));
         $service->createNewsletterTemplate($newsletter->fresh(), $user, $newsletter->message->fresh());
 
         $this->assertNotNull($captured);

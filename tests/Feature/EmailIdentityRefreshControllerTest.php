@@ -37,7 +37,7 @@ class EmailIdentityRefreshControllerTest extends TestCase
 
         $service = Mockery::mock(SesDomainIdentityService::class);
         $service->shouldReceive('getIdentityStatus')
-            ->with('example.com', 'key', 'secret', 'us-east-1')
+            ->with('example.com', 'key', 'secret', 'us-east-1', null)
             ->once()
             ->andReturn([
                 'success' => true,

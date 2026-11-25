@@ -770,7 +770,7 @@ class IdentityWizardTest extends TestCase
         $service = Mockery::mock(SesDomainIdentityService::class);
         $service->shouldReceive('getIdentityStatus')
             ->once()
-            ->with('example.com', Mockery::any(), Mockery::any(), Mockery::any())
+            ->with('example.com', Mockery::any(), Mockery::any(), Mockery::any(), null)
             ->andReturn([
                 'success' => true,
                 'status' => 'verified',
@@ -888,7 +888,7 @@ class IdentityWizardTest extends TestCase
         ]);
         $service->shouldReceive('setMailFromDomain')
             ->once()
-            ->with('new.example', 'bounces.new.example', Mockery::any(), Mockery::any(), Mockery::any())
+            ->with('new.example', 'bounces.new.example', Mockery::any(), Mockery::any(), Mockery::any(), null)
             ->andReturn(['success' => true]);
         $service->shouldReceive('getDkimRecords')->once()->andReturn([
             ['type' => 'CNAME', 'name' => 't1._domainkey.new.example', 'value' => 't1.dkim.amazonses.com'],

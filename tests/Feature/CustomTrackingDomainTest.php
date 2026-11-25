@@ -8,6 +8,7 @@ use App\Models\EmailCredential;
 use App\Models\EmailIdentity;
 use App\Models\User;
 use App\Services\SesConfigurationSetService;
+use App\Services\SesCredentials;
 use App\Services\TrackingDomainVerifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Client\ConnectionException;
@@ -277,7 +278,7 @@ class CustomTrackingDomainTest extends TestCase
             ->andReturn(['success' => true]);
         $this->app->instance(SesConfigurationSetService::class, $mockService);
 
-        $verifier = new TrackingDomainVerifier($mockService);
+        $verifier = new TrackingDomainVerifier($mockService, app(SesCredentials::class));
         $verifier->setDnsResolver(fn () => [
             ['ip' => '203.0.113.10'],
         ]);
@@ -312,7 +313,7 @@ class CustomTrackingDomainTest extends TestCase
         $mockService->shouldNotReceive('putTrackingOptions');
         $this->app->instance(SesConfigurationSetService::class, $mockService);
 
-        $verifier = new TrackingDomainVerifier($mockService);
+        $verifier = new TrackingDomainVerifier($mockService, app(SesCredentials::class));
         $verifier->setDnsResolver(fn () => [
             ['ip' => '203.0.113.10'],
         ]);
@@ -351,7 +352,7 @@ class CustomTrackingDomainTest extends TestCase
         $mockService->shouldNotReceive('putTrackingOptions');
         $this->app->instance(SesConfigurationSetService::class, $mockService);
 
-        $verifier = new TrackingDomainVerifier($mockService);
+        $verifier = new TrackingDomainVerifier($mockService, app(SesCredentials::class));
         $verifier->setDnsResolver(fn () => [
             ['ip' => '203.0.113.10'],
         ]);
@@ -388,7 +389,7 @@ class CustomTrackingDomainTest extends TestCase
             ->andReturn(['success' => false, 'error' => 'Access denied']);
         $this->app->instance(SesConfigurationSetService::class, $mockService);
 
-        $verifier = new TrackingDomainVerifier($mockService);
+        $verifier = new TrackingDomainVerifier($mockService, app(SesCredentials::class));
         $verifier->setDnsResolver(fn () => [
             ['ip' => '203.0.113.10'],
         ]);
@@ -684,7 +685,7 @@ class CustomTrackingDomainTest extends TestCase
         $mockService->shouldReceive('putTrackingOptions')->once()->andReturn(['success' => true]);
         $this->app->instance(SesConfigurationSetService::class, $mockService);
 
-        $verifier = new TrackingDomainVerifier($mockService);
+        $verifier = new TrackingDomainVerifier($mockService, app(SesCredentials::class));
         $verifier->setDnsResolver(fn () => [['ip' => '203.0.113.10']]);
         $this->app->instance(TrackingDomainVerifier::class, $verifier);
 

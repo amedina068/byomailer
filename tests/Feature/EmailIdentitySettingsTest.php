@@ -618,6 +618,7 @@ class EmailIdentitySettingsTest extends TestCase
                 Mockery::type('string'),
                 'test-access-key',
                 'test-secret-key',
+                null,
             )
             ->once()
             ->andReturn(['success' => true]);

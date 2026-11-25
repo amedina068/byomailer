@@ -41,7 +41,7 @@ class AppServiceProvider extends ServiceProvider
         if (class_exists(SesClient::class)) {
             $this->app->scoped(SesCredentials::class, fn ($app) => new SesCredentials($app['config']));
             $this->app->scoped(SesClientManager::class, fn ($app) => new SesClientManager($app['config'], $app->make(SesCredentials::class)));
-            $this->app->scoped(SesBulkEmailService::class, fn ($app) => new SesBulkEmailService($app->make(SesClientManager::class), $app->make(SesTenantService::class)));
+            $this->app->scoped(SesBulkEmailService::class, fn ($app) => new SesBulkEmailService($app->make(SesClientManager::class), $app->make(SesTenantService::class), $app->make(SesCredentials::class)));
         }
 
         $this->app->singleton(RegisterResponseContract::class, RegisterResponse::class);

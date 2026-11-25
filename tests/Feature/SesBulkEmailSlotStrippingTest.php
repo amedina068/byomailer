@@ -6,6 +6,7 @@ use App\Models\EmailIdentity;
 use App\Models\User;
 use App\Services\SesBulkEmailService;
 use App\Services\SesClientManager;
+use App\Services\SesCredentials;
 use App\Services\SesTenantService;
 use Aws\SesV2\SesV2Client;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -59,7 +60,7 @@ class SesBulkEmailSlotStrippingTest extends TestCase
 
         $tenant = Mockery::mock(SesTenantService::class);
 
-        $service = new SesBulkEmailService($manager, $tenant);
+        $service = new SesBulkEmailService($manager, $tenant, app(SesCredentials::class));
         $service->createNewsletterTemplate($newsletter->fresh('message'), $user);
 
         $this->assertNotNull($capturedHtml);
