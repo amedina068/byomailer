@@ -14,7 +14,8 @@ use Keepsuit\Liquid\Nodes\VariableLookup;
  *
  * The HTML environment adds `bm_html`, the text environment adds `bm_text`.
  * The query string separator that `Liquid` puts after a link variable is a
- * fixed `?` or `&`, so it prints without escaping, the same as before Liquid.
+ * fixed `?` or `&`. It gets `bm_separator`, so it prints without escaping,
+ * the same as before Liquid.
  */
 class EscapeOutput implements NodeVisitor
 {
@@ -36,7 +37,11 @@ class EscapeOutput implements NodeVisitor
 
     private function wrap(Variable $variable): Variable
     {
-        $filter = $this->html && ! $this->isSeparator($variable) ? 'bm_html' : 'bm_text';
+        $filter = match (true) {
+            ! $this->html => 'bm_text',
+            $this->isSeparator($variable) => 'bm_separator',
+            default => 'bm_html',
+        };
 
         return new Variable($variable->name, [...$variable->filters, [$filter, [], []]]);
     }

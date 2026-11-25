@@ -81,6 +81,13 @@ class LiquidTest extends TestCase
         $this->assertSame('https://example.com?a=1', $html);
     }
 
+    public function test_an_assigned_variable_with_the_separator_suffix_is_not_printed_raw(): void
+    {
+        $html = Liquid::render('{% assign x__qs = name %}[{{ x__qs }}]', ['name' => '<b>']);
+
+        $this->assertSame('[]', $html);
+    }
+
     public function test_entities_from_the_html_editor_are_decoded_inside_liquid_code(): void
     {
         $this->assertSame('<p>many</p>', Liquid::render('<p>{% if count &gt; 1 %}many{% endif %}</p>', ['count' => 5]));

@@ -17,6 +17,16 @@ class OutputFilters extends FiltersProvider
         return is_array($value) ? json_encode($value) : $value;
     }
 
+    /**
+     * The query string separator after a link variable prints without
+     * escaping. Any other value prints nothing, so an assigned variable with
+     * the same suffix cannot skip the escaping.
+     */
+    public function bmSeparator(mixed $value): string
+    {
+        return in_array($value, ['?', '&'], true) ? $value : '';
+    }
+
     public function bmHtml(mixed $value): string
     {
         $value = $this->bmText($value);
