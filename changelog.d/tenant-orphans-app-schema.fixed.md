@@ -1,0 +1,1 @@
+- On MySQL, `php artisan tenancy:orphans` checks only the tables of the app database. Before, it also listed the tables of each other database that the database user can read.

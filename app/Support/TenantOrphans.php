@@ -18,13 +18,16 @@ use Illuminate\Support\Facades\Schema;
 class TenantOrphans
 {
     /**
-     * Every table that has a client_id column.
+     * Every table of the app database that has a client_id column.
+     *
+     * With no schema, MySQL lists the tables of each database that the user
+     * can read. The current schema keeps the list to the app database.
      *
      * @return list<string>
      */
     public static function tables(): array
     {
-        return collect(Schema::getTableListing(schemaQualified: false))
+        return collect(Schema::getTableListing(Schema::getCurrentSchemaListing(), schemaQualified: false))
             ->filter(fn (string $table): bool => Schema::hasColumn($table, 'client_id'))
             ->sort()
             ->values()
