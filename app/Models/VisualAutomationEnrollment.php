@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\EnrollmentExitReason;
 use Database\Factories\VisualAutomationEnrollmentFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -26,6 +27,7 @@ class VisualAutomationEnrollment extends Model
         return [
             'enrolled_at' => 'datetime',
             'completed_at' => 'datetime',
+            'exit_reason' => EnrollmentExitReason::class,
         ];
     }
 

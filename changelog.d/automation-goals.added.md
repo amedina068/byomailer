@@ -1,0 +1,1 @@
+- Goals and exit conditions for visual automations. A contact that has a tag, is in a list, is subscribed to a topic, or is in a sequence can leave the automation, also from a delay step. The contacts page of the automation counts and filters the converted and the exited contacts.

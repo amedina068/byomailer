@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\EnrollmentExitReason;
 use App\Enums\SequenceStatus;
 use App\Models\Contact;
 use App\Models\ContactMail;
@@ -12,11 +13,25 @@ use App\Models\VisualAutomationContactStep;
 use App\Models\VisualAutomationEnrollment;
 use App\Support\Tenant;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 
 class VisualAutomationEngine
 {
+    /**
+     * The contact relation that each goal and exit condition type reads.
+     *
+     * @var array<string, string>
+     */
+    private const RULE_RELATIONS = [
+        'has_tag' => 'tags',
+        'in_list' => 'lists',
+        'subscribed_to_topic' => 'topics',
+        'in_sequence' => 'sequences',
+    ];
+
     /**
      * Enroll a contact into a visual automation and start at the trigger's first child node.
      */
@@ -65,26 +80,36 @@ class VisualAutomationEngine
     {
         $processed = 0;
 
-        foreach ($this->processableEnrollmentsQuery()->cursor() as $enrollment) {
-            $enrollment->load([
-                'visualAutomation' => fn ($q) => $q->withoutGlobalScopes(),
-                'contact' => fn ($q) => $q->withoutGlobalScopes(),
-            ]);
+        foreach ($this->findProcessableEnrollmentIds() as $enrollmentId) {
+            $enrollment = VisualAutomationEnrollment::query()
+                ->with([
+                    'visualAutomation' => fn (BelongsTo $query) => $query->withoutGlobalScopes(),
+                    'contact' => fn (BelongsTo $query) => $query->withoutGlobalScopes(),
+                ])
+                ->find($enrollmentId);
 
-            $processed += Tenant::run($enrollment->visualAutomation->client_id, fn (): int => $this->processEnrollment($enrollment));
+            if ($enrollment?->visualAutomation) {
+                $processed += Tenant::run($enrollment->visualAutomation->client_id, fn (): int => $this->processEnrollment($enrollment));
+            }
         }
 
         return $processed;
     }
 
     /**
-     * Get IDs of enrollments that have steps ready to process.
+     * Get the IDs of the enrollments to process: each enrollment with a step
+     * that is ready, and each enrollment that meets a goal or an exit
+     * condition. A contact in a long delay then leaves on the next tick.
      *
      * @return LazyCollection<int, int>
      */
     public function findProcessableEnrollmentIds(): LazyCollection
     {
-        return $this->processableEnrollmentsQuery()->pluck('id')->lazy();
+        return $this->processableEnrollmentsQuery()->pluck('id')
+            ->merge($this->enrollmentIdsThatMeetARule())
+            ->unique()
+            ->values()
+            ->lazy();
     }
 
     /**
@@ -111,6 +136,56 @@ class VisualAutomationEngine
     }
 
     /**
+     * The active enrollments of every live automation whose contact meets a
+     * goal or an exit condition. processEnrollment() checks each one again.
+     *
+     * @return Collection<int, int>
+     */
+    private function enrollmentIdsThatMeetARule(): Collection
+    {
+        return VisualAutomation::withoutGlobalScopes()
+            ->live()
+            ->get(['id', 'workflow'])
+            ->map(fn (VisualAutomation $automation): array => [$automation, $this->knownRules($automation)])
+            ->filter(fn (array $pair): bool => $pair[1] !== [])
+            ->flatMap(fn (array $pair): Collection => $pair[0]->enrollments()
+                ->where('status', 'active')
+                ->whereHas('contact', fn (Builder $contacts) => $this->whereMeetsAnyRule($contacts->withoutGlobalScopes(), $pair[1]))
+                ->pluck('id'));
+    }
+
+    /**
+     * The goals and the exit conditions of the automation that have a known type and a value.
+     *
+     * @return list<array{type: string, value: int}>
+     */
+    private function knownRules(VisualAutomation $automation): array
+    {
+        return array_values(array_filter(
+            [...$automation->goals(), ...$automation->exitConditions()],
+            fn (array $rule): bool => isset(self::RULE_RELATIONS[$rule['type'] ?? ''], $rule['value']),
+        ));
+    }
+
+    /**
+     * Match the contacts that meet one of the rules. It matches the same
+     * contacts as meetsAnyRule(), with no tenant.
+     *
+     * @param  Builder<Contact>  $contacts
+     * @param  list<array{type: string, value: int}>  $rules
+     */
+    private function whereMeetsAnyRule(Builder $contacts, array $rules): void
+    {
+        $contacts->where(function (Builder $contacts) use ($rules): void {
+            foreach ($rules as $rule) {
+                $contacts->orWhereHas(self::RULE_RELATIONS[$rule['type']], fn (Builder $query) => $query->withoutGlobalScopes()
+                    ->whereKey((int) $rule['value'])
+                    ->when($rule['type'] === 'subscribed_to_topic', fn (Builder $query) => $query->whereNull('contact_topic.unsubscribed_at')));
+            }
+        });
+    }
+
+    /**
      * Process steps for a single enrollment.
      */
     public function processEnrollment(VisualAutomationEnrollment $enrollment): int
@@ -123,13 +198,7 @@ class VisualAutomationEngine
         $automation = $enrollment->visualAutomation;
         $contact = $enrollment->contact;
 
-        if (! $automation || ! $contact) {
-            return 0;
-        }
-
-        if ($contact->unsubscribed_at) {
-            $this->cancelEnrollment($enrollment);
-
+        if (! $automation || ! $contact || $this->endWhenContactLeaves($enrollment, $automation, $contact)) {
             return 0;
         }
 
@@ -183,9 +252,7 @@ class VisualAutomationEngine
 
         foreach ($pendingSteps as $step) {
             $contact->refresh();
-            if ($contact->unsubscribed_at) {
-                $this->cancelEnrollment($enrollment);
-
+            if ($this->endWhenContactLeaves($enrollment, $automation, $contact)) {
                 return $processed;
             }
 
@@ -216,7 +283,7 @@ class VisualAutomationEngine
         $contact = $enrollment->contact;
 
         if ($contact->unsubscribed_at) {
-            $this->cancelEnrollment($enrollment);
+            $this->cancelEnrollment($enrollment, EnrollmentExitReason::Unsubscribed);
 
             return;
         }
@@ -279,7 +346,7 @@ class VisualAutomationEngine
                 'processed_at' => now(),
             ]);
 
-            $this->cancelEnrollment($enrollment);
+            $this->cancelEnrollment($enrollment, EnrollmentExitReason::Unsubscribed);
 
             return;
         }
@@ -543,9 +610,46 @@ class VisualAutomationEngine
     }
 
     /**
-     * Cancel all remaining steps and complete the enrollment.
+     * End the enrollment when the contact unsubscribed, met a goal, or met an
+     * exit condition. A goal wins over an exit condition.
      */
-    private function cancelEnrollment(VisualAutomationEnrollment $enrollment): void
+    private function endWhenContactLeaves(VisualAutomationEnrollment $enrollment, VisualAutomation $automation, Contact $contact): bool
+    {
+        $reason = match (true) {
+            $contact->unsubscribed_at !== null => EnrollmentExitReason::Unsubscribed,
+            $this->meetsAnyRule($contact, $automation->goals()) => EnrollmentExitReason::Goal,
+            $this->meetsAnyRule($contact, $automation->exitConditions()) => EnrollmentExitReason::ExitCondition,
+            default => null,
+        };
+
+        if ($reason !== null) {
+            $this->cancelEnrollment($enrollment, $reason);
+        }
+
+        return $reason !== null;
+    }
+
+    /**
+     * @param  list<array<string, mixed>>  $rules
+     */
+    private function meetsAnyRule(Contact $contact, array $rules): bool
+    {
+        foreach ($rules as $rule) {
+            $type = $rule['type'] ?? '';
+
+            if (isset(self::RULE_RELATIONS[$type]) && $this->evaluateCondition($contact, $type, $rule['value'] ?? null)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Cancel all remaining steps and complete the enrollment. The reason
+     * tells why the contact left before the end of the workflow.
+     */
+    private function cancelEnrollment(VisualAutomationEnrollment $enrollment, EnrollmentExitReason $reason): void
     {
         $enrollment->steps()
             ->whereIn('status', [
@@ -560,6 +664,7 @@ class VisualAutomationEngine
         $enrollment->update([
             'status' => 'completed',
             'completed_at' => now(),
+            'exit_reason' => $reason,
         ]);
     }
 }

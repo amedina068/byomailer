@@ -2,15 +2,15 @@
 import { Head } from '@inertiajs/vue3';
 import { computed } from 'vue';
 
-import PaginatedContactsTable from '@/components/contacts/PaginatedContactsTable.vue';
 import type {
     FilterOption,
     PaginatedContacts,
 } from '@/components/contacts/PaginatedContactsTable.vue';
+import PaginatedContactsTable from '@/components/contacts/PaginatedContactsTable.vue';
 import AppLayout from '@/layouts/AppLayout.vue';
 import {
-    index as automationsIndex,
     show as automationShow,
+    index as automationsIndex,
 } from '@/routes/visual-automations';
 import automationContacts from '@/routes/visual-automations/contacts';
 import type { BreadcrumbItem } from '@/types';
@@ -25,6 +25,8 @@ interface StatTotals {
     contacts: number;
     completed: number;
     active: number;
+    converted: number;
+    exited: number;
 }
 
 const props = defineProps<{
@@ -60,7 +62,18 @@ const filterOptions: FilterOption[] = [
     {
         key: 'completed',
         label: 'Completed',
-        description: 'Contacts who finished all steps.',
+        description:
+            'Contacts who left the automation: at the end, at a goal, or at an exit condition.',
+    },
+    {
+        key: 'converted',
+        label: 'Converted',
+        description: 'Contacts who met a goal.',
+    },
+    {
+        key: 'exited',
+        label: 'Exited',
+        description: 'Contacts who met an exit condition.',
     },
 ];
 
@@ -92,9 +105,23 @@ const statCards = computed(() => [
     {
         key: 'completed',
         label: 'Completed',
-        description: 'Finished all steps',
+        description: 'Left the automation',
         value: props.stats.completed,
         href: filterLink('completed'),
+    },
+    {
+        key: 'converted',
+        label: 'Converted',
+        description: 'Met a goal',
+        value: props.stats.converted,
+        href: filterLink('converted'),
+    },
+    {
+        key: 'exited',
+        label: 'Exited',
+        description: 'Met an exit condition',
+        value: props.stats.exited,
+        href: filterLink('exited'),
     },
 ]);
 </script>

@@ -17,9 +17,9 @@ use Illuminate\Support\Collection;
 /**
  * Finds the items that select contacts by a list or a topic: the filters of
  * newsletters, sequences, sequence steps and segments, and the triggers,
- * conditions and actions of automations. When the list or the topic goes
- * away, these items select a different audience or fail. Sent newsletters
- * do not count.
+ * conditions and actions of automations, and the goals and exit conditions
+ * of visual automations. When the list or the topic goes away, these
+ * items select a different audience or fail. Sent newsletters do not count.
  *
  * @phpstan-type UsageItem array{id: int, name: string}
  * @phpstan-type Usage array{newsletters: list<UsageItem>, sequences: list<UsageItem>, segments: list<UsageItem>, automations: list<UsageItem>, visual_automations: list<UsageItem>}
@@ -136,10 +136,11 @@ class AudienceUsage
         $visualAutomations = VisualAutomation::query()
             ->orderBy('id')
             ->get(['id', 'name', 'workflow'])
-            ->filter(fn (VisualAutomation $automation): bool => self::stepsUse(
-                Arr::pluck((array) data_get($automation->workflow, 'nodes', []), 'data'),
-                $idsByCategory,
-            ))
+            ->filter(fn (VisualAutomation $automation): bool => self::stepsUse([
+                ...Arr::pluck((array) data_get($automation->workflow, 'nodes', []), 'data'),
+                ...$automation->goals(),
+                ...$automation->exitConditions(),
+            ], $idsByCategory))
             ->map(fn (VisualAutomation $automation): array => ['id' => $automation->id, 'name' => (string) $automation->name]);
 
         return [
@@ -175,8 +176,9 @@ class AudienceUsage
 
     /**
      * Whether one of the automation steps keeps one of the ids. A step is
-     * the condition or an action of an automation, or the data of a node of
-     * a visual automation. Each step has a type and a value.
+     * the condition or an action of an automation, or the data of a node, a
+     * goal or an exit condition of a visual automation. Each step has a type
+     * and a value.
      *
      * @param  array<int, mixed>  $steps
      * @param  array<string, list<int>>  $idsByCategory

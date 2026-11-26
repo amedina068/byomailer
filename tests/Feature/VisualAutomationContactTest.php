@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\EnrollmentExitReason;
 use App\Models\Contact;
 use App\Models\User;
 use App\Models\VisualAutomation;
@@ -253,5 +254,46 @@ class VisualAutomationContactTest extends TestCase
                 ->where('stats.active', 2)
                 ->where('stats.completed', 1);
         });
+    }
+
+    public function test_stats_count_the_converted_and_the_exited_contacts(): void
+    {
+        $user = User::factory()->create();
+        $automation = $this->createAutomationWithWorkflow($user);
+
+        VisualAutomationEnrollment::factory()->for($automation)->create();
+        VisualAutomationEnrollment::factory()->for($automation)->completed()->create();
+        VisualAutomationEnrollment::factory()->for($automation)->completed()->create(['exit_reason' => EnrollmentExitReason::Goal]);
+        VisualAutomationEnrollment::factory()->for($automation)->completed()->create(['exit_reason' => EnrollmentExitReason::Goal]);
+        VisualAutomationEnrollment::factory()->for($automation)->completed()->create(['exit_reason' => EnrollmentExitReason::ExitCondition]);
+        VisualAutomationEnrollment::factory()->for($automation)->completed()->create(['exit_reason' => EnrollmentExitReason::Unsubscribed]);
+
+        $response = $this->actingAs($user)->get(route('visual-automations.contacts.index', $automation));
+
+        $response->assertInertia(fn (Assert $page) => $page
+            ->where('stats.contacts', 6)
+            ->where('stats.active', 1)
+            ->where('stats.completed', 5)
+            ->where('stats.converted', 2)
+            ->where('stats.exited', 1));
+    }
+
+    public function test_contacts_index_filters_by_converted_and_by_exited(): void
+    {
+        $user = User::factory()->create();
+        $automation = $this->createAutomationWithWorkflow($user);
+
+        VisualAutomationEnrollment::factory()->for($automation)->completed()->create();
+        $converted = VisualAutomationEnrollment::factory()->for($automation)->completed()->create(['exit_reason' => EnrollmentExitReason::Goal]);
+        $exited = VisualAutomationEnrollment::factory()->for($automation)->completed()->create(['exit_reason' => EnrollmentExitReason::ExitCondition]);
+
+        foreach (['converted' => $converted, 'exited' => $exited] as $filter => $enrollment) {
+            $response = $this->actingAs($user)->get(route('visual-automations.contacts.index', [$automation, 'filter' => $filter]));
+
+            $response->assertInertia(fn (Assert $page) => $page
+                ->where('filter', $filter)
+                ->has('contacts.data', 1)
+                ->where('contacts.data.0.id', $enrollment->contact_id));
+        }
     }
 }

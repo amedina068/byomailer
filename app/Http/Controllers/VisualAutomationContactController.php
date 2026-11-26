@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\EnrollmentExitReason;
 use App\Http\Controllers\Concerns\ResolvesContactFilter;
 use App\Models\Contact;
 use App\Models\VisualAutomation;
@@ -20,7 +21,7 @@ class VisualAutomationContactController extends Controller
             ->withCount('enrollments')
             ->findOrFail($visualAutomationId);
 
-        $filter = $this->resolveFilter($request, ['completed', 'active']);
+        $filter = $this->resolveFilter($request, ['completed', 'active', 'converted', 'exited']);
 
         $contacts = $this->paginateContacts(
             $this->contactsQuery($automation, $filter),
@@ -40,7 +41,7 @@ class VisualAutomationContactController extends Controller
     }
 
     /**
-     * @return array{contacts: int, completed: int, active: int}
+     * @return array{contacts: int, completed: int, active: int, converted: int, exited: int}
      */
     private function stats(VisualAutomation $automation): array
     {
@@ -50,6 +51,8 @@ class VisualAutomationContactController extends Controller
             'contacts' => (clone $enrollments)->count(),
             'completed' => (clone $enrollments)->where('status', 'completed')->count(),
             'active' => (clone $enrollments)->where('status', 'active')->count(),
+            'converted' => (clone $enrollments)->where('exit_reason', EnrollmentExitReason::Goal)->count(),
+            'exited' => (clone $enrollments)->where('exit_reason', EnrollmentExitReason::ExitCondition)->count(),
         ];
     }
 
@@ -64,18 +67,12 @@ class VisualAutomationContactController extends Controller
 
         $scope = fn ($q) => $q->where('visual_automation_id', $automation->id);
 
-        if ($filter === 'completed') {
-            return $query->whereHas('visualAutomationEnrollments', function ($q) use ($scope): void {
-                $scope($q)->where('status', 'completed');
-            });
-        }
-
-        if ($filter === 'active') {
-            return $query->whereHas('visualAutomationEnrollments', function ($q) use ($scope): void {
-                $scope($q)->where('status', 'active');
-            });
-        }
-
-        return $query->whereHas('visualAutomationEnrollments', $scope);
+        return $query->whereHas('visualAutomationEnrollments', fn ($q) => match ($filter) {
+            'completed' => $scope($q)->where('status', 'completed'),
+            'active' => $scope($q)->where('status', 'active'),
+            'converted' => $scope($q)->where('exit_reason', EnrollmentExitReason::Goal),
+            'exited' => $scope($q)->where('exit_reason', EnrollmentExitReason::ExitCondition),
+            default => $scope($q),
+        });
     }
 }

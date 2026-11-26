@@ -139,6 +139,22 @@ class ListDeleteGuardTest extends TestCase
         $this->assertDestroyIsBlockedBy('Branch on list');
     }
 
+    public function test_destroy_is_blocked_while_a_visual_automation_goal_uses_the_list(): void
+    {
+        VisualAutomation::factory()->for($this->user)->create([
+            'name' => 'Goal on list',
+            'workflow' => [
+                'nodes' => [
+                    ['id' => 'trigger-1', 'type' => 'trigger', 'position' => ['x' => 0, 'y' => 0], 'data' => ['trigger_type' => 'tag_added', 'value' => 999]],
+                ],
+                'edges' => [],
+                'goals' => [['type' => 'in_list', 'value' => $this->list->id]],
+            ],
+        ]);
+
+        $this->assertDestroyIsBlockedBy('Goal on list');
+    }
+
     public function test_destroy_is_allowed_when_only_sent_newsletters_and_other_lists_use_lists(): void
     {
         $otherList = MailList::factory()->for($this->user)->create();
