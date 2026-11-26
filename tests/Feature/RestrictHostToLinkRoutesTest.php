@@ -44,16 +44,27 @@ class RestrictHostToLinkRoutesTest extends TestCase
 
     /**
      * The List-Unsubscribe header points at the customer's link domain, so the
-     * provider's POST arrives on that host. A 404 here would make every
-     * one-click unsubscribe fail.
+     * provider's POST arrives on that host with no CSRF token and no cookies.
+     * A 404, a 419, or a redirect here makes every one-click unsubscribe fail.
      */
-    public function test_one_click_unsubscribe_works_on_verified_link_domain(): void
+    public function test_one_click_unsubscribe_post_unsubscribes_the_contact_on_the_link_domain(): void
     {
-        $this->makeLinkDomain();
-        $contactMail = $this->makeContactMail();
+        $identity = EmailIdentity::factory()->withLinkDomain('mail.example.com')->create();
+        $message = Message::factory()
+            ->for(Newsletter::factory(), 'messageable')
+            ->create(['email_identity_id' => $identity->id]);
+        $contactMail = ContactMail::factory()->create(['message_id' => $message->id]);
 
-        $this->post("http://mail.example.com/one-click-unsubscribe/{$contactMail->uuid}")
+        $link = $contactMail->one_click_unsubscribe_link;
+
+        $this->assertSame("https://mail.example.com/one-click-unsubscribe/{$contactMail->uuid}", $link);
+
+        $this->withMiddleware()
+            ->post($link, ['List-Unsubscribe' => 'One-Click'])
             ->assertOk();
+
+        $this->assertNotNull(Contact::withoutGlobalScopes()->find($contactMail->contact_id)->unsubscribed_at);
+        $this->assertNotNull(ContactMail::withoutGlobalScopes()->find($contactMail->id)->unsubscribed_at);
     }
 
     public function test_dashboard_blocked_on_link_domain(): void
@@ -100,6 +111,23 @@ class RestrictHostToLinkRoutesTest extends TestCase
 
         $this->get("http://mail.example.com/unsubscribe/{$contactMail->uuid}")
             ->assertNotFound();
+    }
+
+    /**
+     * `LinkDomainProbe` calls `/up` on a new link domain before activation.
+     */
+    public function test_health_check_works_on_unverified_link_domain(): void
+    {
+        $this->makeLinkDomain(verified: false);
+
+        $this->get('http://mail.example.com/up')->assertOk();
+        $this->get('http://mail.example.com/dashboard')->assertNotFound();
+    }
+
+    public function test_health_check_works_on_unknown_host_but_other_paths_stay_blocked(): void
+    {
+        $this->get('http://random-host.com/up')->assertOk();
+        $this->get('http://random-host.com/login')->assertNotFound();
     }
 
     public function test_link_route_still_works_on_canonical_host(): void

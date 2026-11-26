@@ -6,6 +6,7 @@ use App\Exceptions\CloudflareException;
 use App\Models\EmailIdentity;
 use App\Models\User;
 use App\Services\CloudflareClient;
+use App\Services\LinkDomainProbe;
 use App\Services\LinkDomainVerifier;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -16,6 +17,17 @@ use Tests\TestCase;
 class CustomLinkDomainTest extends TestCase
 {
     use RefreshDatabase;
+
+    /**
+     * @param  array{healthy: bool, reason?: string}  $result
+     */
+    private function probe(array $result = ['healthy' => true]): LinkDomainProbe
+    {
+        $probe = Mockery::mock(LinkDomainProbe::class);
+        $probe->shouldReceive('check')->andReturn($result);
+
+        return $probe;
+    }
 
     private function fakeCloudflare(bool $configured = true): MockInterface
     {
@@ -251,7 +263,7 @@ class CustomLinkDomainTest extends TestCase
         $client->shouldReceive('getCustomHostname')->andReturn(
             ['id' => 'cf-1', 'hostname' => 'mail.example.com', 'status' => 'pending', 'ssl_status' => 'pending_validation']
         );
-        $this->app->instance(LinkDomainVerifier::class, new LinkDomainVerifier($client));
+        $this->app->instance(LinkDomainVerifier::class, new LinkDomainVerifier($client, $this->probe()));
 
         $response = $this->actingAs($user)->postJson(
             route('identities.check-custom-link-domain', $identity)
@@ -272,7 +284,7 @@ class CustomLinkDomainTest extends TestCase
         $client->shouldReceive('getCustomHostname')->andReturn(
             ['id' => 'cf-1', 'hostname' => 'mail.example.com', 'status' => 'active', 'ssl_status' => 'active']
         );
-        $this->app->instance(LinkDomainVerifier::class, new LinkDomainVerifier($client));
+        $this->app->instance(LinkDomainVerifier::class, new LinkDomainVerifier($client, $this->probe()));
 
         $response = $this->actingAs($user)->postJson(
             route('identities.check-custom-link-domain', $identity)
@@ -281,6 +293,26 @@ class CustomLinkDomainTest extends TestCase
         $response->assertOk();
         $response->assertJson(['verified' => true]);
         $this->assertNotNull($identity->fresh()->custom_link_domain_verified_at);
+    }
+
+    public function test_check_shows_the_reason_when_the_domain_does_not_reach_the_app(): void
+    {
+        $user = User::factory()->create();
+        $identity = EmailIdentity::factory()->for($user)
+            ->withLinkDomain('mail.example.com', verified: false)->create(['cf_custom_hostname_id' => 'cf-1']);
+
+        $client = Mockery::mock(CloudflareClient::class);
+        $client->shouldReceive('getCustomHostname')->andReturn(
+            ['id' => 'cf-1', 'hostname' => 'mail.example.com', 'status' => 'active', 'ssl_status' => 'active']
+        );
+        $reason = 'https://mail.example.com/up redirects to https://byomailer.example/up. The web server does not send this host to the app.';
+        $this->app->instance(LinkDomainVerifier::class, new LinkDomainVerifier($client, $this->probe(['healthy' => false, 'reason' => $reason])));
+
+        $this->actingAs($user)->postJson(route('identities.check-custom-link-domain', $identity))
+            ->assertUnprocessable()
+            ->assertJson(['verified' => false, 'error' => $reason]);
+
+        $this->assertNull($identity->fresh()->custom_link_domain_verified_at);
     }
 
     public function test_check_returns_cached_result_within_cooldown(): void
@@ -307,7 +339,7 @@ class CustomLinkDomainTest extends TestCase
             ['id' => 'cf-1', 'hostname' => 'mail.example.com', 'status' => 'pending', 'ssl_status' => 'pending_validation'],
             ['id' => 'cf-1', 'hostname' => 'mail.example.com', 'status' => 'active', 'ssl_status' => 'active'],
         );
-        $this->app->instance(LinkDomainVerifier::class, new LinkDomainVerifier($client));
+        $this->app->instance(LinkDomainVerifier::class, new LinkDomainVerifier($client, $this->probe()));
 
         $this->actingAs($user)->postJson(route('identities.check-custom-link-domain', $identity))
             ->assertOk()->assertJson(['verified' => false]);

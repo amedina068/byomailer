@@ -21,6 +21,8 @@ class RestrictHostToLinkRoutes
      * contact-facing link routes, the Vite asset bundle the Inertia pages
      * for those routes load (`public/build/*` — static, public, safe to
      * serve on any host). The `/up` health endpoint is open on each host.
+     * The container health check calls it on localhost, and `LinkDomainProbe`
+     * calls it on a new link domain before activation.
      */
     private const ALLOWED_PATHS = [
         'unsubscribe/*',
