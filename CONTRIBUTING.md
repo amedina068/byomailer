@@ -8,7 +8,7 @@ This guide tells you how to run BYOMailer on your computer, how to test a change
 - Inertia 3, Vue 3.5, Tailwind CSS 4, and Vite 7
 - Laravel Fortify for authentication, Sanctum for API tokens, Horizon for queues, and Laravel MCP for the MCP server
 - PHPUnit 12 for the PHP tests and Vitest 4 for the JavaScript tests
-- MySQL in production. The tests and local development use SQLite.
+- SQLite by default, and MySQL 8.4 with Redis and Horizon as an option. The tests and local development use SQLite.
 
 ## Local setup
 
@@ -140,6 +140,10 @@ composer audit --locked
 
 A new push to a pull request cancels the CI run of the old commit. Each push to `main` runs to the end.
 
+If you change `install.sh`, run `shellcheck install.sh`. The installer keeps all its code in functions, and its last line calls `main`. A partial download then runs nothing. Before you open the pull request, run the installer with `--dry-run`.
+
+If you change the install steps or a `byomailer:` command, also change `README.md` and `INSTALL.md`. `INSTALL.md` gives the steps to an AI agent, so each command and each JSON field in it must be correct.
+
 ## Rules for PHP code
 
 - Do not add `declare(strict_types=1);`.
@@ -204,7 +208,7 @@ CI runs `composer api-docs` and fails when `docs/api/` or `public/docs/openapi.j
 ## Frontend rules
 
 - Use Node 24. Vite 7 and Vitest 4 fail on older versions.
-- Follow `STYLE_GUIDE.md`: Phosphor icons in the regular weight, the `bm-*` CSS variables, a maximum radius of 6px, and JetBrains Mono for numbers.
+- Read `DESIGN_SYSTEM.md` for the short version of the design rules. Follow `STYLE_GUIDE.md`: Phosphor icons in the regular weight, the `bm-*` CSS variables, a maximum radius of 6px, and JetBrains Mono for numbers.
 - `npm run build` does not check types. Run `npm run types` and `npm run lint:changed`.
 - When a deferred prop loads on a page, show a skeleton until it arrives.
 
