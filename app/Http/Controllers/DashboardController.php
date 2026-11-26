@@ -73,6 +73,15 @@ class DashboardController extends Controller
             'hasVerifiedIdentity' => $hasVerifiedIdentity,
             'pendingIdentityId' => $pendingIdentityId,
             'missingPermissions' => $checker->getMissing($user, $allRequired, $emailCredential),
+            // The first-run panel shows the SES steps in order. The AWS
+            // connection needs the SQS queue of the instance, so the queue
+            // comes first. Only the owner can set the SQS settings.
+            'sesSetup' => [
+                'sandbox' => $emailCredential ? ! $emailCredential->production_access_enabled : null,
+                'eventsConfigured' => filled(config('services.sqs_ses_events.queue_url'))
+                    && filled(config('services.sqs_ses_events.queue_arn')),
+                'canConfigureEvents' => $user->isOwner(),
+            ],
             'sesQuota' => $emailCredential ? [
                 'max_24_hour_send' => $emailCredential->max_24_hour_send,
                 'max_send_rate' => $emailCredential->max_send_rate,

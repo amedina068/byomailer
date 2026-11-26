@@ -27,11 +27,16 @@ test.describe('public pages', () => {
         ).toBeVisible();
     });
 
-    test('the setup page is closed after the owner account exists', async ({
+    test('the setup page sends to the login page after the owner account exists', async ({
         page,
     }) => {
-        const response = await page.goto('/setup');
+        await page.goto('/setup');
 
-        expect(response?.status()).toBe(404);
+        await expect(page).toHaveURL(/\/login$/);
+        await expect(
+            page.getByText(
+                'This instance is already set up. Log in with your account.',
+            ),
+        ).toBeVisible();
     });
 });
