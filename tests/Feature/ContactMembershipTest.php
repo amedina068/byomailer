@@ -95,15 +95,15 @@ class ContactMembershipTest extends TestCase
 
         $expected = ['url' => 'kept', 'off' => false, 'blank' => '', 'nullable' => null, 'nested' => ['new' => 2],
             'kept_false' => false, 'kept_blank' => '', 'kept_null' => null, 'kept_nested' => ['a' => ['b']]];
-        $this->assertSame($expected, $result->fresh()->extra_attributes);
-        $this->assertSame([[
+        $this->assertSameJsonData($expected, $result->fresh()->extra_attributes);
+        $this->assertSameJsonData([[
             'off' => ['old' => 'old', 'new' => null], 'blank' => ['old' => 'old', 'new' => null],
             'nullable' => ['old' => 'old', 'new' => null], 'nested' => ['old' => '{"old":1}', 'new' => '{"new":2}'],
         ]], $received);
         $membership->persist($user, $result, ['extra_attributes' => []]);
         $membership->persist($user, $result, ['extra_attributes' => ['off' => '', 'blank' => null, 'nullable' => false]]);
         $this->assertCount(1, $received);
-        $this->assertSame(array_replace($expected, ['off' => '', 'blank' => null, 'nullable' => false]), $result->fresh()->extra_attributes);
+        $this->assertSameJsonData(array_replace($expected, ['off' => '', 'blank' => null, 'nullable' => false]), $result->fresh()->extra_attributes);
     }
 
     public function test_persist_without_auth_rejects_other_clients_and_preserves_their_tags(): void

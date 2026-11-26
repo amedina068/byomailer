@@ -31,7 +31,7 @@ class ContentVariablesToolsTest extends TestCase
         ])->assertOk()->assertSee('checkout_url');
 
         $sequence = Sequence::query()->sole();
-        $this->assertSame(['checkout_url' => 'https://example.com/checkout', 'first_name' => ''], $sequence->content_variables);
+        $this->assertSameJsonData(['checkout_url' => 'https://example.com/checkout', 'first_name' => ''], $sequence->content_variables);
     }
 
     public function test_create_sequence_rejects_a_default_longer_than_the_dashboard_allows(): void

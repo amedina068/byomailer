@@ -34,7 +34,7 @@ class SequenceUpdateWritePathTest extends TestCase
             ->patch(route('sequences.variables.update', $sequence), ['content_variables' => self::SENT])
             ->assertRedirect();
 
-        $this->assertSame(self::STORED, $sequence->refresh()->content_variables);
+        $this->assertSameJsonData(self::STORED, $sequence->refresh()->content_variables);
     }
 
     public function test_api_keeps_a_variable_that_no_step_uses_yet(): void
@@ -46,7 +46,7 @@ class SequenceUpdateWritePathTest extends TestCase
         $this->patchJson("/api/v1/sequences/{$sequence->id}/variables", ['content_variables' => self::SENT])
             ->assertOk();
 
-        $this->assertSame(self::STORED, $sequence->refresh()->content_variables);
+        $this->assertSameJsonData(self::STORED, $sequence->refresh()->content_variables);
     }
 
     public function test_mcp_keeps_a_variable_that_no_step_uses_yet(): void
@@ -59,7 +59,7 @@ class SequenceUpdateWritePathTest extends TestCase
             'content_variables' => self::SENT,
         ])->assertOk();
 
-        $this->assertSame(self::STORED, $sequence->refresh()->content_variables);
+        $this->assertSameJsonData(self::STORED, $sequence->refresh()->content_variables);
     }
 
     public function test_web_filters_clear_the_segment(): void
@@ -76,7 +76,7 @@ class SequenceUpdateWritePathTest extends TestCase
 
         $sequence->refresh();
         $this->assertNull($sequence->segment_id);
-        $this->assertSame($filters, $sequence->filters);
+        $this->assertSameJsonData($filters, $sequence->filters);
     }
 
     public function test_web_segment_clears_the_filters(): void
@@ -110,7 +110,7 @@ class SequenceUpdateWritePathTest extends TestCase
 
         $sequence->refresh();
         $this->assertNull($sequence->segment_id);
-        $this->assertSame($filters, $sequence->filters);
+        $this->assertSameJsonData($filters, $sequence->filters);
     }
 
     public function test_mcp_rename_keeps_the_segment(): void

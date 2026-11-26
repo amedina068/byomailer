@@ -81,6 +81,14 @@ return [
             'replace_placeholders' => true,
         ],
 
+        // The audit log of the instance-admin MCP server: one line for each tool call.
+        'mcp-admin' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/mcp-admin.log'),
+            'level' => 'info',
+            'days' => 90,
+        ],
+
         'slack' => [
             'driver' => 'slack',
             'url' => env('LOG_SLACK_WEBHOOK_URL'),

@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Actions\Fortify\ResetUserPassword;
+use App\Console\Commands\Concerns\WritesJsonOutput;
 use App\Models\User;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -19,11 +20,14 @@ use function Laravel\Prompts\password;
  */
 class UserPasswordCommand extends Command
 {
+    use WritesJsonOutput;
+
     protected $signature = 'byomailer:user:password
         {email : The email of the user}
         {--password= : The new password. The command does not prompt}
         {--generate : Make a random password and show it one time}
-        {--reset-two-factor : Turn off two-factor authentication for a user who lost the device}';
+        {--reset-two-factor : Turn off two-factor authentication for a user who lost the device}
+        {--json : Write one JSON object to stdout}';
 
     protected $description = 'Set a new password for a user, without email';
 
@@ -32,33 +36,23 @@ class UserPasswordCommand extends Command
         $user = User::query()->where('email', $this->argument('email'))->first();
 
         if (! $user) {
-            $this->components->error("No user has the email {$this->argument('email')}.");
-
-            return self::FAILURE;
+            return $this->failWith(self::EXIT_BAD_INPUT, 'user_not_found', "No user has the email {$this->argument('email')}.", 'Run php artisan byomailer:user:list to find the email.');
         }
 
         if ($this->option('password') !== null && $this->option('generate')) {
-            $this->components->error('Use --password or --generate, not the two together.');
-
-            return self::FAILURE;
+            return $this->failWith(self::EXIT_BAD_INPUT, 'conflicting_options', 'Use --password or --generate, not the two together.', 'Run the command again with one of the two options.');
         }
 
         $password = $this->newPassword();
 
-        if ($password === null) {
-            return self::FAILURE;
+        if (is_int($password)) {
+            return $password;
         }
 
         try {
             $resetter->reset($user, ['password' => $password, 'password_confirmation' => $password]);
         } catch (ValidationException $exception) {
-            foreach ($exception->errors() as $messages) {
-                foreach ($messages as $message) {
-                    $this->components->error($message);
-                }
-            }
-
-            return self::FAILURE;
+            return $this->invalidPassword($exception);
         }
 
         $user->forceFill(['remember_token' => Str::random(60)]);
@@ -73,6 +67,26 @@ class UserPasswordCommand extends Command
 
         $user->save();
 
+        [$endedSessions, $sessionsMessage] = $this->endWebSessions($user);
+
+        if ($this->wantsJson()) {
+            return $this->respond(self::EXIT_OK, [
+                'user' => ['id' => $user->id, 'email' => $user->email],
+                'password_changed' => true,
+                'generated_password' => $this->option('generate') ? $password : null,
+                'remember_token_rotated' => true,
+                'web_sessions_ended' => $endedSessions,
+                'two_factor_reset' => (bool) $this->option('reset-two-factor'),
+            ]);
+        }
+
+        $this->printResult($user, $password, $sessionsMessage);
+
+        return self::SUCCESS;
+    }
+
+    private function printResult(User $user, string $password, string $sessionsMessage): void
+    {
         $this->components->info("The password of {$user->email} changed.");
 
         if ($this->option('generate')) {
@@ -82,7 +96,7 @@ class UserPasswordCommand extends Command
 
         $this->components->bulletList(array_filter([
             'Rotated the remember token. All "Remember me" logins ended.',
-            $this->endWebSessions($user),
+            $sessionsMessage,
             $this->option('reset-two-factor')
                 ? 'Two-factor authentication is off. The user can turn it on again in the account settings.'
                 : null,
@@ -90,14 +104,29 @@ class UserPasswordCommand extends Command
                 ? 'This user is deactivated. The user cannot log in until the owner reactivates the user in Admin, Users.'
                 : null,
         ]));
+    }
 
-        return self::SUCCESS;
+    private function invalidPassword(ValidationException $exception): int
+    {
+        $messages = collect($exception->errors())->flatten()->all();
+
+        if (! $this->wantsJson()) {
+            foreach ($messages as $message) {
+                $this->components->error($message);
+            }
+        }
+
+        return $this->respond(self::EXIT_BAD_INPUT, [], array_map(
+            fn (string $message): array => self::errorItem('invalid_password', $message, 'Choose a password that meets the rule, or use --generate.'),
+            $messages,
+        ));
     }
 
     /**
-     * Returns null when no password is available. The error is already on the screen.
+     * Returns the exit code when no password is available. The error is
+     * already on the screen.
      */
-    private function newPassword(): ?string
+    private function newPassword(): string|int
     {
         if ($this->option('password') !== null) {
             return $this->option('password');
@@ -109,18 +138,14 @@ class UserPasswordCommand extends Command
             return Str::password(16, symbols: false).'-'.Str::password(16, symbols: false);
         }
 
-        if (! $this->input->isInteractive()) {
-            $this->components->error('Give --password or --generate when the command cannot prompt.');
-
-            return null;
+        if (! $this->input->isInteractive() || $this->wantsJson()) {
+            return $this->failWith(self::EXIT_BAD_INPUT, 'missing_option', 'Give --password or --generate when the command cannot prompt.', 'Run the command again with --generate.');
         }
 
         $password = password('New password', required: true);
 
         if ($password !== password('Type the new password again', required: true)) {
-            $this->components->error('The two passwords are not the same.');
-
-            return null;
+            return $this->failWith(self::EXIT_BAD_INPUT, 'password_mismatch', 'The two passwords are not the same.', 'Run the command again and type the same password two times.');
         }
 
         return $password;
@@ -131,14 +156,16 @@ class UserPasswordCommand extends Command
      * removes those rows. Other drivers cannot find the sessions of one user.
      * For them, the AuthenticateSession middleware ends each session at its
      * next request, because the password hash changed.
+     *
+     * @return array{0: int|null, 1: string}
      */
-    private function endWebSessions(User $user): string
+    private function endWebSessions(User $user): array
     {
         $driver = config('session.driver');
 
         if ($driver !== 'database') {
-            return "The \"{$driver}\" session driver cannot find the sessions of one user. "
-                .'Each open web session ends at its next request, because the password changed.';
+            return [null, "The \"{$driver}\" session driver cannot find the sessions of one user. "
+                .'Each open web session ends at its next request, because the password changed.'];
         }
 
         $ended = DB::connection(config('session.connection'))
@@ -146,6 +173,6 @@ class UserPasswordCommand extends Command
             ->where('user_id', $user->id)
             ->delete();
 
-        return "Ended {$ended} web sessions of this user.";
+        return [$ended, "Ended {$ended} web sessions of this user."];
     }
 }

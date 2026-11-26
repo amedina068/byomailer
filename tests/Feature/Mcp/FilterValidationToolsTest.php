@@ -64,7 +64,7 @@ class FilterValidationToolsTest extends TestCase
             'filters' => [['category' => 'tags', 'mode' => 'any', 'values' => ['ghost']]],
         ])->assertHasErrors(['The tag "ghost" does not exist.']);
 
-        $this->assertSame($filters, $newsletter->refresh()->filters);
+        $this->assertSameJsonData($filters, $newsletter->refresh()->filters);
     }
 
     public function test_create_sequence_rejects_a_topic_of_another_client(): void

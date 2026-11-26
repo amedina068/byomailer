@@ -1097,7 +1097,7 @@ class ByoMailerServerTest extends TestCase
             'delay_days' => 5,
         ])->assertOk();
 
-        $this->assertSame($filters, $step->refresh()->filters);
+        $this->assertSameJsonData($filters, $step->refresh()->filters);
     }
 
     public function test_update_sequence_step_rejects_an_unknown_filter_category(): void
@@ -1193,7 +1193,7 @@ class ByoMailerServerTest extends TestCase
         $sequence->refresh();
         $this->assertSame('New name', $sequence->name);
         $this->assertSame(SequenceStatus::Draft, $sequence->status);
-        $this->assertSame($filters, $sequence->filters);
+        $this->assertSameJsonData($filters, $sequence->filters);
     }
 
     public function test_update_sequence_replaces_and_clears_filters(): void
@@ -1312,6 +1312,6 @@ class ByoMailerServerTest extends TestCase
             'filters' => [['category' => 'nope', 'values' => [1]]],
         ])->assertHasErrors(['The selected filters.0.category is invalid.']);
 
-        $this->assertSame($filters, $sequence->refresh()->filters);
+        $this->assertSameJsonData($filters, $sequence->refresh()->filters);
     }
 }

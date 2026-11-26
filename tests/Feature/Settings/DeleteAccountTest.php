@@ -168,7 +168,7 @@ class DeleteAccountTest extends TestCase
             DeleteUser::AUTHORED_MODELS,
         );
 
-        $referencing = collect(Schema::getTableListing(schemaQualified: false))
+        $referencing = collect(Schema::getTableListing(Schema::getCurrentSchemaListing(), schemaQualified: false))
             ->filter(fn (string $table): bool => collect(Schema::getForeignKeys($table))
                 ->contains(fn (array $key): bool => $key['foreign_table'] === 'users' && $key['columns'] === ['user_id']))
             ->values()

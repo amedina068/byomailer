@@ -89,7 +89,7 @@ class NewsletterMetricsScopeTest extends TestCase
             ->toSql();
 
         $this->assertStringContainsString('left join', strtolower($sql));
-        $this->assertStringNotContainsString('select count(*) from "contact_mails"', strtolower($sql));
+        $this->assertStringNotContainsString('select count(*) from '.$this->quoted('contact_mails'), strtolower($sql));
     }
 
     public function test_only_argument_restricts_aggregate_to_given_newsletter(): void
@@ -109,7 +109,7 @@ class NewsletterMetricsScopeTest extends TestCase
         $this->assertSame(1, (int) $row->sent_count);
 
         $sql = strtolower(Newsletter::query()->withoutGlobalScopes()->withMetricsCounts($target->id)->toSql());
-        $this->assertStringContainsString('"mailable_id" in', $sql);
+        $this->assertStringContainsString($this->quoted('mailable_id').' in', $sql);
     }
 
     public function test_scope_bounds_aggregate_to_authenticated_client(): void
@@ -130,7 +130,7 @@ class NewsletterMetricsScopeTest extends TestCase
         $this->assertSame(3, (int) $row->sent_count);
 
         $sql = strtolower(Newsletter::query()->withMetricsCounts()->toSql());
-        $this->assertStringContainsString('"client_id" =', $sql);
+        $this->assertStringContainsString($this->quoted('client_id').' =', $sql);
     }
 
     public function test_scope_emits_one_query_regardless_of_newsletter_count(): void
@@ -148,5 +148,14 @@ class NewsletterMetricsScopeTest extends TestCase
             ->get();
 
         $this->assertCount(1, DB::getQueryLog());
+    }
+
+    /**
+     * The identifier as the SQL of the driver writes it: "name" on SQLite and
+     * `name` on MySQL.
+     */
+    private function quoted(string $identifier): string
+    {
+        return DB::getQueryGrammar()->wrap($identifier);
     }
 }
