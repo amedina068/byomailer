@@ -183,6 +183,46 @@ class NewsletterMailExportTest extends TestCase
         $this->assertSame('Hi Cleo', $rows[0]['body']);
     }
 
+    public function test_export_renders_the_liquid_code_of_the_body_and_the_subject(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAsTenant($user->client_id);
+        $newsletter = Newsletter::factory()->for($user)->create();
+        $newsletter->message->forceFill([
+            'subject' => 'Hi {{ name | upcase }}',
+            'html_content' => '<p>{% for item in items %}[{{ item }}]{% endfor %}</p>',
+            'text_content' => null,
+        ])->save();
+        ContactMail::factory()->forNewsletter($newsletter)->create([
+            'contact_id' => Contact::factory()->for($user),
+            'message_id' => $newsletter->message->id,
+            'subject' => 'Hi {{ name | upcase }}',
+            'template_data' => ['name' => 'Cleo', 'items' => ['a', 'b']],
+        ]);
+
+        $rows = $this->csvRows($this->actingAs($user)->get(route('newsletters.export', $newsletter->id)));
+
+        $this->assertSame('Hi CLEO', $rows[0]['subject']);
+        $this->assertSame('[a][b]', $rows[0]['body']);
+    }
+
+    public function test_a_liquid_render_error_does_not_stop_the_export(): void
+    {
+        $user = User::factory()->create();
+        $this->actingAsTenant($user->client_id);
+        $newsletter = Newsletter::factory()->for($user)->create();
+        $newsletter->message->forceFill(['text_content' => '{{ 10 | divided_by: count }}'])->save();
+        ContactMail::factory()->forNewsletter($newsletter)->create([
+            'contact_id' => Contact::factory()->for($user),
+            'message_id' => $newsletter->message->id,
+            'template_data' => ['count' => '0'],
+        ]);
+
+        $rows = $this->csvRows($this->actingAs($user)->get(route('newsletters.export', $newsletter->id)));
+
+        $this->assertSame('{{ 10 | divided_by: count }}', $rows[0]['body']);
+    }
+
     public function test_export_rejects_a_status_longer_than_fifty_characters(): void
     {
         $user = User::factory()->create();

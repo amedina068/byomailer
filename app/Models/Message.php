@@ -7,6 +7,7 @@ use App\Models\Concerns\BelongsToClient;
 use App\Scopes\ClientScope;
 use App\Support\ContentSlot;
 use App\Support\HtmlToText;
+use App\Support\Liquid;
 use App\Support\ReplacesBlockVariables;
 use App\Support\ReplacesTemplateVariables;
 use Database\Factories\MessageFactory;
@@ -24,7 +25,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  * @property string|null $preview_text
  * @property string $markdown_content
  * @property string $html_content
- * @property string $text_content
+ * @property string|null $text_content
  * @property string|null $from_email
  * @property string|null $from_name
  * @property int|null $email_identity_id
@@ -113,6 +114,14 @@ class Message extends Model
     public function templateFields(): array
     {
         return once(function (): array {
+            if ($this->usesLiquid()) {
+                return collect($this->templateParts())
+                    ->flatMap(fn (string $part): array => Liquid::variables($part))
+                    ->unique()
+                    ->values()
+                    ->all();
+            }
+
             $haystack = $this->withBlocksExpanded(
                 $this->body()
                 .' '.($this->currentTemplate() ? $this->composedHtml() : '')
@@ -137,6 +146,60 @@ class Message extends Model
     }
 
     /**
+     * True when the message uses Liquid code and each part of it is valid
+     * Liquid. Plain `{{ name }}` content and content that is not valid Liquid
+     * keep the replacement from before Liquid, so they send the same as before.
+     */
+    public function usesLiquid(): bool
+    {
+        return once(function (): bool {
+            $parts = $this->templateParts();
+
+            if (Liquid::isPlain(implode("\n", $parts))) {
+                return false;
+            }
+
+            return collect($parts)->every(fn (string $part): bool => Liquid::error($part) === null);
+        });
+    }
+
+    /**
+     * Render one part of the message with the template data of a contact.
+     * Text parts (the subject, the preview text and the text body) are not
+     * escaped. The HTML part escapes each value.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    public function render(string $content, array $data, bool $html = true): string
+    {
+        if ($this->usesLiquid()) {
+            return Liquid::render($content, $data, $html);
+        }
+
+        return $html
+            ? $this->replaceTemplateVariablesInHtml($content, $data)
+            : $this->replaceTemplateVariables($content, $data);
+    }
+
+    /**
+     * The parts of the message that a send renders, with the blocks expanded.
+     *
+     * @return list<string>
+     */
+    private function templateParts(): array
+    {
+        return array_values(array_filter(array_map(
+            fn (?string $part): string => $this->withBlocksExpanded((string) $part),
+            [
+                $this->currentTemplate() ? $this->composedHtml() : $this->html_content,
+                $this->text_content,
+                $this->subject,
+                $this->preview_text,
+            ],
+        ), fn (string $part): bool => trim($part) !== ''));
+    }
+
+    /**
      * The send expands the blocks before it replaces the variables, so the
      * variables of a block must be in the template data too.
      */
@@ -150,7 +213,10 @@ class Message extends Model
     }
 
     /**
-     * @return array<string, string>
+     * Liquid content keeps a list attribute as a list, so a `{% for %}` loop
+     * can read it. Plain content gets the text of the old replacement.
+     *
+     * @return array<string, string|array<mixed>|null>
      */
     public function templateData(Contact $contact, ContactMail $contactMail): array
     {
@@ -168,7 +234,7 @@ class Message extends Model
                     return [$field => $this->postalAddress()];
                 }
 
-                return [$field => $contact->getTemplateAttribute($field)];
+                return [$field => $this->usesLiquid() ? $contact->getTemplateValue($field) : $contact->getTemplateAttribute($field)];
             })
             ->all();
     }
@@ -189,7 +255,7 @@ class Message extends Model
      *
      * @param  array<string, string|null>  $contentVariableDefaults
      * @param  array<string, string>  $globalAttributeDefaults
-     * @return array<string, string>
+     * @return array<string, string|array<mixed>|null>
      */
     public function resolveTemplateData(Contact $contact, ContactMail $contactMail, array $contentVariableDefaults = [], array $globalAttributeDefaults = []): array
     {
@@ -197,6 +263,11 @@ class Message extends Model
 
         foreach ([$contentVariableDefaults, $globalAttributeDefaults] as $defaults) {
             foreach ($defaults as $key => $defaultValue) {
+                // An empty default leaves a Liquid variable null, so `{% if %}` reads it as false.
+                if ($this->usesLiquid() && ($defaultValue === null || $defaultValue === '')) {
+                    continue;
+                }
+
                 if (! isset($templateData[$key]) || $templateData[$key] === '') {
                     $templateData[$key] = (string) ($defaultValue ?? '');
                 }

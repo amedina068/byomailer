@@ -5,6 +5,7 @@ namespace App\Http\Requests;
 use App\Enums\DelayUnit;
 use App\Http\Requests\Concerns\ValidatesClientTemplate;
 use App\Rules\SafeHtml;
+use App\Rules\ValidLiquid;
 use App\Support\ContentSlot;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Contracts\Validation\Validator;
@@ -35,9 +36,9 @@ class UpdateSequenceStepRequest extends FormRequest
         return [
             'delay_type' => ['required', Rule::enum(DelayUnit::class)],
             'delay_days' => ['required', 'integer', 'min:0', 'max:'.DelayUnit::maxDelayFor($this->input('delay_type'))],
-            'subject' => ['nullable', 'string', 'max:255'],
-            'preview_text' => ['nullable', 'string', 'max:255', new SafeHtml],
-            'content' => ['nullable', 'string', 'max:524288', new SafeHtml],
+            'subject' => ['nullable', 'string', 'max:255', new ValidLiquid],
+            'preview_text' => ['nullable', 'string', 'max:255', new SafeHtml, new ValidLiquid],
+            'content' => ['nullable', 'string', 'max:524288', new SafeHtml, new ValidLiquid],
             'email_template_id' => ['nullable', 'integer', $this->clientTemplateExistsRule()],
             'template_slot_content' => ['nullable', 'string'],
             'email_identity_id' => [

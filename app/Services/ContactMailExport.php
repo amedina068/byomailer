@@ -9,6 +9,7 @@ use App\Support\HtmlToText;
 use App\Support\ReplacesBlockVariables;
 use App\Support\SpreadsheetCell;
 use Carbon\CarbonInterface;
+use Keepsuit\Liquid\Exceptions\LiquidException;
 
 /**
  * Builds one CSV row per campaign recipient: delivery status, recipient
@@ -70,7 +71,7 @@ class ContactMailExport
     public function row(ContactMail $contactMail): array
     {
         $message = $contactMail->message ?? $this->fallbackMessage;
-        $templateData = $this->templateData($contactMail);
+        $templateData = $this->templateData($contactMail, $message?->usesLiquid() ?? false);
 
         return array_map(SpreadsheetCell::escapeFormula(...), [
             (string) $contactMail->contact?->email,
@@ -90,33 +91,67 @@ class ContactMailExport
             $this->timestamp($contactMail->rejected_at),
             $this->timestamp($contactMail->unsubscribed_at),
             (string) $contactMail->failure_reason,
-            $message ? $message->replaceTemplateVariables($this->expandedBody($message), $templateData) : '',
+            $message ? $this->body($message, $templateData) : '',
         ]);
     }
 
     /**
      * Stored template data plus the per-recipient links, as `NewsletterMail`
-     * builds it. Nested values are dropped because a placeholder takes a
-     * scalar only.
+     * builds it. A plain placeholder takes a scalar only, so nested values are
+     * dropped. Liquid content keeps them for its loops.
      *
-     * @return array<string, string>
+     * @return array<string, mixed>
      */
-    private function templateData(ContactMail $contactMail): array
+    private function templateData(ContactMail $contactMail, bool $liquid): array
     {
         $stored = array_filter(
             $contactMail->template_data ?? [],
-            fn (mixed $value): bool => is_scalar($value) || $value === null,
+            fn (mixed $value): bool => $liquid || is_scalar($value) || $value === null,
         );
 
-        return array_map(fn (mixed $value): string => (string) $value, [
+        $data = [
             ...$stored,
             'unsubscribe_url' => $contactMail->unsubscribe_link ?? '',
             'preferences_url' => $contactMail->preferences_link ?? '',
-        ]);
+        ];
+
+        return $liquid ? $data : array_map(fn (mixed $value): string => (string) $value, $data);
     }
 
     /**
-     * @param  array<string, string>  $templateData
+     * The plain-text body of the mail. Liquid content renders as HTML first,
+     * the same as the send.
+     *
+     * @param  array<string, mixed>  $templateData
+     */
+    private function body(Message $message, array $templateData): string
+    {
+        if (! $message->usesLiquid() || $message->text_content !== null) {
+            return $this->render($message, $this->expandedBody($message), $templateData);
+        }
+
+        $html = $this->replaceBlockVariables((string) $message->html_content, $this->client);
+
+        return HtmlToText::convert($this->render($message, $html, $templateData, html: true));
+    }
+
+    /**
+     * A render error must not stop the export. The cell then shows the content
+     * without the contact data.
+     *
+     * @param  array<string, mixed>  $templateData
+     */
+    private function render(Message $message, string $content, array $templateData, bool $html = false): string
+    {
+        try {
+            return $message->render($content, $templateData, $html);
+        } catch (LiquidException) {
+            return $content;
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $templateData
      */
     private function subject(ContactMail $contactMail, ?Message $message, array $templateData): string
     {
@@ -125,7 +160,7 @@ class ContactMailExport
         $this->expandedSubjects[$subject] ??= $this->replaceBlockVariablesAsText($subject, $this->client);
 
         return $message
-            ? $message->replaceTemplateVariables($this->expandedSubjects[$subject], $templateData)
+            ? $this->render($message, $this->expandedSubjects[$subject], $templateData)
             : $this->expandedSubjects[$subject];
     }
 

@@ -965,9 +965,9 @@ When `status` is `"live"`, the response has `meta.warnings`: a list of complianc
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `title` | string | No | Newsletter title. Defaults to `"Untitled newsletter"`. |
-| `subject` | string | required\_if `status=live` | Email subject. May contain `{{ variables }}`. |
-| `preview_text` | string | No | Optional inbox preheader (max 255 chars). Shown next to the subject in clients like Gmail and Apple Mail. May contain `{{ variables }}`. |
-| `html_content` | string | required\_if `status=live` | HTML body. Validated against the `SafeHtml` rule. |
+| `subject` | string | required\_if `status=live` | Email subject. Supports Liquid, for example `{{ name }}`. |
+| `preview_text` | string | No | Optional inbox preheader (max 255 chars). Shown next to the subject in clients like Gmail and Apple Mail. Supports Liquid, for example `{{ name }}`. |
+| `html_content` | string | required\_if `status=live` | HTML body. Validated against the `SafeHtml` rule. Supports Liquid. Content that is not valid Liquid returns 422. |
 | `status` | string | No | `"draft"` (default) or `"live"`. |
 | `scheduled_at` | string | required\_if `status=live` | ISO 8601 datetime in **UTC**. Required when `status` is `"live"`; prohibited otherwise. Must be at-or-after the current time (60s clock-skew tolerance). |
 | `email_identity_id` | integer | required\_if `status=live` | ID of a verified `email_identity` belonging to the client. |

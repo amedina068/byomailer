@@ -114,16 +114,26 @@ trait BuildsFromContactMail
         $htmlContent = $this->replaceBlockVariables($htmlContent, $client);
         $previewText = $this->replaceBlockVariablesAsText($previewText, $client);
 
-        $textContent = $message?->currentTemplate() !== null || $message?->text_content === null
-            ? HtmlToText::convert($htmlContent)
-            : $this->replaceBlockVariablesAsText($message->text_content, $client);
+        $storedText = $message?->currentTemplate() === null && $message?->text_content !== null
+            ? $this->replaceBlockVariablesAsText($message->text_content, $client)
+            : null;
 
-        // Pass 2: Replace contact template variables ({{ name }}, {{ email }}, etc.)
-        // The HTML part gets escaped values. The text part keeps raw values.
-        if ($message) {
-            $htmlContent = $message->replaceTemplateVariablesInHtml($htmlContent, $templateData);
-            $textContent = $message->replaceTemplateVariables($textContent, $templateData);
-            $previewText = $message->replaceTemplateVariables($previewText, $templateData);
+        if ($message?->usesLiquid()) {
+            // Liquid code can sit between table rows, where the HTML to text
+            // conversion moves it. The text part comes from the rendered HTML.
+            $htmlContent = $message->render($htmlContent, $templateData);
+            $textContent = $storedText === null ? HtmlToText::convert($htmlContent) : $message->render($storedText, $templateData, html: false);
+            $previewText = $message->render($previewText, $templateData, html: false);
+        } else {
+            $textContent = $storedText ?? HtmlToText::convert($htmlContent);
+
+            // Replace contact template variables ({{ name }}, {{ email }}, etc.)
+            // The HTML part gets escaped values. The text part keeps raw values.
+            if ($message) {
+                $htmlContent = $message->render($htmlContent, $templateData);
+                $textContent = $message->render($textContent, $templateData, html: false);
+                $previewText = $message->render($previewText, $templateData, html: false);
+            }
         }
 
         $htmlContent = ContentSlot::unwrap($htmlContent);
@@ -155,11 +165,7 @@ trait BuildsFromContactMail
         $client = $this->resolveClient();
         $subject = $this->replaceBlockVariablesAsText($subject, $client);
 
-        if ($message) {
-            return $message->replaceTemplateVariables($subject, $templateData);
-        }
-
-        return $subject;
+        return $message ? $message->render($subject, $templateData, html: false) : $subject;
     }
 
     /**

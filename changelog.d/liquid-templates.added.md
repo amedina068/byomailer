@@ -1,0 +1,1 @@
+- Subjects, preview texts and bodies support Liquid: conditions, loops and filters, for example `{% if vip %}` and `{{ name | default: "friend" }}`. A save refuses content that is not valid Liquid. Content with only `{{ variable }}` placeholders sends the same as before. `php artisan messages:liquid-check` lists the unsent messages that use Liquid.

@@ -17,6 +17,7 @@
         "dedoc/scramble": "^0.13",
         "geoip2/geoip2": "^3.3",
         "inertiajs/inertia-laravel": "^3.0",
+        "keepsuit/liquid": "^0.13",
         "laravel/fortify": "^1.37",
         "laravel/framework": "^13.0",
         "laravel/horizon": "^5.47",

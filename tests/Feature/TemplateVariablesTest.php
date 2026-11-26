@@ -92,6 +92,24 @@ class TemplateVariablesTest extends TestCase
         $this->assertSame(['name', 'valid_var'], $result);
     }
 
+    public function test_detects_the_variables_that_liquid_code_reads(): void
+    {
+        $detector = $this->makeDetector();
+
+        $result = $detector->detectVariables(
+            '{% if vip %}{{ name | upcase }}{% endif %}{% for item in items %}{{ item }}{% endfor %} {{ address.city }} {{ unsubscribe_url }}',
+        );
+
+        $this->assertSame(['address.city', 'items', 'name', 'vip'], $result);
+    }
+
+    public function test_content_that_is_not_valid_liquid_keeps_the_placeholder_detection(): void
+    {
+        $detector = $this->makeDetector();
+
+        $this->assertSame(['name'], $detector->detectVariables('{% if vip %}Hi {{ name }}'));
+    }
+
     public function test_preserves_case_of_variables(): void
     {
         $detector = $this->makeDetector();

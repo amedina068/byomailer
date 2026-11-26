@@ -20,7 +20,8 @@ trait DetectsTemplateVariables
     ];
 
     /**
-     * Detect {{variable}} placeholders in the given content.
+     * Detect the variables of the given content: the {{variable}} placeholders,
+     * and for Liquid content each variable that the Liquid code reads.
      *
      * @return array<int, string>
      */
@@ -30,9 +31,14 @@ trait DetectsTemplateVariables
             return [];
         }
 
-        preg_match_all('/\{\{\s*([A-Za-z0-9_]+)\s*\}\}/', $content, $matches);
+        if (Liquid::isPlain($content) || Liquid::error($content) !== null) {
+            preg_match_all('/\{\{\s*([A-Za-z0-9_]+)\s*\}\}/', $content, $matches);
+            $names = $matches[1] ?? [];
+        } else {
+            $names = Liquid::variables($content);
+        }
 
-        return collect($matches[1] ?? [])
+        return collect($names)
             ->map(fn (string $match): string => trim($match))
             ->filter()
             ->reject(fn (string $name): bool => in_array($name, $this->reservedTemplateVariables, true))

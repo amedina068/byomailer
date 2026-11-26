@@ -10,6 +10,7 @@ use App\Models\Newsletter;
 use App\Models\User;
 use App\Rules\SafeHtml;
 use App\Rules\SafeTemplatedHtml;
+use App\Rules\ValidLiquid;
 use App\Support\ContentVariables;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Support\Arr;
@@ -34,9 +35,9 @@ class CreateNewsletterTool extends Tool
 
         $validated = $request->validate([
             'title' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'subject' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'preview_text' => ['sometimes', 'nullable', 'string', 'max:255', new SafeHtml],
-            'html_content' => ['sometimes', 'nullable', 'string', 'max:524288', new SafeTemplatedHtml],
+            'subject' => ['sometimes', 'nullable', 'string', 'max:255', new ValidLiquid],
+            'preview_text' => ['sometimes', 'nullable', 'string', 'max:255', new SafeHtml, new ValidLiquid],
+            'html_content' => ['sometimes', 'nullable', 'string', 'max:524288', new SafeTemplatedHtml, new ValidLiquid],
             'email_identity_id' => [
                 'sometimes', 'nullable', 'integer',
                 Rule::exists('email_identities', 'id')->where('client_id', $user->client_id),
@@ -75,9 +76,9 @@ class CreateNewsletterTool extends Tool
     {
         return [
             'title' => $schema->string()->description('Internal title for the newsletter. Defaults to "Untitled newsletter".'),
-            'subject' => $schema->string()->description('Email subject line. Supports {{ variable }} template tags.'),
+            'subject' => $schema->string()->description('Email subject line. Supports Liquid: {{ variable }} placeholders, filters such as {{ name | default: "friend" }}, and tags such as {% if %}.'),
             'preview_text' => $schema->string()->description('Inbox preview / preheader text.'),
-            'html_content' => $schema->string()->description('HTML body of the email. Plain-text is derived automatically.'),
+            'html_content' => $schema->string()->description('HTML body of the email. Plain-text is derived automatically. Supports Liquid: {{ variable }} placeholders, filters, and the {% if %}, {% unless %}, {% case %} and {% for %} tags. Each output is HTML-escaped. Content that is not valid Liquid is refused with the line of the error.'),
             'email_identity_id' => $schema->integer()->description('Verified sender identity id to send from. Required before the draft can be scheduled or test-mailed.'),
             'email_template_id' => $schema->integer()->description('Optional email template id to wrap the content.'),
             ...$this->filtersSchema($schema),

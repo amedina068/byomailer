@@ -9,6 +9,7 @@ use App\Models\EmailIdentity;
 use App\Models\Sequence;
 use App\Models\User;
 use App\Rules\SafeHtml;
+use App\Rules\ValidLiquid;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Validation\Rule;
 use Laravel\Mcp\Request;
@@ -35,9 +36,9 @@ class CreateSequenceStepTool extends Tool
                 'required', 'integer',
                 Rule::exists('email_identities', 'id')->where('client_id', $user->client_id),
             ],
-            'subject' => ['sometimes', 'nullable', 'string', 'max:255'],
-            'preview_text' => ['sometimes', 'nullable', 'string', 'max:255', new SafeHtml],
-            'html_content' => ['sometimes', 'nullable', 'string', 'max:524288', new SafeHtml],
+            'subject' => ['sometimes', 'nullable', 'string', 'max:255', new ValidLiquid],
+            'preview_text' => ['sometimes', 'nullable', 'string', 'max:255', new SafeHtml, new ValidLiquid],
+            'html_content' => ['sometimes', 'nullable', 'string', 'max:524288', new SafeHtml, new ValidLiquid],
             ...$this->filterValidationRules(),
         ]);
 
@@ -85,9 +86,9 @@ class CreateSequenceStepTool extends Tool
             'email_identity_id' => $schema->integer()
                 ->description('Verified sender identity id to send this step from.')
                 ->required(),
-            'subject' => $schema->string()->description('Email subject line. Supports {{ variable }} template tags.'),
+            'subject' => $schema->string()->description('Email subject line. Supports Liquid: {{ variable }} placeholders, filters such as {{ name | default: "friend" }}, and tags such as {% if %}.'),
             'preview_text' => $schema->string()->description('Inbox preview / preheader text.'),
-            'html_content' => $schema->string()->description('HTML body of the step. Plain-text is derived automatically.'),
+            'html_content' => $schema->string()->description('HTML body of the step. Plain-text is derived automatically. Supports Liquid: {{ variable }} placeholders, filters, and the {% if %}, {% unless %}, {% case %} and {% for %} tags. Each output is HTML-escaped. Content that is not valid Liquid is refused with the line of the error.'),
             ...$this->filtersSchema($schema, 'Step filters. A contact who does not match them skips only this step and moves on to the next step. The sequence filters still apply first. Use view-newsletter-filters-tool to build the array. Omit to send this step to every contact in the sequence.'),
         ];
     }

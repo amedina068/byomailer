@@ -443,19 +443,19 @@ const endpoints: Endpoint[] = [
                 name: 'subject',
                 type: 'string',
                 description:
-                    'The email subject line. Max 255 characters. Required when status is "live".',
+                    'The email subject line. Max 255 characters. Supports Liquid. Required when status is "live".',
             },
             {
                 name: 'preview_text',
                 type: 'string',
                 description:
-                    'Optional inbox preheader shown next to the subject in Gmail and Apple Mail. Max 255 characters. May contain {{ variables }}.',
+                    'Optional inbox preheader shown next to the subject in Gmail and Apple Mail. Max 255 characters. Supports Liquid, for example {{ name }}.',
             },
             {
                 name: 'html_content',
                 type: 'string',
                 description:
-                    'Valid HTML content of the newsletter. Automatically converted to plain text. Required when status is "live".',
+                    'Valid HTML content of the newsletter. Automatically converted to plain text. Supports Liquid: {{ variable }} placeholders, filters, and tags such as {% if %} and {% for %}. Content that is not valid Liquid returns 422. Required when status is "live".',
             },
             {
                 name: 'status',
@@ -726,19 +726,19 @@ const endpoints: Endpoint[] = [
                 name: 'subject',
                 type: 'string',
                 description:
-                    'The new email subject line. Max 255 characters. Must exist (in request or on record) when setting status to "live".',
+                    'The new email subject line. Max 255 characters. Supports Liquid. Must exist (in request or on record) when setting status to "live".',
             },
             {
                 name: 'preview_text',
                 type: 'string',
                 description:
-                    'Optional inbox preheader. Max 255 characters. May contain {{ variables }}.',
+                    'Optional inbox preheader. Max 255 characters. Supports Liquid, for example {{ name }}.',
             },
             {
                 name: 'html_content',
                 type: 'string',
                 description:
-                    'Valid HTML content. Must exist (in request or on record) when setting status to "live".',
+                    'Valid HTML content. Supports Liquid. Content that is not valid Liquid returns 422. Must exist (in request or on record) when setting status to "live".',
             },
             {
                 name: 'status',

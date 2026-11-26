@@ -21,4 +21,13 @@ describe('Newsletters API reference', () => {
 
         expect(text).toContain('Delete a draft or scheduled newsletter.');
     });
+
+    it('says that the subject and the body support Liquid', () => {
+        const text = mount(Newsletters, {
+            global: { stubs: { CodeBlock: true } },
+        }).text();
+
+        expect(text).toContain('Content that is not valid Liquid returns 422.');
+        expect(text).toContain('Supports Liquid, for example {{ name }}.');
+    });
 });

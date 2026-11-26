@@ -10,6 +10,7 @@ use App\Models\Newsletter;
 use App\Models\User;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Keepsuit\Liquid\Exceptions\LiquidException;
 
 class NewsletterTransport
 {
@@ -30,7 +31,7 @@ class NewsletterTransport
             ])->save();
         }
 
-        if (! $this->usesSesApi()) {
+        if (! $this->usesBulkTemplate($message)) {
             return null;
         }
 
@@ -62,7 +63,7 @@ class NewsletterTransport
         ?string $tenantName,
         Message $message,
     ): void {
-        if ($this->usesSesApi()) {
+        if ($this->usesBulkTemplate($message)) {
             $this->sendViaSes($templateName, $fromEmail, $fromName, $contacts, $contactMails, $user, $defaultTemplateData, $tenantName, $message);
         } else {
             $this->sendViaMailer($contacts, $contactMails, $user);
@@ -84,6 +85,16 @@ class NewsletterTransport
     public function usesSesApi(): bool
     {
         return (bool) config('mail.use_ses_api');
+    }
+
+    /**
+     * SES renders a bulk template with its own `{{ }}` engine, which knows no
+     * Liquid. A message with Liquid code renders in BYOMailer and sends one
+     * email for each contact, the same way as a sequence step.
+     */
+    private function usesBulkTemplate(Message $message): bool
+    {
+        return $this->usesSesApi() && ! $message->usesLiquid();
     }
 
     /**
@@ -143,9 +154,22 @@ class NewsletterTransport
         foreach ($contacts as $contact) {
             $contactMail = $contactMails->firstWhere('contact_id', $contact->id);
 
-            $this->userMailerFactory->mailerFor($user)
-                ->to($contact->email)
-                ->send(new NewsletterMail($contactMail));
+            try {
+                $this->userMailerFactory->mailerFor($user)
+                    ->to($contact->email)
+                    ->send(new NewsletterMail($contactMail));
+            } catch (LiquidException $exception) {
+                // One contact whose data breaks the Liquid code must not stop
+                // the chunk. The other contacts still get the newsletter.
+                $contactMail->forceFill([
+                    'status' => 'failed',
+                    'failure_reason' => mb_substr($exception->getMessage(), 0, 500),
+                ])->save();
+
+                report($exception);
+
+                continue;
+            }
 
             $contactMail->update([
                 'status' => 'sent',
