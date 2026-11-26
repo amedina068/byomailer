@@ -2,14 +2,16 @@
 
 namespace App\Http\Requests;
 
+use App\Concerns\SegmentValidationRules;
 use App\Http\Requests\Concerns\ValidatesNewsletterFilters;
+use App\Models\Segment;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class UpdateSegmentRequest extends FormRequest
 {
+    use SegmentValidationRules;
     use ValidatesNewsletterFilters;
 
     public function authorize(): bool
@@ -22,17 +24,11 @@ class UpdateSegmentRequest extends FormRequest
      */
     public function rules(): array
     {
+        /** @var Segment $segment */
+        $segment = $this->route('segment');
+
         return [
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                Rule::unique('segments')
-                    ->where('client_id', $this->user()->client_id)
-                    ->ignore($this->route('segment')),
-            ],
-            'description' => ['nullable', 'string', 'max:1000'],
-            'filters' => ['present', 'array', 'min:1', 'max:20'],
+            ...$this->segmentRules($this->user()->client_id, $segment),
             ...$this->filterItemRules(),
         ];
     }
@@ -42,10 +38,7 @@ class UpdateSegmentRequest extends FormRequest
      */
     public function messages(): array
     {
-        return [
-            'name.unique' => 'You already have a segment with this name.',
-            'filters.min' => 'A segment needs at least one filter.',
-        ];
+        return $this->segmentMessages();
     }
 
     public function withValidator(Validator $validator): void

@@ -4,6 +4,7 @@ namespace App\Mcp\Tools;
 
 use App\Enums\NewsletterStatus;
 use App\Mcp\Concerns\ConfirmsLiveEdits;
+use App\Mcp\Concerns\FormatsComplianceWarnings;
 use App\Models\Newsletter;
 use App\Models\User;
 use App\Services\NewsletterScheduleService;
@@ -19,7 +20,7 @@ use Laravel\Mcp\Server\Tool;
 #[Description('Schedule a draft newsletter to send at a future time (action "schedule"), move a scheduled newsletter to a new time (action "schedule"), or cancel the schedule and return it to draft (action "unschedule"). This affects real contacts, so the first call only returns a preview: the change, the send time and the number of recipients. Nothing is saved. Show the preview to the user, and after the user confirms, call the tool again with the same arguments and confirm_live set to true. Never set confirm_live without that confirmation. The dashboard runs the same checks before scheduling: subject and body, the SES account status, and the SES permissions. A missing {{ unsubscribe_url }} link or a missing postal address never blocks the schedule. The preview and the result list them in warnings. Show the warnings to the user. Set the sender first with update-newsletter-tool. This tool never sends a newsletter immediately.')]
 class ScheduleNewsletterTool extends Tool
 {
-    use ConfirmsLiveEdits;
+    use ConfirmsLiveEdits, FormatsComplianceWarnings;
 
     protected string $name = 'schedule-newsletter';
 
@@ -64,7 +65,7 @@ class ScheduleNewsletterTool extends Tool
         }
 
         $scheduledAt = Carbon::parse($validated['scheduled_at'])->utc();
-        $warnings = array_values($check['warnings']);
+        $warnings = $this->mcpWarnings($check['warnings']);
 
         if (! $this->confirmsLive($validated)) {
             return $this->statusChangePreview([

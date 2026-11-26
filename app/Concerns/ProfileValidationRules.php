@@ -56,4 +56,20 @@ trait ProfileValidationRules
     {
         return ['required', 'string', 'timezone:all'];
     }
+
+    /**
+     * Get the validation rules of the account settings that belong to the
+     * client: the timezone, the sunset rule and the postal address. The
+     * profile form and the MCP tool use them.
+     *
+     * @return array<string, array<int, \Illuminate\Contracts\Validation\Rule|array<mixed>|string>>
+     */
+    protected function accountSettingsRules(): array
+    {
+        return [
+            'timezone' => $this->timezoneRules(),
+            'sunset_inactive_days' => ['nullable', 'integer', 'min:30', 'max:730'],
+            'postal_address' => ['nullable', 'string', 'max:500'],
+        ];
+    }
 }

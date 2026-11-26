@@ -1,0 +1,1 @@
+- The MCP server can set the Reply-To address and the custom link domain of a sender identity, and it can check the link domain DNS record. It can also list, read, create and update email templates. An update to a template that a scheduled newsletter or a live sequence uses needs the confirmation of the user. The web form now refuses template HTML that is larger than 500 KB.

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateSegment;
+use App\Actions\UpdateSegment;
 use App\Http\Requests\StoreSegmentRequest;
 use App\Http\Requests\UpdateSegmentRequest;
 use App\Http\Resources\ContactResource;
@@ -50,14 +52,14 @@ class SegmentController extends Controller
         return Inertia::render('segments/Create', $this->filterFormOptions($request));
     }
 
-    public function store(StoreSegmentRequest $request): RedirectResponse
+    public function store(StoreSegmentRequest $request, CreateSegment $createSegment): RedirectResponse
     {
         $data = $request->validated();
 
-        $request->user()->client->segments()->create([
+        $createSegment->handle($request->user(), [
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
-            'filters' => $this->filterPreparationService->prepareFilters($data['filters'] ?? [], $request->user()),
+            'filters' => $data['filters'] ?? [],
         ]);
 
         return to_route('segments.index')->with('success', 'Segment created.');
@@ -95,14 +97,14 @@ class SegmentController extends Controller
         ]);
     }
 
-    public function update(UpdateSegmentRequest $request, Segment $segment): RedirectResponse
+    public function update(UpdateSegmentRequest $request, Segment $segment, UpdateSegment $updateSegment): RedirectResponse
     {
         $data = $request->validated();
 
-        $segment->update([
+        $updateSegment->handle($request->user(), $segment, [
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
-            'filters' => $this->filterPreparationService->prepareFilters($data['filters'] ?? [], $request->user()),
+            'filters' => $data['filters'] ?? [],
         ]);
 
         return to_route('segments.show', $segment)->with('success', 'Segment updated.');

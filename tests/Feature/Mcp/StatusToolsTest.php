@@ -9,6 +9,7 @@ use App\Mcp\Tools\ScheduleNewsletterTool;
 use App\Mcp\Tools\SetAutomationStatusTool;
 use App\Mcp\Tools\SetSequenceStatusTool;
 use App\Mcp\Tools\SetSequenceStepStatusTool;
+use App\Mcp\Tools\UpdateAccountProfileTool;
 use App\Models\Automation;
 use App\Models\Contact;
 use App\Models\ContactMail;
@@ -524,7 +525,7 @@ class StatusToolsTest extends TestCase
         $newsletter = Newsletter::factory()->for($user)->create(['status' => 'draft']);
         $newsletter->message->update(['html_content' => '<p>No link here</p>', 'text_content' => 'No link here']);
         $sendAt = now()->addDay()->startOfMinute()->toIso8601String();
-        $expectedWarnings = [SendableContentCheck::UNSUBSCRIBE_WARNING, SendableContentCheck::POSTAL_ADDRESS_WARNING];
+        $expectedWarnings = [SendableContentCheck::UNSUBSCRIBE_WARNING, UpdateAccountProfileTool::POSTAL_ADDRESS_WARNING];
 
         ByoMailerServer::actingAs($user)->tool(ScheduleNewsletterTool::class, [
             'newsletter_id' => $newsletter->id,
@@ -571,7 +572,7 @@ class StatusToolsTest extends TestCase
         $sequence = Sequence::factory()->for($user)->create(['status' => 'live']);
         $step = SequenceStep::factory()->for($sequence)->create(['status' => 'draft']);
         $step->message->update(['html_content' => '<p>Welcome</p>', 'text_content' => 'Welcome']);
-        $expectedWarnings = [SendableContentCheck::UNSUBSCRIBE_WARNING, SendableContentCheck::POSTAL_ADDRESS_WARNING];
+        $expectedWarnings = [SendableContentCheck::UNSUBSCRIBE_WARNING, UpdateAccountProfileTool::POSTAL_ADDRESS_WARNING];
 
         ByoMailerServer::actingAs($user)->tool(SetSequenceStepStatusTool::class, [
             'sequence_step_id' => $step->id,
@@ -607,7 +608,7 @@ class StatusToolsTest extends TestCase
         SequenceStep::factory()->for($sequence)->create(['status' => 'live', 'delay_days' => 3]);
         $expectedWarnings = [
             "Step #{$withoutLink->id}: ".SendableContentCheck::UNSUBSCRIBE_WARNING,
-            SendableContentCheck::POSTAL_ADDRESS_WARNING,
+            UpdateAccountProfileTool::POSTAL_ADDRESS_WARNING,
         ];
 
         ByoMailerServer::actingAs($user)->tool(SetSequenceStatusTool::class, [

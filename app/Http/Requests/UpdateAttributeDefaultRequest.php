@@ -2,10 +2,13 @@
 
 namespace App\Http\Requests;
 
+use App\Concerns\AttributeDefaultValidationRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class UpdateAttributeDefaultRequest extends FormRequest
 {
+    use AttributeDefaultValidationRules;
+
     public function authorize(): bool
     {
         return true;
@@ -16,9 +19,7 @@ class UpdateAttributeDefaultRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'default_value' => ['nullable', 'string', 'max:255'],
-        ];
+        return $this->attributeDefaultRules();
     }
 
     /**

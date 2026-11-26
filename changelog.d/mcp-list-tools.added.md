@@ -1,0 +1,1 @@
+- MCP server: the new tools `list-lists`, `create-list`, `update-list`, `create-topic`, `update-topic` and `delete-topic` manage mailing lists and their topics. A change of the opt-in setting and a topic delete show a preview first and need the confirmation of the user.

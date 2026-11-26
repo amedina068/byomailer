@@ -3,17 +3,16 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Actions\DeleteUser;
+use App\Actions\UpdateAccountSettings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\ProfileDeleteRequest;
 use App\Http\Requests\Settings\ProfileUpdateRequest;
-use App\Models\Client;
 use App\Services\SunsetPolicy;
 use DateTimeZone;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Cache;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -31,14 +30,14 @@ class ProfileController extends Controller
             'sunsetInactiveDays' => $request->user()->client->sunset_inactive_days,
             'postalAddress' => $request->user()->client->postal_address,
             'isInstanceOwner' => $request->user()->isOwner(),
-            'sunsetPreview' => Inertia::defer(fn (): ?array => $this->sunsetPreview($request->user()->client, $sunsetPolicy)),
+            'sunsetPreview' => Inertia::defer(fn (): ?array => $sunsetPolicy->preview($request->user()->client)),
         ]);
     }
 
     /**
      * Update the user's profile information.
      */
-    public function update(ProfileUpdateRequest $request): RedirectResponse
+    public function update(ProfileUpdateRequest $request, UpdateAccountSettings $updateAccountSettings): RedirectResponse
     {
         $validated = $request->validated();
 
@@ -50,42 +49,12 @@ class ProfileController extends Controller
 
         $request->user()->save();
 
-        $client = $request->user()->client;
-        $client->update(['timezone' => $validated['timezone']]);
-
-        if (array_key_exists('sunset_inactive_days', $validated)) {
-            $days = $validated['sunset_inactive_days'];
-            $client->update(['sunset_inactive_days' => $days === null ? null : (int) $days]);
-        }
-
-        if (array_key_exists('postal_address', $validated)) {
-            $client->update(['postal_address' => $validated['postal_address']]);
-        }
-
-        return to_route('profile.edit');
-    }
-
-    /**
-     * The number of contacts the next sunset run marks. The count scans the
-     * client's contacts, so it loads as a deferred prop and is cached.
-     *
-     * @return array{count: int, days: int}|null
-     */
-    private function sunsetPreview(Client $client, SunsetPolicy $sunsetPolicy): ?array
-    {
-        $days = $client->sunset_inactive_days;
-
-        if ($days === null) {
-            return null;
-        }
-
-        $count = Cache::remember(
-            SunsetPolicy::previewCacheKey($client->id, $days),
-            600,
-            fn (): int => $sunsetPolicy->candidateCount($client->id, now()->subDays($days)),
+        $updateAccountSettings->handle(
+            $request->user()->client,
+            collect($validated)->only(['timezone', 'sunset_inactive_days', 'postal_address'])->all(),
         );
 
-        return ['count' => $count, 'days' => $days];
+        return to_route('profile.edit');
     }
 
     /**
