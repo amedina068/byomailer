@@ -65,6 +65,7 @@ class NewsletterVariablesController extends Controller
             'data' => [
                 'newsletter_id' => $newsletter->id,
                 'detected_variables' => $detected,
+                /** @var array<string, string> */
                 'content_variables' => ContentVariables::withDetected($detected, $newsletter->content_variables),
             ],
         ]);

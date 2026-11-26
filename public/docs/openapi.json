@@ -1,5 +1,5 @@
 {
-    "openapi": "3.1.0",
+    "openapi": "3.1.2",
     "info": {
         "title": "BYOMailer",
         "version": "1.0.0",
@@ -240,12 +240,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -272,6 +266,12 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -313,15 +313,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -348,6 +339,15 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     }
                 }
             },
@@ -396,18 +396,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -434,6 +422,18 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             },
@@ -482,18 +482,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -520,6 +508,18 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -570,6 +570,33 @@
                             }
                         }
                     },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Error overview."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        },
+                        "headers": {
+                            "Retry-After": {
+                                "description": "The number of seconds to wait before you send the request again.",
+                                "schema": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
                     },
@@ -599,33 +626,6 @@
                     },
                     "403": {
                         "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "429": {
-                        "description": "Too many requests",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "description": "Error overview."
-                                        }
-                                    },
-                                    "required": [
-                                        "message"
-                                    ]
-                                }
-                            }
-                        },
-                        "headers": {
-                            "Retry-After": {
-                                "description": "The number of seconds to wait before you send the request again.",
-                                "schema": {
-                                    "type": "integer"
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -667,15 +667,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -702,6 +693,15 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -758,6 +758,33 @@
                             }
                         }
                     },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Error overview."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        },
+                        "headers": {
+                            "Retry-After": {
+                                "description": "The number of seconds to wait before you send the request again.",
+                                "schema": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
+                    },
                     "422": {
                         "description": "The contact unsubscribed through an email link, or the address is on a suppression list that cannot be removed (`contact`). The address has a bounce suppression and `remove_suppression` is not true (`remove_suppression`).",
                         "content": {
@@ -802,33 +829,6 @@
                     },
                     "403": {
                         "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "429": {
-                        "description": "Too many requests",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "description": "Error overview."
-                                        }
-                                    },
-                                    "required": [
-                                        "message"
-                                    ]
-                                }
-                            }
-                        },
-                        "headers": {
-                            "Retry-After": {
-                                "description": "The number of seconds to wait before you send the request again.",
-                                "schema": {
-                                    "type": "integer"
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -878,15 +878,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -913,6 +904,15 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -1039,15 +1039,6 @@
                             }
                         }
                     },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -1074,6 +1065,15 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             },
@@ -1113,15 +1113,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -1148,6 +1139,15 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -1199,18 +1199,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -1237,6 +1225,18 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             },
@@ -1261,18 +1261,6 @@
                     "204": {
                         "description": "No content"
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -1299,6 +1287,18 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -1343,15 +1343,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -1378,6 +1369,15 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             },
@@ -1427,18 +1427,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -1465,6 +1453,18 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -1524,18 +1524,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -1562,6 +1550,18 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     }
                 }
             },
@@ -1594,18 +1594,6 @@
                     "204": {
                         "description": "No content"
                     },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -1632,6 +1620,18 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     }
                 }
             }
@@ -1666,12 +1666,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -1698,6 +1692,12 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             },
@@ -1737,15 +1737,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -1772,6 +1763,15 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -1824,18 +1824,6 @@
                             }
                         }
                     },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -1862,6 +1850,18 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             },
@@ -1887,18 +1887,6 @@
                     "204": {
                         "description": "No content"
                     },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -1925,6 +1913,18 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -2078,15 +2078,6 @@
                             }
                         }
                     },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -2113,6 +2104,15 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             },
@@ -2164,15 +2164,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -2199,6 +2190,15 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -2240,15 +2240,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -2275,6 +2266,15 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -2316,15 +2316,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -2351,6 +2342,15 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     }
                 }
             },
@@ -2426,8 +2426,7 @@
                                                                 "type": "string"
                                                             },
                                                             "minItems": 0,
-                                                            "maxItems": 0,
-                                                            "additionalItems": false
+                                                            "maxItems": 0
                                                         }
                                                     },
                                                     "required": [
@@ -2444,18 +2443,6 @@
                                 }
                             }
                         }
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
                     },
                     "429": {
                         "description": "Too many requests",
@@ -2483,6 +2470,18 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             },
@@ -2506,6 +2505,33 @@
                 "responses": {
                     "204": {
                         "description": "No content"
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Error overview."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        },
+                        "headers": {
+                            "Retry-After": {
+                                "description": "The number of seconds to wait before you send the request again.",
+                                "schema": {
+                                    "type": "integer"
+                                }
+                            }
+                        }
                     },
                     "404": {
                         "$ref": "#/components/responses/ModelNotFoundException"
@@ -2548,33 +2574,6 @@
                     },
                     "403": {
                         "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "429": {
-                        "description": "Too many requests",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "description": "Error overview."
-                                        }
-                                    },
-                                    "required": [
-                                        "message"
-                                    ]
-                                }
-                            }
-                        },
-                        "headers": {
-                            "Retry-After": {
-                                "description": "The number of seconds to wait before you send the request again.",
-                                "schema": {
-                                    "type": "integer"
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -2616,6 +2615,33 @@
                                         "message",
                                         "sent_to"
                                     ]
+                                }
+                            }
+                        }
+                    },
+                    "429": {
+                        "description": "Too many requests",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "description": "Error overview."
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        },
+                        "headers": {
+                            "Retry-After": {
+                                "description": "The number of seconds to wait before you send the request again.",
+                                "schema": {
+                                    "type": "integer"
                                 }
                             }
                         }
@@ -2664,33 +2690,6 @@
                     },
                     "403": {
                         "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "429": {
-                        "description": "Too many requests",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "description": "Error overview."
-                                        }
-                                    },
-                                    "required": [
-                                        "message"
-                                    ]
-                                }
-                            }
-                        },
-                        "headers": {
-                            "Retry-After": {
-                                "description": "The number of seconds to wait before you send the request again.",
-                                "schema": {
-                                    "type": "integer"
-                                }
-                            }
-                        }
                     }
                 }
             }
@@ -2742,18 +2741,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -2780,6 +2767,18 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -2843,15 +2842,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -2878,6 +2868,15 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     }
                 }
             },
@@ -2949,18 +2948,6 @@
                             }
                         }
                     },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -2987,6 +2974,18 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     }
                 }
             }
@@ -3158,18 +3157,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -3196,6 +3183,18 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     }
                 }
             }
@@ -3355,15 +3354,6 @@
                             }
                         }
                     },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -3390,6 +3380,15 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -3431,15 +3430,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -3466,6 +3456,15 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     }
                 }
             }
@@ -3507,15 +3506,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -3542,6 +3532,15 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     }
                 }
             }
@@ -3605,15 +3604,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -3640,6 +3630,15 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             },
@@ -3711,18 +3710,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -3749,6 +3736,18 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -3798,15 +3797,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -3833,6 +3823,15 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     }
                 }
             }
@@ -3882,15 +3881,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -3917,6 +3907,15 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     }
                 }
             }
@@ -3976,18 +3975,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -4014,6 +4001,18 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     }
                 }
             }
@@ -4048,12 +4047,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -4080,6 +4073,12 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             },
@@ -4119,15 +4118,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -4154,6 +4144,15 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -4195,15 +4194,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -4230,6 +4220,15 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             },
@@ -4279,18 +4278,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -4317,6 +4304,18 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             },
@@ -4341,15 +4340,6 @@
                     "204": {
                         "description": "No content"
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -4376,6 +4366,15 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -4519,15 +4518,6 @@
                             }
                         }
                     },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -4554,6 +4544,15 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -4585,30 +4584,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "404": {
-                        "description": "No template is the default.",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "type": "object",
-                                    "properties": {
-                                        "message": {
-                                            "type": "string"
-                                        }
-                                    },
-                                    "required": [
-                                        "message"
-                                    ]
-                                }
-                            }
-                        }
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -4635,6 +4610,30 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "404": {
+                        "description": "No template is the default.",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "message": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "required": [
+                                        "message"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -4676,15 +4675,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -4711,6 +4701,15 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -4846,12 +4845,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -4878,6 +4871,12 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -4919,15 +4918,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -4954,6 +4944,15 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -5105,12 +5104,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -5137,6 +5130,12 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -5178,15 +5177,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -5213,6 +5203,15 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -5341,15 +5340,6 @@
                             }
                         }
                     },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -5376,6 +5366,15 @@
                                 }
                             }
                         }
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             },
@@ -5415,15 +5414,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -5450,6 +5440,15 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -5491,15 +5490,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -5526,6 +5516,15 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
                     }
                 }
             },
@@ -5575,18 +5574,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -5613,6 +5600,18 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             },
@@ -5637,15 +5636,6 @@
                     "204": {
                         "description": "No content"
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -5672,6 +5662,15 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -5809,7 +5808,9 @@
                                         "message": {
                                             "type": "string",
                                             "description": "Error overview.",
-                                            "example": "Only an admin of the account can manage webhook endpoints."
+                                            "examples": [
+                                                "Only an admin of the account can manage webhook endpoints."
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -5818,9 +5819,6 @@
                                 }
                             }
                         }
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
                     },
                     "429": {
                         "description": "Too many requests",
@@ -5848,6 +5846,9 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
                     }
                 }
             },
@@ -5887,15 +5888,6 @@
                             }
                         }
                     },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -5922,6 +5914,15 @@
                                 }
                             }
                         }
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             }
@@ -5973,7 +5974,9 @@
                                         "message": {
                                             "type": "string",
                                             "description": "Error overview.",
-                                            "example": "Only an admin of the account can manage webhook endpoints."
+                                            "examples": [
+                                                "Only an admin of the account can manage webhook endpoints."
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -5982,12 +5985,6 @@
                                 }
                             }
                         }
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
                     },
                     "429": {
                         "description": "Too many requests",
@@ -6015,6 +6012,12 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
                     }
                 }
             },
@@ -6063,18 +6066,6 @@
                             }
                         }
                     },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
-                    },
-                    "422": {
-                        "$ref": "#/components/responses/ValidationException"
-                    },
-                    "403": {
-                        "$ref": "#/components/responses/AuthorizationException"
-                    },
                     "429": {
                         "description": "Too many requests",
                         "content": {
@@ -6101,6 +6092,18 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
+                    },
+                    "422": {
+                        "$ref": "#/components/responses/ValidationException"
+                    },
+                    "403": {
+                        "$ref": "#/components/responses/AuthorizationException"
                     }
                 }
             },
@@ -6135,7 +6138,9 @@
                                         "message": {
                                             "type": "string",
                                             "description": "Error overview.",
-                                            "example": "Only an admin of the account can manage webhook endpoints."
+                                            "examples": [
+                                                "Only an admin of the account can manage webhook endpoints."
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -6144,12 +6149,6 @@
                                 }
                             }
                         }
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
                     },
                     "429": {
                         "description": "Too many requests",
@@ -6177,6 +6176,12 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
                     }
                 }
             }
@@ -6322,7 +6327,9 @@
                                         "message": {
                                             "type": "string",
                                             "description": "Error overview.",
-                                            "example": "Only an admin of the account can manage webhook endpoints."
+                                            "examples": [
+                                                "Only an admin of the account can manage webhook endpoints."
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -6331,12 +6338,6 @@
                                 }
                             }
                         }
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
                     },
                     "429": {
                         "description": "Too many requests",
@@ -6364,6 +6365,12 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
                     }
                 }
             }
@@ -6415,7 +6422,9 @@
                                         "message": {
                                             "type": "string",
                                             "description": "Error overview.",
-                                            "example": "Only an admin of the account can manage webhook endpoints."
+                                            "examples": [
+                                                "Only an admin of the account can manage webhook endpoints."
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -6424,12 +6433,6 @@
                                 }
                             }
                         }
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
                     },
                     "429": {
                         "description": "Too many requests",
@@ -6457,6 +6460,12 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
                     }
                 }
             }
@@ -6508,7 +6517,9 @@
                                         "message": {
                                             "type": "string",
                                             "description": "Error overview.",
-                                            "example": "Only an admin of the account can manage webhook endpoints."
+                                            "examples": [
+                                                "Only an admin of the account can manage webhook endpoints."
+                                            ]
                                         }
                                     },
                                     "required": [
@@ -6517,12 +6528,6 @@
                                 }
                             }
                         }
-                    },
-                    "404": {
-                        "$ref": "#/components/responses/ModelNotFoundException"
-                    },
-                    "401": {
-                        "$ref": "#/components/responses/AuthenticationException"
                     },
                     "429": {
                         "description": "Too many requests",
@@ -6550,6 +6555,12 @@
                                 }
                             }
                         }
+                    },
+                    "404": {
+                        "$ref": "#/components/responses/ModelNotFoundException"
+                    },
+                    "401": {
+                        "$ref": "#/components/responses/AuthenticationException"
                     }
                 }
             }
@@ -6680,8 +6691,8 @@
                         "type": "string"
                     },
                     "extra_attributes": {
-                        "type": "array",
-                        "items": {}
+                        "type": "object",
+                        "additionalProperties": {}
                     },
                     "unsubscribed_at": {
                         "type": [
@@ -6723,7 +6734,11 @@
                                     "type": "string"
                                 },
                                 "status": {
-                                    "type": "string"
+                                    "type": "string",
+                                    "enum": [
+                                        "draft",
+                                        "live"
+                                    ]
                                 }
                             },
                             "required": [
@@ -6782,7 +6797,13 @@
                         ]
                     },
                     "identity_status": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "verifying",
+                            "verified",
+                            "failed"
+                        ]
                     },
                     "verified_at": {
                         "type": [
@@ -7014,16 +7035,10 @@
                         "type": "object",
                         "properties": {
                             "subject": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
+                                "type": "string"
                             },
                             "html_content": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
+                                "type": "string"
                             },
                             "email_identity_id": {
                                 "type": [
@@ -7122,16 +7137,33 @@
                         "type": "string"
                     },
                     "status": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "draft",
+                            "scheduled",
+                            "queued",
+                            "ab_testing",
+                            "sent",
+                            "failed"
+                        ]
                     },
                     "subject": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "preview_text": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "email_identity_id": {
-                        "type": "string"
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
                     },
                     "email_identity": {
                         "type": [
@@ -7141,13 +7173,22 @@
                         "items": {}
                     },
                     "email_template_id": {
-                        "type": "string"
+                        "type": [
+                            "integer",
+                            "null"
+                        ]
                     },
                     "from_email": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "from_name": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "scheduled_at": {
                         "type": [
@@ -7176,8 +7217,13 @@
                         }
                     },
                     "content_variables": {
-                        "type": "array",
-                        "items": {}
+                        "type": "object",
+                        "additionalProperties": {
+                            "type": [
+                                "string",
+                                "null"
+                            ]
+                        }
                     },
                     "ab_test_enabled": {
                         "type": "boolean"
@@ -7186,13 +7232,24 @@
                         "type": [
                             "string",
                             "null"
+                        ],
+                        "enum": [
+                            "a",
+                            "b",
+                            null
                         ]
                     },
                     "subject_b": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "preview_text_b": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "total_contacts_reached": {
                         "type": "integer"
@@ -7245,30 +7302,36 @@
                         ]
                     },
                     "created_at": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
+                        "type": "string",
                         "format": "date-time"
                     },
                     "updated_at": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
+                        "type": "string",
                         "format": "date-time"
                     },
                     "html_content": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "text_content": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "html_content_b": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "text_content_b": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     }
                 },
                 "required": [
@@ -7365,7 +7428,11 @@
                         "type": "string"
                     },
                     "status": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "draft",
+                            "live"
+                        ]
                     },
                     "contacts_count": {
                         "type": "integer"
@@ -7443,7 +7510,11 @@
                         "type": "string"
                     },
                     "status": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "draft",
+                            "live"
+                        ]
                     },
                     "stats": {
                         "type": "string"
@@ -7513,10 +7584,18 @@
                         "type": "integer"
                     },
                     "delay_type": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "days",
+                            "hours"
+                        ]
                     },
                     "status": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "draft",
+                            "live"
+                        ]
                     },
                     "filters": {
                         "type": "array",
@@ -7532,10 +7611,7 @@
                                 "type": "integer"
                             },
                             "subject": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
+                                "type": "string"
                             },
                             "preview_text": {
                                 "type": [
@@ -7544,16 +7620,10 @@
                                 ]
                             },
                             "html_content": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
+                                "type": "string"
                             },
                             "text_content": {
-                                "type": [
-                                    "string",
-                                    "null"
-                                ]
+                                "type": "string"
                             },
                             "email_identity_id": {
                                 "type": [
@@ -7631,16 +7701,27 @@
                         "type": "integer"
                     },
                     "subject": {
-                        "type": "string"
+                        "type": [
+                            "string",
+                            "null"
+                        ]
                     },
                     "delay_days": {
                         "type": "integer"
                     },
                     "delay_type": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "days",
+                            "hours"
+                        ]
                     },
                     "status": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "draft",
+                            "live"
+                        ]
                     },
                     "stats": {
                         "type": "string"
@@ -7671,7 +7752,11 @@
                         "type": "string"
                     },
                     "status": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                            "draft",
+                            "live"
+                        ]
                     },
                     "steps_count": {
                         "type": "integer"
@@ -7856,13 +7941,6 @@
                         "type": "string",
                         "maxLength": 2048
                     },
-                    "description": {
-                        "type": [
-                            "string",
-                            "null"
-                        ],
-                        "maxLength": 255
-                    },
                     "events": {
                         "type": "array",
                         "items": {
@@ -7877,6 +7955,13 @@
                             ]
                         },
                         "minItems": 1
+                    },
+                    "description": {
+                        "type": [
+                            "string",
+                            "null"
+                        ],
+                        "maxLength": 255
                     }
                 },
                 "required": [

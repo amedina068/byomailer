@@ -1,4 +1,4 @@
-openapi: 3.1.0
+openapi: 3.1.2
 info:
   title: BYOMailer
   version: 1.0.0
@@ -185,10 +185,6 @@ paths:
                   - data
                   - links
                   - meta
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -206,6 +202,10 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/contacts/{contactId}':
     get:
       operationId: v1.contacts.show
@@ -232,12 +232,6 @@ paths:
                     $ref: '#/components/schemas/ContactResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
         429:
           description: 'Too many requests'
           content:
@@ -255,6 +249,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
     put:
       operationId: v1.contacts.update
       description: |-
@@ -290,14 +290,6 @@ paths:
                     $ref: '#/components/schemas/ContactResource'
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -315,6 +307,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
     patch:
       operationId: v1.contacts.patch
       description: |-
@@ -350,14 +350,6 @@ paths:
                     $ref: '#/components/schemas/ContactResource'
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -375,6 +367,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/lists/{listId}/contacts':
     post:
       operationId: v1.lists.contacts.store
@@ -415,6 +415,23 @@ paths:
                     $ref: '#/components/schemas/ContactResource'
                 required:
                   - data
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
         404:
           $ref: '#/components/responses/ModelNotFoundException'
         401:
@@ -434,23 +451,6 @@ paths:
                   - data
         403:
           $ref: '#/components/responses/AuthorizationException'
-        429:
-          description: 'Too many requests'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: 'Error overview.'
-                required:
-                  - message
-          headers:
-            Retry-After:
-              description: 'The number of seconds to wait before you send the request again.'
-              schema:
-                type: integer
   '/contacts/{contactId}/unsubscribe':
     post:
       operationId: v1.contacts.unsubscribe
@@ -479,12 +479,6 @@ paths:
                     $ref: '#/components/schemas/ContactResource'
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -502,6 +496,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/contacts/{contactId}/subscribe':
     post:
       operationId: v1.contacts.subscribe
@@ -543,6 +543,23 @@ paths:
                     $ref: '#/components/schemas/ContactResource'
                 required:
                   - data
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
         422:
           description: 'The contact unsubscribed through an email link, or the address is on a suppression list that cannot be removed (`contact`). The address has a bounce suppression and `remove_suppression` is not true (`remove_suppression`).'
           content:
@@ -572,23 +589,6 @@ paths:
           $ref: '#/components/responses/AuthenticationException'
         403:
           $ref: '#/components/responses/AuthorizationException'
-        429:
-          description: 'Too many requests'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: 'Error overview.'
-                required:
-                  - message
-          headers:
-            Retry-After:
-              description: 'The number of seconds to wait before you send the request again.'
-              schema:
-                type: integer
   '/lists/{listId}/contacts/{contactId}':
     delete:
       operationId: v1.lists.contacts.destroy
@@ -623,12 +623,6 @@ paths:
                     $ref: '#/components/schemas/ContactResource'
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -646,6 +640,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   /lists:
     get:
       operationId: v1.lists.index
@@ -733,12 +733,6 @@ paths:
                   - data
                   - links
                   - meta
-        422:
-          $ref: '#/components/responses/ValidationException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -756,6 +750,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
     post:
       operationId: v1.lists.store
       description: 'Creates a list with the given name. A list name is unique in your account.'
@@ -780,12 +780,6 @@ paths:
                     $ref: '#/components/schemas/MailListResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -803,6 +797,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/lists/{listId}':
     patch:
       operationId: v1.lists.update
@@ -835,14 +835,6 @@ paths:
                     $ref: '#/components/schemas/MailListResource'
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -860,6 +852,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
     delete:
       operationId: v1.lists.destroy
       description: |-
@@ -879,14 +879,6 @@ paths:
       responses:
         204:
           description: 'No content'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -904,6 +896,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/lists/{listId}/topics':
     get:
       operationId: v1.lists.topics.index
@@ -932,12 +932,6 @@ paths:
                       $ref: '#/components/schemas/TopicResource'
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -955,6 +949,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
     post:
       operationId: v1.lists.topics.store
       description: |-
@@ -988,14 +988,6 @@ paths:
                     $ref: '#/components/schemas/TopicResource'
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -1013,6 +1005,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/lists/{listId}/topics/{topicId}':
     patch:
       operationId: v1.lists.topics.update
@@ -1051,14 +1051,6 @@ paths:
                     $ref: '#/components/schemas/TopicResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
         429:
           description: 'Too many requests'
           content:
@@ -1076,6 +1068,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
     delete:
       operationId: v1.lists.topics.destroy
       description: |-
@@ -1100,14 +1100,6 @@ paths:
       responses:
         204:
           description: 'No content'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
         429:
           description: 'Too many requests'
           content:
@@ -1125,6 +1117,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
   /tags:
     get:
       operationId: v1.tags.index
@@ -1148,10 +1148,6 @@ paths:
                       $ref: '#/components/schemas/TagResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -1169,6 +1165,10 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
     post:
       operationId: v1.tags.store
       description: 'Creates a tag. A tag name is unique in your account.'
@@ -1193,12 +1193,6 @@ paths:
                     $ref: '#/components/schemas/TagResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -1216,6 +1210,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/tags/{tag}':
     patch:
       operationId: v1.tags.update
@@ -1252,14 +1252,6 @@ paths:
                     $ref: '#/components/schemas/TagResource'
                 required:
                   - data
-        422:
-          $ref: '#/components/responses/ValidationException'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -1277,6 +1269,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        422:
+          $ref: '#/components/responses/ValidationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
     delete:
       operationId: v1.tags.destroy
       description: |-
@@ -1297,14 +1297,6 @@ paths:
       responses:
         204:
           description: 'No content'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -1322,6 +1314,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        422:
+          $ref: '#/components/responses/ValidationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   /newsletters:
     get:
       operationId: v1.newsletters.index
@@ -1431,12 +1431,6 @@ paths:
                   - data
                   - links
                   - meta
-        422:
-          $ref: '#/components/responses/ValidationException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -1454,6 +1448,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
     post:
       operationId: v1.newsletters.store
       description: |-
@@ -1492,12 +1492,6 @@ paths:
                 required:
                   - data
                   - meta
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -1515,6 +1509,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   /newsletters/contacts/preview:
     post:
       operationId: v1.newsletters.contacts.preview
@@ -1543,12 +1543,6 @@ paths:
                     minimum: 0
                 required:
                   - count
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -1566,6 +1560,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/newsletters/{newsletterId}':
     get:
       operationId: v1.newsletters.show
@@ -1594,12 +1594,6 @@ paths:
                     $ref: '#/components/schemas/NewsletterResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
         429:
           description: 'Too many requests'
           content:
@@ -1617,6 +1611,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
     patch:
       operationId: v1.newsletters.update
       description: |-
@@ -1683,20 +1683,11 @@ paths:
                               type: string
                             minItems: 0
                             maxItems: 0
-                            additionalItems: false
                         required:
                           - warnings
                     required:
                       - data
                       - meta
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -1714,6 +1705,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
     delete:
       operationId: v1.newsletters.destroy
       description: |-
@@ -1733,6 +1732,23 @@ paths:
       responses:
         204:
           description: 'No content'
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
         404:
           $ref: '#/components/responses/ModelNotFoundException'
         422:
@@ -1760,23 +1776,6 @@ paths:
           $ref: '#/components/responses/AuthenticationException'
         403:
           $ref: '#/components/responses/AuthorizationException'
-        429:
-          description: 'Too many requests'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: 'Error overview.'
-                required:
-                  - message
-          headers:
-            Retry-After:
-              description: 'The number of seconds to wait before you send the request again.'
-              schema:
-                type: integer
   '/newsletters/{newsletterId}/test-mail':
     post:
       operationId: v1.newsletters.test-mail
@@ -1809,6 +1808,23 @@ paths:
                 required:
                   - message
                   - sent_to
+        429:
+          description: 'Too many requests'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    description: 'Error overview.'
+                required:
+                  - message
+          headers:
+            Retry-After:
+              description: 'The number of seconds to wait before you send the request again.'
+              schema:
+                type: integer
         404:
           $ref: '#/components/responses/ModelNotFoundException'
         401:
@@ -1838,23 +1854,6 @@ paths:
                   - errors
         403:
           $ref: '#/components/responses/AuthorizationException'
-        429:
-          description: 'Too many requests'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    description: 'Error overview.'
-                required:
-                  - message
-          headers:
-            Retry-After:
-              description: 'The number of seconds to wait before you send the request again.'
-              schema:
-                type: integer
   '/newsletters/{newsletterId}/ab-winner':
     post:
       operationId: v1.newsletters.ab-winner
@@ -1891,14 +1890,6 @@ paths:
                     $ref: '#/components/schemas/NewsletterResource'
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -1916,6 +1907,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/newsletters/{newsletterId}/variables':
     get:
       operationId: v1.newsletters.variables.show
@@ -1960,12 +1959,6 @@ paths:
                       - content_variables
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
         429:
           description: 'Too many requests'
           content:
@@ -1983,6 +1976,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
     patch:
       operationId: v1.newsletters.variables.update
       description: |-
@@ -2033,14 +2032,6 @@ paths:
                       - content_variables
                 required:
                   - data
-        422:
-          $ref: '#/components/responses/ValidationException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
         429:
           description: 'Too many requests'
           content:
@@ -2058,6 +2049,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
   '/sequences/{sequenceId}/steps/{sequenceStepId}/contact-mails/export':
     get:
       operationId: v1.sequences.steps.contact-mails.export
@@ -2190,14 +2189,6 @@ paths:
                 type: string
                 enum:
                   - chunked
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
         429:
           description: 'Too many requests'
           content:
@@ -2215,6 +2206,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
   /sequences:
     get:
       operationId: v1.sequences.index
@@ -2328,12 +2327,6 @@ paths:
                   - data
                   - links
                   - meta
-        422:
-          $ref: '#/components/responses/ValidationException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -2351,6 +2344,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/sequences/{sequenceId}':
     get:
       operationId: v1.sequences.show
@@ -2379,12 +2378,6 @@ paths:
                     $ref: '#/components/schemas/SequenceResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
         429:
           description: 'Too many requests'
           content:
@@ -2402,6 +2395,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
   '/sequences/{sequenceId}/stats':
     get:
       operationId: v1.sequences.stats
@@ -2428,12 +2427,6 @@ paths:
                     $ref: '#/components/schemas/SequenceStatsResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
         429:
           description: 'Too many requests'
           content:
@@ -2451,6 +2444,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
   '/sequences/{sequenceId}/variables':
     get:
       operationId: v1.sequences.variables.show
@@ -2495,12 +2494,6 @@ paths:
                       - content_variables
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -2518,6 +2511,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
     patch:
       operationId: v1.sequences.variables.update
       description: |-
@@ -2566,14 +2565,6 @@ paths:
                       - content_variables
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -2591,6 +2582,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/sequences/{sequenceId}/steps/{sequenceStepId}':
     get:
       operationId: v1.sequences.steps.show
@@ -2625,12 +2624,6 @@ paths:
                     $ref: '#/components/schemas/SequenceStepResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
         429:
           description: 'Too many requests'
           content:
@@ -2648,6 +2641,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
   '/sequences/{sequenceId}/steps/{sequenceStepId}/stats':
     get:
       operationId: v1.sequences.steps.stats
@@ -2680,12 +2679,6 @@ paths:
                     $ref: '#/components/schemas/SequenceStepStatsResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
         429:
           description: 'Too many requests'
           content:
@@ -2703,6 +2696,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
   '/sequences/{sequenceId}/steps/{sequenceStepId}/filters':
     patch:
       operationId: v1.sequences.steps.filters.update
@@ -2744,14 +2743,6 @@ paths:
                     $ref: '#/components/schemas/SequenceStepResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
         429:
           description: 'Too many requests'
           content:
@@ -2769,6 +2760,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
   /blocks:
     get:
       operationId: v1.blocks.index
@@ -2792,10 +2791,6 @@ paths:
                       $ref: '#/components/schemas/BlockResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -2813,6 +2808,10 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
     post:
       operationId: v1.blocks.store
       description: 'Creates a block with a name and HTML content.'
@@ -2837,12 +2836,6 @@ paths:
                     $ref: '#/components/schemas/BlockResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -2860,6 +2853,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/blocks/{blockId}':
     get:
       operationId: v1.blocks.show
@@ -2886,12 +2885,6 @@ paths:
                     $ref: '#/components/schemas/BlockResource'
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -2909,6 +2902,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
     patch:
       operationId: v1.blocks.update
       description: 'Replaces the name and the HTML content of a block.'
@@ -2940,14 +2939,6 @@ paths:
                     $ref: '#/components/schemas/BlockResource'
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -2965,6 +2956,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
     delete:
       operationId: v1.blocks.destroy
       description: 'Deletes the block.'
@@ -2981,12 +2980,6 @@ paths:
       responses:
         204:
           description: 'No content'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -3004,6 +2997,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   /email-templates:
     get:
       operationId: v1.email-templates.index
@@ -3106,12 +3105,6 @@ paths:
                   - data
                   - links
                   - meta
-        422:
-          $ref: '#/components/responses/ValidationException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -3129,6 +3122,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   /email-templates/default:
     get:
       operationId: v1.email-templates.default
@@ -3150,21 +3149,6 @@ paths:
                     $ref: '#/components/schemas/EmailTemplateResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        404:
-          description: 'No template is the default.'
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                required:
-                  - message
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -3182,6 +3166,21 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        404:
+          description: 'No template is the default.'
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                required:
+                  - message
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/email-templates/{emailTemplateId}':
     get:
       operationId: v1.email-templates.show
@@ -3208,12 +3207,6 @@ paths:
                     $ref: '#/components/schemas/EmailTemplateResource'
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -3231,6 +3224,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   /email-identities:
     get:
       operationId: v1.email-identities.index
@@ -3325,10 +3324,6 @@ paths:
                   - data
                   - links
                   - meta
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -3346,6 +3341,10 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/email-identities/{emailIdentityId}':
     get:
       operationId: v1.email-identities.show
@@ -3372,12 +3371,6 @@ paths:
                     $ref: '#/components/schemas/EmailIdentityResource'
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -3395,6 +3388,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   /email-logs:
     get:
       operationId: v1.email-logs.index
@@ -3501,10 +3500,6 @@ paths:
                   - data
                   - links
                   - meta
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -3522,6 +3517,10 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/email-logs/{emailLogId}':
     get:
       operationId: v1.email-logs.show
@@ -3548,12 +3547,6 @@ paths:
                     $ref: '#/components/schemas/EmailLogResource'
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -3571,6 +3564,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   /projects:
     get:
       operationId: v1.projects.index
@@ -3661,12 +3660,6 @@ paths:
                   - data
                   - links
                   - meta
-        422:
-          $ref: '#/components/responses/ValidationException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -3684,6 +3677,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        422:
+          $ref: '#/components/responses/ValidationException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
     post:
       operationId: v1.projects.store
       description: 'Creates a project with the given name.'
@@ -3708,12 +3707,6 @@ paths:
                     $ref: '#/components/schemas/ProjectResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -3731,6 +3724,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/projects/{projectId}':
     get:
       operationId: v1.projects.show
@@ -3759,12 +3758,6 @@ paths:
                     $ref: '#/components/schemas/ProjectResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
         429:
           description: 'Too many requests'
           content:
@@ -3782,6 +3775,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
     patch:
       operationId: v1.projects.update
       description: 'Changes the name of a project.'
@@ -3813,14 +3812,6 @@ paths:
                     $ref: '#/components/schemas/ProjectResource'
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -3838,6 +3829,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
     delete:
       operationId: v1.projects.destroy
       description: |-
@@ -3856,12 +3855,6 @@ paths:
       responses:
         204:
           description: 'No content'
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -3879,6 +3872,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   /webhook-endpoints:
     get:
       operationId: v1.webhook-endpoints.index
@@ -3979,11 +3978,10 @@ paths:
                   message:
                     type: string
                     description: 'Error overview.'
-                    example: 'Only an admin of the account can manage webhook endpoints.'
+                    examples:
+                      - 'Only an admin of the account can manage webhook endpoints.'
                 required:
                   - message
-        401:
-          $ref: '#/components/responses/AuthenticationException'
         429:
           description: 'Too many requests'
           content:
@@ -4001,6 +3999,8 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
     post:
       operationId: v1.webhook-endpoints.store
       description: |-
@@ -4028,12 +4028,6 @@ paths:
                     $ref: '#/components/schemas/WebhookEndpointResource'
                 required:
                   - data
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -4051,6 +4045,12 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
   '/webhook-endpoints/{webhookEndpointId}':
     get:
       operationId: v1.webhook-endpoints.show
@@ -4089,13 +4089,10 @@ paths:
                   message:
                     type: string
                     description: 'Error overview.'
-                    example: 'Only an admin of the account can manage webhook endpoints.'
+                    examples:
+                      - 'Only an admin of the account can manage webhook endpoints.'
                 required:
                   - message
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
         429:
           description: 'Too many requests'
           content:
@@ -4113,6 +4110,10 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
     patch:
       operationId: v1.webhook-endpoints.update
       description: 'Changes the description, or turns the endpoint on or off with `active`.'
@@ -4143,14 +4144,6 @@ paths:
                     $ref: '#/components/schemas/WebhookEndpointResource'
                 required:
                   - data
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
-        422:
-          $ref: '#/components/responses/ValidationException'
-        403:
-          $ref: '#/components/responses/AuthorizationException'
         429:
           description: 'Too many requests'
           content:
@@ -4168,6 +4161,14 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
+        422:
+          $ref: '#/components/responses/ValidationException'
+        403:
+          $ref: '#/components/responses/AuthorizationException'
     delete:
       operationId: v1.webhook-endpoints.destroy
       description: 'Deletes the webhook endpoint. Only an admin can call this endpoint.'
@@ -4194,13 +4195,10 @@ paths:
                   message:
                     type: string
                     description: 'Error overview.'
-                    example: 'Only an admin of the account can manage webhook endpoints.'
+                    examples:
+                      - 'Only an admin of the account can manage webhook endpoints.'
                 required:
                   - message
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
         429:
           description: 'Too many requests'
           content:
@@ -4218,6 +4216,10 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
   '/webhook-endpoints/{webhookEndpointId}/deliveries':
     get:
       operationId: v1.webhook-endpoints.deliveries
@@ -4324,13 +4326,10 @@ paths:
                   message:
                     type: string
                     description: 'Error overview.'
-                    example: 'Only an admin of the account can manage webhook endpoints.'
+                    examples:
+                      - 'Only an admin of the account can manage webhook endpoints.'
                 required:
                   - message
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
         429:
           description: 'Too many requests'
           content:
@@ -4348,6 +4347,10 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
   '/webhook-endpoints/{webhookEndpointId}/test':
     post:
       operationId: v1.webhook-endpoints.test
@@ -4387,13 +4390,10 @@ paths:
                   message:
                     type: string
                     description: 'Error overview.'
-                    example: 'Only an admin of the account can manage webhook endpoints.'
+                    examples:
+                      - 'Only an admin of the account can manage webhook endpoints.'
                 required:
                   - message
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
         429:
           description: 'Too many requests'
           content:
@@ -4411,6 +4411,10 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
   '/webhook-endpoints/{webhookEndpointId}/secret':
     post:
       operationId: v1.webhook-endpoints.secret
@@ -4449,13 +4453,10 @@ paths:
                   message:
                     type: string
                     description: 'Error overview.'
-                    example: 'Only an admin of the account can manage webhook endpoints.'
+                    examples:
+                      - 'Only an admin of the account can manage webhook endpoints.'
                 required:
                   - message
-        404:
-          $ref: '#/components/responses/ModelNotFoundException'
-        401:
-          $ref: '#/components/responses/AuthenticationException'
         429:
           description: 'Too many requests'
           content:
@@ -4473,6 +4474,10 @@ paths:
               description: 'The number of seconds to wait before you send the request again.'
               schema:
                 type: integer
+        404:
+          $ref: '#/components/responses/ModelNotFoundException'
+        401:
+          $ref: '#/components/responses/AuthenticationException'
 components:
   securitySchemes:
     http:
@@ -4565,8 +4570,8 @@ components:
         email:
           type: string
         extra_attributes:
-          type: array
-          items: {}
+          type: object
+          additionalProperties: {}
         unsubscribed_at:
           type:
             - string
@@ -4598,6 +4603,9 @@ components:
                 type: string
               status:
                 type: string
+                enum:
+                  - draft
+                  - live
             required:
               - id
               - name
@@ -4640,6 +4648,11 @@ components:
             - 'null'
         identity_status:
           type: string
+          enum:
+            - pending
+            - verifying
+            - verified
+            - failed
         verified_at:
           type:
             - string
@@ -4815,13 +4828,9 @@ components:
           type: object
           properties:
             subject:
-              type:
-                - string
-                - 'null'
+              type: string
             html_content:
-              type:
-                - string
-                - 'null'
+              type: string
             email_identity_id:
               type:
                 - integer
@@ -4889,23 +4898,42 @@ components:
           type: string
         status:
           type: string
+          enum:
+            - draft
+            - scheduled
+            - queued
+            - ab_testing
+            - sent
+            - failed
         subject:
-          type: string
+          type:
+            - string
+            - 'null'
         preview_text:
-          type: string
+          type:
+            - string
+            - 'null'
         email_identity_id:
-          type: string
+          type:
+            - integer
+            - 'null'
         email_identity:
           type:
             - array
             - 'null'
           items: {}
         email_template_id:
-          type: string
+          type:
+            - integer
+            - 'null'
         from_email:
-          type: string
+          type:
+            - string
+            - 'null'
         from_name:
-          type: string
+          type:
+            - string
+            - 'null'
         scheduled_at:
           type:
             - string
@@ -4925,18 +4953,29 @@ components:
           items:
             type: object
         content_variables:
-          type: array
-          items: {}
+          type: object
+          additionalProperties:
+            type:
+              - string
+              - 'null'
         ab_test_enabled:
           type: boolean
         ab_test_winner_variant:
           type:
             - string
             - 'null'
+          enum:
+            - a
+            - b
+            - null
         subject_b:
-          type: string
+          type:
+            - string
+            - 'null'
         preview_text_b:
-          type: string
+          type:
+            - string
+            - 'null'
         total_contacts_reached:
           type: integer
         project_ids:
@@ -4974,23 +5013,27 @@ components:
             - open_rate
             - unsubscribe_rate
         created_at:
-          type:
-            - string
-            - 'null'
+          type: string
           format: date-time
         updated_at:
+          type: string
+          format: date-time
+        html_content:
           type:
             - string
             - 'null'
-          format: date-time
-        html_content:
-          type: string
         text_content:
-          type: string
+          type:
+            - string
+            - 'null'
         html_content_b:
-          type: string
+          type:
+            - string
+            - 'null'
         text_content_b:
-          type: string
+          type:
+            - string
+            - 'null'
       required:
         - id
         - uuid
@@ -5068,6 +5111,9 @@ components:
           type: string
         status:
           type: string
+          enum:
+            - draft
+            - live
         contacts_count:
           type: integer
         completed_count:
@@ -5124,6 +5170,9 @@ components:
           type: string
         status:
           type: string
+          enum:
+            - draft
+            - live
         stats:
           type: string
         mail_metrics:
@@ -5172,8 +5221,14 @@ components:
           type: integer
         delay_type:
           type: string
+          enum:
+            - days
+            - hours
         status:
           type: string
+          enum:
+            - draft
+            - live
         filters:
           type: array
           items: {}
@@ -5185,21 +5240,15 @@ components:
             id:
               type: integer
             subject:
-              type:
-                - string
-                - 'null'
+              type: string
             preview_text:
               type:
                 - string
                 - 'null'
             html_content:
-              type:
-                - string
-                - 'null'
+              type: string
             text_content:
-              type:
-                - string
-                - 'null'
+              type: string
             email_identity_id:
               type:
                 - integer
@@ -5256,13 +5305,21 @@ components:
         sequence_id:
           type: integer
         subject:
-          type: string
+          type:
+            - string
+            - 'null'
         delay_days:
           type: integer
         delay_type:
           type: string
+          enum:
+            - days
+            - hours
         status:
           type: string
+          enum:
+            - draft
+            - live
         stats:
           type: string
         mail_metrics:
@@ -5286,6 +5343,9 @@ components:
           type: string
         status:
           type: string
+          enum:
+            - draft
+            - live
         steps_count:
           type: integer
         contacts_count:
@@ -5414,11 +5474,6 @@ components:
         url:
           type: string
           maxLength: 2048.0
-        description:
-          type:
-            - string
-            - 'null'
-          maxLength: 255.0
         events:
           type: array
           items:
@@ -5431,6 +5486,11 @@ components:
               - sequence_step.sent
               - sequence.completed
           minItems: 1.0
+        description:
+          type:
+            - string
+            - 'null'
+          maxLength: 255.0
       required:
         - url
         - events
