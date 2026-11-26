@@ -37,12 +37,49 @@ class SetupWizardTest extends TestCase
 
     public function test_the_setup_page_shows_the_form_with_the_token_from_the_url(): void
     {
-        $this->get('/setup?token=abc123')
+        $this->get('/setup?token='.$this->token())
             ->assertOk()
             ->assertInertia(fn (Assert $page) => $page
                 ->component('auth/Setup')
-                ->where('token', 'abc123')
-                ->where('setupUrlCommand', 'php artisan byomailer:setup-url'));
+                ->where('token', $this->token())
+                ->where('tokenIsValid', true)
+                ->where('tokenWasWrong', false));
+    }
+
+    public function test_the_setup_page_without_a_token_tells_how_to_find_the_setup_url(): void
+    {
+        $this->get('/setup')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('auth/Setup')
+                ->where('token', '')
+                ->where('tokenIsValid', false)
+                ->where('tokenWasWrong', false)
+                ->where('setupUrlCommands.0.command', 'docker logs byomailer')
+                ->where('setupUrlCommands.1.command', 'docker compose logs web')
+                ->where('setupUrlCommands.2.command', 'php artisan byomailer:setup-url'));
+    }
+
+    public function test_the_setup_page_with_a_wrong_token_does_not_echo_the_token(): void
+    {
+        $this->get('/setup?token=wrong-token')
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->component('auth/Setup')
+                ->where('token', '')
+                ->where('tokenIsValid', false)
+                ->where('tokenWasWrong', true));
+    }
+
+    public function test_the_setup_page_accepts_a_pasted_setup_url(): void
+    {
+        $pasted = urlencode('http://localhost:8080/setup?token='.$this->token());
+
+        $this->get('/setup?token='.$pasted)
+            ->assertOk()
+            ->assertInertia(fn (Assert $page) => $page
+                ->where('token', $this->token())
+                ->where('tokenIsValid', true));
     }
 
     public function test_a_wrong_token_creates_no_account(): void
@@ -94,21 +131,23 @@ class SetupWizardTest extends TestCase
         $this->assertDatabaseCount('users', 0);
     }
 
-    public function test_setup_is_not_found_after_a_user_exists(): void
+    public function test_setup_sends_to_the_login_page_after_a_user_exists(): void
     {
         User::factory()->create();
 
-        $this->get('/setup?token='.$this->token())->assertNotFound();
+        $this->get('/setup?token='.$this->token())
+            ->assertRedirect('/login')
+            ->assertSessionHas('status', 'This instance is already set up. Log in with your account.');
         $this->post('/setup', $this->form())->assertNotFound();
 
         $this->assertDatabaseMissing('users', ['email' => 'owner@example.com']);
     }
 
-    public function test_setup_is_not_found_when_users_exist_but_no_owner(): void
+    public function test_setup_sends_to_the_login_page_when_users_exist_but_no_owner(): void
     {
         User::factory()->create(['is_owner' => false]);
 
-        $this->get('/setup')->assertNotFound();
+        $this->get('/setup')->assertRedirect('/login');
     }
 
     public function test_the_entry_pages_send_a_new_instance_to_setup(): void

@@ -1,5 +1,6 @@
 <?php
 
+use App\Support\RuntimeDefaults;
 use Illuminate\Support\Str;
 
 return [
@@ -169,7 +170,12 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    // If SESSION_SECURE_COOKIE is not set, the cookie is secure when the app
+    // URL (APP_URL, or https://APP_DOMAIN) starts with https.
+    'secure' => RuntimeDefaults::secureCookie(
+        env('SESSION_SECURE_COOKIE'),
+        RuntimeDefaults::appUrl(env('APP_URL'), env('APP_DOMAIN')),
+    ),
 
     /*
     |--------------------------------------------------------------------------

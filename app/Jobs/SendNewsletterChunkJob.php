@@ -8,6 +8,7 @@ use App\Models\Message;
 use App\Models\Newsletter;
 use App\Models\User;
 use App\Services\NewsletterTransport;
+use App\Support\SesSendingLimit;
 use App\Support\Tenant;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
@@ -15,7 +16,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\Middleware\RateLimitedWithRedis;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
@@ -59,7 +59,7 @@ class SendNewsletterChunkJob implements ShouldQueue
      */
     public function middleware(): array
     {
-        return [(new RateLimitedWithRedis('ses-sending'))->releaseAfter(1)];
+        return [SesSendingLimit::middleware()];
     }
 
     public function handle(NewsletterTransport $transport): void

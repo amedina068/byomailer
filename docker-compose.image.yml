@@ -1,102 +1,86 @@
 # Self-host BYOMailer with the published Docker image. No build is needed.
 #
-# This file is the same stack as docker-compose.yml, but the app containers
-# use the image from the GitHub Container Registry. When you change one
-# file, change the other file too.
+# This file is the same stack as docker-compose.yml, but the containers use
+# the image from the GitHub Container Registry. When you change one file,
+# change the other file too.
 #
+# SQLite (the default). It needs no .env:
+#   docker compose -f docker-compose.image.yml up -d
+#   docker compose -f docker-compose.image.yml logs -f web
+# The last log line is the URL to open. Open it and create the owner account.
+#
+# MySQL, Redis and Horizon (the "mysql" profile):
 # 1. Put this file and .env.example in an empty folder.
-# 2. Copy .env.example to .env. Set APP_KEY, APP_URL, DB_PASSWORD, and
-#    DB_ROOT_PASSWORD.
+# 2. Copy .env.example to .env. In .env, remove the "#" from the lines of the
+#    "MySQL and Redis" block, and set DB_PASSWORD.
 # 3. Run: docker compose -f docker-compose.image.yml up -d
-# 4. Run: docker compose -f docker-compose.image.yml logs web
-#    Open the setup URL from the log and create the owner account.
 #
 # BYOMAILER_VERSION selects the image tag. The default is "latest". Set an
 # exact version, for example BYOMAILER_VERSION=0.1.0, so that an update
-# happens only when you change the value.
-#
-# To update, change BYOMAILER_VERSION (or keep "latest") and run:
+# happens only when you change the value. To update, run:
 #   docker compose -f docker-compose.image.yml pull
 #   docker compose -f docker-compose.image.yml up -d
-#
-# The `ses-events` worker reads SES events from SQS. It is in the `ses`
-# profile because it needs AWS settings. Start it with
-# `docker compose -f docker-compose.image.yml --profile ses up -d` after you set them.
 
 x-app: &app
   image: ${BYOMAILER_IMAGE:-ghcr.io/amedina068/byomailer}:${BYOMAILER_VERSION:-latest}
   restart: unless-stopped
+  # .env is optional. With no .env, the app uses SQLite in the data volume.
   env_file:
     - path: ${BYOMAILER_ENV_FILE:-.env}
       required: false
   environment: &app-environment
-    APP_ENV: ${APP_ENV:-production}
-    APP_DEBUG: ${APP_DEBUG:-false}
-    DB_CONNECTION: mysql
+    # The host names of the mysql and redis services. They have an effect
+    # only when .env sets DB_CONNECTION=mysql or the redis drivers.
     DB_HOST: mysql
     DB_PORT: 3306
-    DB_DATABASE: ${DB_DATABASE:-byomailer}
-    DB_USERNAME: ${DB_USERNAME:-byomailer}
-    DB_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
-    REDIS_CLIENT: phpredis
     REDIS_HOST: redis
     REDIS_PORT: 6379
-    REDIS_PASSWORD: "null"
-    QUEUE_CONNECTION: redis
-    CACHE_STORE: redis
-    SESSION_DRIVER: redis
+    # With SQLite, the database file is in the data volume.
+    DB_DATABASE: ${DB_DATABASE:-/data/database.sqlite}
     LOG_CHANNEL: stderr
     INERTIA_SSR_ENABLED: "false"
+    # Caddy in the image gives automatic HTTPS on the ports 80 and 443. This
+    # stack expects a reverse proxy on the host, so Caddy is off by default.
+    CADDY_ENABLED: ${CADDY_ENABLED:-false}
   volumes:
-    - storage:/var/www/html/storage/app
-  depends_on:
-    mysql:
-      condition: service_healthy
-    redis:
-      condition: service_healthy
+    # The SQLite database, the app key file and the Caddy certificates.
+    - data:/data
+    # The uploads. Older versions of this file used the same volume.
+    - storage:/data/storage/app
 
 services:
   web:
     <<: *app
     ports:
-      - "${APP_PORT:-8080}:8080"
-    environment:
-      <<: *app-environment
-      # Link storage, run migrations, and cache the config on each start.
-      # Only this service does it, so the workers do not migrate too.
-      AUTORUN_ENABLED: "true"
-      AUTORUN_LARAVEL_MIGRATION_ISOLATION: "true"
-      # Prepare the instance and print the setup URL at start.
-      BYOMAILER_PREPARE_ON_START: "true"
-      HEALTHCHECK_PATH: /up
-      PHP_OPCACHE_ENABLE: "1"
-    healthcheck:
-      # The first start runs every migration before NGINX starts.
-      start_period: 600s
-
-  horizon:
-    <<: *app
-    command: ["php", "artisan", "horizon"]
-    stop_signal: SIGTERM
+      # The app listens on the loopback interface of the host by default. Put a
+      # reverse proxy on the host in front of it. Set APP_BIND=0.0.0.0 only if
+      # the app must take traffic from other hosts with no proxy.
+      - "${APP_BIND:-127.0.0.1}:${APP_PORT:-8080}:8080"
     stop_grace_period: 60s
     healthcheck:
-      test: ["CMD", "healthcheck-horizon"]
-      start_period: 30s
+      test: ["CMD", "curl", "--silent", "--fail", "--output", "/dev/null", "http://127.0.0.1:8080/up"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      # A first install on MySQL loads the schema dump before /up answers.
+      start_period: 300s
+      start_interval: 2s
+    # The web container also runs the queue worker, the scheduler and the SES
+    # events poller. It waits for MySQL and Redis only when the "mysql"
+    # profile is active. `up` does not wait for the web container itself, so
+    # it does not fail while the migrations run.
     depends_on:
-      web:
+      mysql:
         condition: service_healthy
-
-  scheduler:
-    <<: *app
-    command: ["php", "artisan", "schedule:work"]
-    stop_signal: SIGTERM
-    healthcheck:
-      test: ["CMD", "healthcheck-schedule"]
-      start_period: 10s
-    depends_on:
-      web:
+        required: false
+      redis:
         condition: service_healthy
+        required: false
 
+  # Optional: the SES events poller in its own container. The web container
+  # already runs the poller when the SQS settings are set. If you start this
+  # profile, set BYOMAILER_SES_EVENTS=false in .env, so that only this
+  # container polls.
   ses-events:
     <<: *app
     profiles: ["ses"]
@@ -106,6 +90,11 @@ services:
     restart: always
     command: ["php", "artisan", "ses-events:poll"]
     stop_signal: SIGTERM
+    environment:
+      <<: *app-environment
+      # Only the web container runs the migrations and prepares the instance.
+      AUTORUN_ENABLED: "false"
+      BYOMAILER_PREPARE_ON_START: "false"
     healthcheck:
       test: ["CMD", "pgrep", "-f", "ses-events:poll"]
       start_period: 10s
@@ -115,16 +104,18 @@ services:
 
   mysql:
     image: mysql:8.4
+    profiles: ["mysql"]
     restart: unless-stopped
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-byomailer}
       MYSQL_USER: ${DB_USERNAME:-byomailer}
-      MYSQL_PASSWORD: ${DB_PASSWORD:?Set DB_PASSWORD in .env}
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?Set DB_ROOT_PASSWORD in .env}
+      MYSQL_PASSWORD: ${DB_PASSWORD:-}
+      # The app uses MYSQL_USER. Nobody needs the root password.
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
     volumes:
       - mysql:/var/lib/mysql
     healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u root -p\"$${MYSQL_ROOT_PASSWORD}\" --silent"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u\"$$MYSQL_USER\" -p\"$$MYSQL_PASSWORD\" --silent"]
       interval: 5s
       timeout: 5s
       retries: 30
@@ -132,6 +123,7 @@ services:
 
   redis:
     image: redis:7.4-alpine
+    profiles: ["mysql"]
     restart: unless-stopped
     command: ["redis-server", "--appendonly", "yes"]
     volumes:
@@ -143,6 +135,7 @@ services:
       retries: 20
 
 volumes:
+  data:
   storage:
   mysql:
   redis:

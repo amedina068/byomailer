@@ -1,5 +1,7 @@
 <?php
 
+use App\Support\RuntimeDefaults;
+
 /*
 |--------------------------------------------------------------------------
 | Cloudflare Edge IP Ranges
@@ -56,8 +58,10 @@ return [
     |
     */
 
+    // With APP_DOMAIN, the Caddy of the Docker image sends each HTTPS request
+    // from 127.0.0.1, so the default list also trusts that address.
     'proxies' => $fromEnv === ''
-        ? $cloudflare
+        ? [...$cloudflare, ...(RuntimeDefaults::hasDomain(env('APP_DOMAIN')) ? ['127.0.0.1'] : [])]
         : array_values(array_filter(array_map('trim', explode(',', $fromEnv)), fn (string $proxy): bool => $proxy !== '')),
 
 ];

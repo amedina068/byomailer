@@ -1,0 +1,26 @@
+#!/command/with-contenv sh
+# The SES events poller. It reads the bounces, complaints, deliveries, opens
+# and clicks from the SQS queue, and queues a job for each event.
+#
+# The poller needs three settings: PLATFORM_AWS_ACCESS_KEY_ID,
+# PLATFORM_AWS_SECRET_ACCESS_KEY and SES_EVENTS_SQS_QUEUE_URL. Without them,
+# the service pauses and does not start the poller again in a loop.
+# `php artisan byomailer:doctor` shows the missing settings.
+#
+# Set BYOMAILER_SES_EVENTS=false when another container runs the poller, for
+# example the ses-events service of docker-compose.yml.
+cd /var/www/html || exit 1
+
+if [ "${BYOMAILER_SES_EVENTS:-true}" != "true" ]; then
+    exec /command/s6-pause
+fi
+
+if [ -z "${PLATFORM_AWS_ACCESS_KEY_ID:-}" ] \
+    || [ -z "${PLATFORM_AWS_SECRET_ACCESS_KEY:-}" ] \
+    || [ -z "${SES_EVENTS_SQS_QUEUE_URL:-}" ]; then
+    exec /command/s6-pause
+fi
+
+# The poller stops after `php artisan queue:restart` and at its memory limit.
+# s6 then starts it again.
+exec php artisan ses-events:poll

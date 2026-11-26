@@ -3,7 +3,6 @@ import { Deferred, Head, Link } from '@inertiajs/vue3';
 import {
     PhBookOpen,
     PhCheckCircle,
-    PhCloud,
     PhCurrencyDollar,
     PhCursorClick,
     PhLightning,
@@ -17,7 +16,7 @@ import { computed } from 'vue';
 
 import ContactTable from '@/components/contacts/ContactTable.vue';
 import ContactGrowthChart from '@/components/dashboard/ContactGrowthChart.vue';
-import IdentitySetupCta from '@/components/dashboard/IdentitySetupCta.vue';
+import SesSetupSteps from '@/components/dashboard/SesSetupSteps.vue';
 import NewsletterRow from '@/components/newsletters/NewsletterRow.vue';
 import SequenceCard from '@/components/sequences/SequenceCard.vue';
 import SesPermissionBanner from '@/components/SesPermissionBanner.vue';
@@ -35,7 +34,6 @@ import {
     show as newsletterShow,
     index as newslettersIndex,
 } from '@/routes/newsletters';
-import { aws as onboardingAws } from '@/routes/onboarding';
 import {
     create as sequencesCreate,
     show as sequenceShow,
@@ -114,6 +112,11 @@ const props = defineProps<{
     hasVerifiedIdentity: boolean;
     pendingIdentityId: number | null;
     missingPermissions: string[];
+    sesSetup: {
+        sandbox: boolean | null;
+        eventsConfigured: boolean;
+        canConfigureEvents: boolean;
+    };
     monthlySesCost: MonthlySesCost;
     weeklyStats: WeeklyStats;
     contactGrowth?: ContactGrowthPoint[];
@@ -213,45 +216,14 @@ const statCards = computed(() => [
 
     <AppLayout :breadcrumbs="breadcrumbs">
         <section class="space-y-6">
-            <!-- Onboarding CTA: No Credentials -->
-            <div
-                v-if="!hasCredentials"
-                class="flex flex-col items-start gap-4 p-5 sm:flex-row sm:items-center"
-                style="
-                    background-color: var(--bm-info-dim);
-                    border: 1px solid rgba(37, 99, 235, 0.12);
-                    border-radius: var(--bm-radius-md);
-                "
-            >
-                <div
-                    class="flex h-10 w-10 shrink-0 items-center justify-center"
-                    style="
-                        background-color: var(--bm-info-dim);
-                        border-radius: var(--bm-radius);
-                    "
-                >
-                    <PhCloud :size="20" style="color: var(--bm-info)" />
-                </div>
-                <div class="min-w-0 grow">
-                    <h3 class="font-semibold" style="color: var(--bm-text-1)">
-                        Connect your email service
-                    </h3>
-                    <p class="text-sm" style="color: var(--bm-text-2)">
-                        Connect your AWS account to start sending emails through
-                        Amazon SES.
-                    </p>
-                </div>
-                <Button as-child size="sm" class="shrink-0">
-                    <Link :href="onboardingAws().url"
-                        >Set up AWS credentials</Link
-                    >
-                </Button>
-            </div>
-
-            <!-- Onboarding CTA: No Verified Identity -->
-            <IdentitySetupCta
-                v-else-if="!hasVerifiedIdentity"
+            <!-- First run: the SES steps come first. -->
+            <SesSetupSteps
+                :has-credentials="hasCredentials"
+                :has-verified-identity="hasVerifiedIdentity"
                 :pending-identity-id="pendingIdentityId"
+                :sandbox="sesSetup.sandbox"
+                :events-configured="sesSetup.eventsConfigured"
+                :can-configure-events="sesSetup.canConfigureEvents"
             />
 
             <SesPermissionBanner

@@ -1,5 +1,7 @@
 <?php
 
+use App\Support\RuntimeDefaults;
+
 return [
 
     /*
@@ -52,7 +54,9 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    // APP_URL, then https://APP_DOMAIN, then http://localhost:8080 (the port
+    // of the Docker image).
+    'url' => RuntimeDefaults::appUrl(env('APP_URL'), env('APP_DOMAIN')),
 
     /*
     |--------------------------------------------------------------------------
@@ -114,7 +118,9 @@ return [
 
     'cipher' => 'AES-256-CBC',
 
-    'key' => env('APP_KEY'),
+    // APP_KEY, then the file in APP_KEY_FILE. The Docker image writes that
+    // file (/data/.secrets/app_key) on the first start.
+    'key' => RuntimeDefaults::appKey(env('APP_KEY'), env('APP_KEY_FILE')),
 
     'previous_keys' => [
         ...array_filter(

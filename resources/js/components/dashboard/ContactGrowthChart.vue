@@ -121,14 +121,22 @@ const series = computed(() => [
 <template>
     <div
         class="w-full min-w-0 p-6"
-        style="background-color: var(--bm-surface); border: 1px solid var(--bm-border); border-radius: var(--bm-radius-md); box-shadow: var(--bm-shadow-xs);"
+        style="
+            background-color: var(--bm-surface);
+            border: 1px solid var(--bm-border);
+            border-radius: var(--bm-radius-md);
+            box-shadow: var(--bm-shadow-xs);
+        "
     >
         <div class="flex flex-wrap items-start justify-between gap-4">
             <div>
-                <h2 class="text-xl font-semibold" style="color: var(--bm-text-1);">
+                <h2
+                    class="text-xl font-semibold"
+                    style="color: var(--bm-text-1)"
+                >
                     Contact growth
                 </h2>
-                <p class="text-sm" style="color: var(--bm-text-2);">
+                <p class="text-sm" style="color: var(--bm-text-2)">
                     Last 7 days
                 </p>
             </div>
@@ -137,28 +145,34 @@ const series = computed(() => [
                     <span
                         class="inline-block h-2.5 w-2.5 rounded-full bg-emerald-500"
                     />
-                    <span style="color: var(--bm-text-3);">New</span>
-                    <span class="font-semibold" style="color: var(--bm-text-1);">{{
-                        totals.new
-                    }}</span>
+                    <span style="color: var(--bm-text-3)">New</span>
+                    <span
+                        class="font-semibold"
+                        style="color: var(--bm-text-1)"
+                        >{{ totals.new }}</span
+                    >
                 </div>
                 <div class="flex items-center gap-1.5 text-sm">
                     <span
                         class="inline-block h-2.5 w-2.5 rounded-full bg-red-500"
                     />
-                    <span style="color: var(--bm-text-3);">Unsubs</span>
-                    <span class="font-semibold" style="color: var(--bm-text-1);">{{
-                        totals.unsubscribed
-                    }}</span>
+                    <span style="color: var(--bm-text-3)">Unsubs</span>
+                    <span
+                        class="font-semibold"
+                        style="color: var(--bm-text-1)"
+                        >{{ totals.unsubscribed }}</span
+                    >
                 </div>
                 <div class="flex items-center gap-1.5 text-sm">
                     <span
                         class="inline-block h-2.5 w-2.5 rounded-full bg-blue-500"
                     />
-                    <span style="color: var(--bm-text-3);">Net</span>
-                    <span class="font-semibold" style="color: var(--bm-text-1);">{{
-                        totals.net
-                    }}</span>
+                    <span style="color: var(--bm-text-3)">Net</span>
+                    <span
+                        class="font-semibold"
+                        style="color: var(--bm-text-1)"
+                        >{{ totals.net }}</span
+                    >
                 </div>
             </div>
         </div>
@@ -200,13 +214,13 @@ const series = computed(() => [
                         :x2="chartWidth - paddingX"
                         :y2="line.y"
                         stroke-width="0.5"
-                        style="stroke: var(--bm-border);"
+                        style="stroke: var(--bm-border)"
                     />
                     <text
                         :x="paddingX - 6"
                         :y="line.y + 3"
                         text-anchor="end"
-                        style="fill: var(--bm-text-3);"
+                        style="fill: var(--bm-text-3)"
                         font-size="7"
                     >
                         {{ line.value }}
@@ -256,7 +270,7 @@ const series = computed(() => [
                     :x="toX(i)"
                     :y="chartHeight + 14"
                     text-anchor="middle"
-                    style="fill: var(--bm-text-3);"
+                    style="fill: var(--bm-text-3)"
                     font-size="8"
                 >
                     {{ point.day }}
@@ -269,7 +283,7 @@ const series = computed(() => [
             class="mt-6 flex items-center justify-center"
             style="height: 160px"
         >
-            <p class="text-sm" style="color: var(--bm-text-3);">
+            <p class="text-sm" style="color: var(--bm-text-3)">
                 No contact activity this week yet.
             </p>
         </div>

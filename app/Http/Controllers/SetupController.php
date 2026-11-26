@@ -13,17 +13,37 @@ use Inertia\Response;
 
 /**
  * The first-run page of a self-hosted instance. It creates the owner account.
- * After the first user exists, both routes return 404.
+ *
+ * The page shows the form only for the correct setup token. Without the token,
+ * it tells the operator where to find the setup URL. After the first user
+ * exists, GET sends the visitor to the login page and POST returns 404.
  */
 class SetupController extends Controller
 {
-    public function show(Request $request): Response
+    /**
+     * The commands that print the setup URL, one for each type of install.
+     */
+    private const SETUP_URL_COMMANDS = [
+        ['label' => 'Docker', 'command' => 'docker logs byomailer'],
+        ['label' => 'Docker Compose', 'command' => 'docker compose logs web'],
+        ['label' => 'Any install', 'command' => 'php artisan byomailer:setup-url'],
+    ];
+
+    public function show(Request $request): Response|RedirectResponse
     {
-        abort_unless(InstanceSetup::isNeeded(), 404);
+        if (! InstanceSetup::isNeeded()) {
+            return redirect('/login')->with('status', 'This instance is already set up. Log in with your account.');
+        }
+
+        $token = $this->tokenFrom($request->query('token'));
+        $tokenIsValid = InstanceSetup::tokenMatches($token);
 
         return Inertia::render('auth/Setup', [
-            'token' => (string) $request->query('token', ''),
-            'setupUrlCommand' => 'php artisan byomailer:setup-url',
+            // A wrong token never goes back to the page.
+            'token' => $tokenIsValid ? $token : '',
+            'tokenIsValid' => $tokenIsValid,
+            'tokenWasWrong' => ! $tokenIsValid && $token !== '',
+            'setupUrlCommands' => self::SETUP_URL_COMMANDS,
         ]);
     }
 
@@ -41,7 +61,7 @@ class SetupController extends Controller
 
         if (! InstanceSetup::tokenMatches($input['token'])) {
             throw ValidationException::withMessages([
-                'token' => 'The setup token is not correct. Copy the setup URL from the log of the web container, or run php artisan byomailer:setup-url.',
+                'token' => 'The setup token is not correct. Copy the setup URL from the log of the container, or run php artisan byomailer:setup-url.',
             ]);
         }
 
@@ -60,5 +80,21 @@ class SetupController extends Controller
         $request->session()->regenerate();
 
         return redirect()->route('dashboard');
+    }
+
+    /**
+     * Reads the token from the query. An operator can paste the full setup URL
+     * into the token field, so the method also reads the token from a URL.
+     */
+    private function tokenFrom(mixed $value): string
+    {
+        $value = is_string($value) ? trim($value) : '';
+
+        if (str_contains($value, 'token=')) {
+            parse_str((string) parse_url($value, PHP_URL_QUERY), $query);
+            $value = is_string($query['token'] ?? null) ? $query['token'] : '';
+        }
+
+        return $value;
     }
 }
