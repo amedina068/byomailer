@@ -16,7 +16,7 @@ import Newsletters from '../Newsletters.vue';
 describe('Newsletters API reference', () => {
     it('renders the delete endpoint, which has an empty 204 response', () => {
         const text = mount(Newsletters, {
-            global: { stubs: { CodeBlock: true } },
+            global: { stubs: { CodeBlock: true, TabbedCodeBlock: true } },
         }).text();
 
         expect(text).toContain('Delete a draft or scheduled newsletter.');
