@@ -8,6 +8,27 @@ This file lists the changes to the code for each release. The release notes for 
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-26
+
+BYOMailer runs in one container with no settings, and AI agents can install and operate it.
+
+### Added
+
+- Commands for AI agents and scripts: `byomailer:status`, `byomailer:doctor [--fix]`, `byomailer:token:create`, `byomailer:token:list`, `byomailer:token:revoke` and `byomailer:mcp:connect`. With `--json`, each command writes one JSON object to stdout. `byomailer:install` takes `--json` and `--with-token`, and returns a one-time login link and the `claude mcp add` line. `setup-url`, `user:list` and `user:password` also take `--json`.
+- The instance-admin MCP server `byomailer-admin`. An agent starts it over stdio with `php artisan mcp:start byomailer-admin`. It has 15 tools to read the instance status, run the checks, manage users and tokens, and read the SES status. Set `MCP_ADMIN_ENABLED=true` to also serve it at `/mcp/admin` for owners.
+
+### Changed
+
+- The Docker image now runs all of BYOMailer in one container with no settings. It uses SQLite in the `/data` volume and makes its own app key. It runs the queue worker and the scheduler. When the SQS settings are set, it also runs the SES events poller. The last log line is the URL to open. Set `APP_DOMAIN` to get automatic HTTPS from the built-in Caddy server. MySQL, Redis and Horizon are the `mysql` profile of `docker-compose.yml`. Existing compose installs must add `COMPOSE_PROFILES=mysql` to `.env` and run `docker compose up -d --remove-orphans` one time.
+- The setup page shows the form only for the correct setup token. Without the token, the page tells you how to find the setup URL. After the setup, `/setup` sends you to the login page.
+- The dashboard shows the Amazon SES steps first: create the SES event queue, connect AWS, verify a sending domain and leave the SES sandbox. The AWS connection needs the queue, so the queue is the first step. Only the owner sees the link to the queue guide.
+- The HTTP error pages (401, 403, 404, 419, 429, 500 and 503) say what happened and what to do next. They load no build assets.
+
+### Fixed
+
+- `php artisan db:seed` fills a new database with the demo data again. Before, it stopped at the first query with no tenant, and then at a factory state that does not exist.
+- On MySQL, `php artisan tenancy:orphans` checks only the tables of the app database. Before, it also listed the tables of each other database that the database user can read.
+
 ## [0.1.0] - 2026-11-25
 
 The first public release.
@@ -151,5 +172,6 @@ The first public release.
 - Each response sends `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff` and `Referrer-Policy: strict-origin-when-cross-origin`. Another site cannot show the app in a frame.
 - The WebAuthn libraries that Fortify loads (`web-auth/webauthn-lib`, `web-auth/cose-lib`, `spomky-labs/pki-framework`, `spomky-labs/cbor-php`) are updated to versions that fix 40 known security advisories.
 
-[Unreleased]: https://github.com/amedina068/byomailer/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/amedina068/byomailer/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/amedina068/byomailer/compare/v0.1.0...v0.2.0
 [0.1.0]: https://github.com/amedina068/byomailer/releases/tag/v0.1.0
