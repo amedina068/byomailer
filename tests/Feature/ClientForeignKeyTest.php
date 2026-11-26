@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use ReflectionClassConstant;
 use RuntimeException;
+use Tests\Concerns\MakesOrphanRows;
 use Tests\TestCase;
 
 /**
@@ -21,21 +22,12 @@ use Tests\TestCase;
  */
 class ClientForeignKeyTest extends TestCase
 {
+    use MakesOrphanRows;
     use RefreshDatabase;
 
     private function migration(): Migration
     {
         return require database_path('migrations/2026_11_18_000001_add_client_foreign_keys.php');
-    }
-
-    /**
-     * SQLite checks deferred keys at commit. RefreshDatabase rolls the test
-     * back, so the orphan row that this makes is never checked.
-     */
-    private function orphan(string $table, int $id): void
-    {
-        DB::statement('PRAGMA defer_foreign_keys = ON');
-        DB::table($table)->where('id', $id)->update(['client_id' => 999999]);
     }
 
     public function test_every_client_id_column_has_a_cascading_foreign_key_to_clients(): void
@@ -60,8 +52,9 @@ class ClientForeignKeyTest extends TestCase
     {
         $newsletter = Newsletter::factory()->create();
 
+        // SQLite says "FOREIGN KEY constraint failed". MySQL says "a foreign key constraint fails".
         $this->expectException(QueryException::class);
-        $this->expectExceptionMessage('FOREIGN KEY constraint failed');
+        $this->expectExceptionMessageMatches('/foreign key constraint fail/i');
 
         DB::table('newsletters')->where('id', $newsletter->id)->update(['client_id' => 999999]);
     }
@@ -89,9 +82,9 @@ class ClientForeignKeyTest extends TestCase
     {
         $contacts = Contact::factory()->count(2)->create();
         $newsletter = Newsletter::factory()->create();
-        $this->orphan('contacts', $contacts[0]->id);
-        $this->orphan('contacts', $contacts[1]->id);
-        $this->orphan('newsletters', $newsletter->id);
+        $this->makeOrphan('contacts', $contacts[0]->id, 999999);
+        $this->makeOrphan('contacts', $contacts[1]->id, 999999);
+        $this->makeOrphan('newsletters', $newsletter->id, 999999);
 
         try {
             $this->migration()->up();
@@ -115,13 +108,16 @@ class ClientForeignKeyTest extends TestCase
 
         $contacts = Contact::factory()->count(2)->create();
         $newsletter = Newsletter::factory()->create();
-        $this->orphan('contacts', $contacts[0]->id);
-        $this->orphan('contacts', $contacts[1]->id);
-        $this->orphan('newsletters', $newsletter->id);
-        DB::table('blacklisted_emails')->insert([
-            ['client_id' => 999999, 'email' => 'orphan@example.com', 'created_at' => now(), 'updated_at' => now()],
+        $this->makeOrphan('contacts', $contacts[0]->id, 999999);
+        $this->makeOrphan('contacts', $contacts[1]->id, 999999);
+        $this->makeOrphan('newsletters', $newsletter->id, 999999);
+        $orphanEntry = DB::table('blacklisted_emails')->insertGetId(
+            ['client_id' => null, 'email' => 'orphan@example.com', 'created_at' => now(), 'updated_at' => now()],
+        );
+        $this->makeOrphan('blacklisted_emails', $orphanEntry, 999999);
+        DB::table('blacklisted_emails')->insert(
             ['client_id' => null, 'email' => 'global@example.com', 'created_at' => now(), 'updated_at' => now()],
-        ]);
+        );
 
         $expected = collect(TenantOrphans::counts($migrationTables))
             ->map(fn (int $count, string $table): string => "{$table} ({$count})")

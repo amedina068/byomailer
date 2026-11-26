@@ -169,7 +169,7 @@ class BulkContactToolsTest extends TestCase
 
         $first->refresh();
         $this->assertSame('Ada Lovelace', $first->name);
-        $this->assertSame(['plan' => 'pro', 'city' => 'London', 'seats' => 5], $first->extra_attributes);
+        $this->assertSameJsonData(['plan' => 'pro', 'city' => 'London', 'seats' => 5], $first->extra_attributes);
         $this->assertEqualsCanonicalizing(['Newsletter', 'Customer'], $first->tags()->pluck('name')->all());
 
         $second->refresh();

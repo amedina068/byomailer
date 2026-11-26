@@ -44,7 +44,7 @@ class SequenceVariablesApiTest extends TestCase
             ->assertJsonPath('data.content_variables.checkout_url', 'https://example.com/checkout')
             ->assertJsonPath('data.content_variables.first_name', '');
 
-        $this->assertSame(
+        $this->assertSameJsonData(
             ['checkout_url' => 'https://example.com/checkout', 'first_name' => ''],
             $sequence->refresh()->content_variables,
         );

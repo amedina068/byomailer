@@ -31,8 +31,9 @@ class NewsletterProjectApiTest extends TestCase
             'project_ids' => $projects->pluck('id')->all(),
         ]);
 
-        $response->assertCreated()
-            ->assertJsonPath('data.project_ids', $projects->pluck('id')->all());
+        // The API gives the project ids in no fixed order.
+        $response->assertCreated();
+        $this->assertEqualsCanonicalizing($projects->pluck('id')->all(), $response->json('data.project_ids'));
 
         $newsletter = Newsletter::where('title', 'Projected')->firstOrFail();
         $this->assertEqualsCanonicalizing(

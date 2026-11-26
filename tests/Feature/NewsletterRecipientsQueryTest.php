@@ -653,7 +653,7 @@ class NewsletterRecipientsQueryTest extends TestCase
 
         /** @var ContactFilterService $filterService */
         $filterService = app(ContactFilterService::class);
-        $queryCount = $filterService->newsletterRecipientsQuery($user->id, $filters)->count();
+        $queryCount = $filterService->newsletterRecipientsQuery($user->client_id, $filters)->count();
 
         $this->assertSame(5, $previewCount);
         $this->assertSame($previewCount, $queryCount);
@@ -677,8 +677,8 @@ class NewsletterRecipientsQueryTest extends TestCase
         /** @var ContactFilterService $filterService */
         $filterService = app(ContactFilterService::class);
 
-        $withoutNewsletter = $filterService->newsletterRecipientsQuery($user->id, [])->count();
-        $withNewsletter = $filterService->newsletterRecipientsQuery($user->id, [], $newsletter)->count();
+        $withoutNewsletter = $filterService->newsletterRecipientsQuery($user->client_id, [])->count();
+        $withNewsletter = $filterService->newsletterRecipientsQuery($user->client_id, [], $newsletter)->count();
 
         $this->assertSame(5, $withoutNewsletter);
         $this->assertSame(4, $withNewsletter);

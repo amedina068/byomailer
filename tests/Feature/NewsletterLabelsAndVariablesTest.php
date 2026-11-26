@@ -97,7 +97,7 @@ class NewsletterLabelsAndVariablesTest extends TestCase
             ])
             ->assertRedirect(route('newsletters.filters.show', $newsletter));
 
-        $this->assertSame(['checkout_url' => 'https://example.com', 'first_name' => ''], $newsletter->fresh()->content_variables);
+        $this->assertSameJsonData(['checkout_url' => 'https://example.com', 'first_name' => ''], $newsletter->fresh()->content_variables);
     }
 
     public function test_the_api_keeps_every_variable_sent_and_fills_each_detected_variable(): void
@@ -109,7 +109,7 @@ class NewsletterLabelsAndVariablesTest extends TestCase
             'content_variables' => ['checkout_url' => 'https://example.com'],
         ])->assertOk();
 
-        $this->assertSame(['checkout_url' => 'https://example.com', 'first_name' => ''], $newsletter->fresh()->content_variables);
+        $this->assertSameJsonData(['checkout_url' => 'https://example.com', 'first_name' => ''], $newsletter->fresh()->content_variables);
     }
 
     public function test_the_mcp_keeps_every_variable_sent_and_fills_each_detected_variable(): void
@@ -121,7 +121,7 @@ class NewsletterLabelsAndVariablesTest extends TestCase
             'content_variables' => ['checkout_url' => 'https://example.com'],
         ])->assertOk();
 
-        $this->assertSame(['checkout_url' => 'https://example.com', 'first_name' => ''], $newsletter->fresh()->content_variables);
+        $this->assertSameJsonData(['checkout_url' => 'https://example.com', 'first_name' => ''], $newsletter->fresh()->content_variables);
     }
 
     public function test_every_channel_gives_a_new_draft_the_same_title(): void

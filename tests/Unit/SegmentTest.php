@@ -67,7 +67,7 @@ class SegmentTest extends TestCase
             'filters' => $this->attributeFilters('pro'),
         ]);
 
-        $this->assertSame($this->attributeFilters('enterprise'), $newsletter->fresh()->effectiveFilters());
+        $this->assertSameJsonData($this->attributeFilters('enterprise'), $newsletter->fresh()->effectiveFilters());
     }
 
     public function test_effective_filters_rejects_cross_client_segment(): void
