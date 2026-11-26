@@ -17,7 +17,7 @@
         "types": "vue-tsc --noEmit"
     },
     "devDependencies": {
-        "@eslint/js": "^9.19.0",
+        "@eslint/js": "^10.0.1",
         "@laravel/vite-plugin-wayfinder": "^0.1.11",
         "@playwright/test": "^1.65.1",
         "@tailwindcss/vite": "^4.3.5",
