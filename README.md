@@ -56,7 +56,7 @@ docker run -d --name byomailer --restart unless-stopped \
 
 HTTPS is automatic. Caddy gets the certificate on the first request. Open and click tracking and the unsubscribe links need HTTPS. `APP_DOMAIN` is the only required variable. The app derives the URL, the cookie settings and the trusted hosts from it.
 
-To put the app behind your own proxy, or to send the invitations and the password resets, read [Reverse proxy and TLS](https://byomailer.com/docs/self-hosting/reverse-proxy-and-tls) and [Configuration](https://byomailer.com/docs/getting-started/configuration).
+To put the app behind your own proxy, set `CADDY_ENABLED=false` and send the traffic to port 8080. To send the invitations and the password resets, set the `MAIL_*` variables. Read [Reverse proxy and TLS](https://byomailer.com/docs/self-hosting/reverse-proxy-and-tls) and [Configuration](https://byomailer.com/docs/getting-started/configuration).
 
 A version tag (`v0.1.0` and later) publishes the image for `linux/amd64` and `linux/arm64`. Before the first tag, build the image from a clone: `docker build -t ghcr.io/amedina068/byomailer .`
 
@@ -121,7 +121,7 @@ docker run -d --name byomailer ... \
   ghcr.io/amedina068/byomailer
 ```
 
-The installer accepts the same variables in a file: `install.sh --env-file=/root/byomailer.env`. When the settings exist, the container starts the `ses-events:poll` worker.
+The installer accepts the same variables in a file: `install.sh --env-file=/root/byomailer.env`. When `PLATFORM_AWS_ACCESS_KEY_ID`, `PLATFORM_AWS_SECRET_ACCESS_KEY` and `SES_EVENTS_SQS_QUEUE_URL` are set, the container starts the `ses-events:poll` worker. Without them, the worker does not start. The AWS connection of each account also needs `SES_EVENTS_SQS_QUEUE_ARN`.
 
 **2. Connect each AWS account.** Each account in BYOMailer connects its own AWS account:
 
@@ -144,7 +144,17 @@ docker rm -f byomailer
 docker run -d --name byomailer ...   # the same command as before
 ```
 
-The container runs the new migrations when it starts. Read the [release notes](https://byomailer.com/docs/getting-started/release-notes) and the [changelog](CHANGELOG.md) before you upgrade.
+The container runs the new migrations when it starts.
+
+> [!IMPORTANT]
+> **Compose installs from before the one-container image.** The old stack had separate `horizon` and `scheduler` services, and MySQL started without a profile. Before the first `docker compose up` with the new files, do these steps one time:
+>
+> 1. In `.env`, add `COMPOSE_PROFILES=mysql` and the lines of the "MySQL and Redis" block of `.env.example`. Keep your `DB_PASSWORD`.
+> 2. Run `docker compose up -d --build --remove-orphans`. This removes the old `horizon` and `scheduler` containers. The `web` container now runs Horizon and the scheduler.
+>
+> The old Compose file set `DB_CONNECTION=mysql` itself. The new file does not. Without the MySQL block, the app starts on a new, empty SQLite database, and your MySQL data stays unused.
+
+Read the [release notes](https://byomailer.com/docs/getting-started/release-notes) and the [changelog](CHANGELOG.md) before you upgrade.
 
 ## Backup
 
