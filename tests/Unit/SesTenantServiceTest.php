@@ -303,4 +303,24 @@ class SesTenantServiceTest extends TestCase
 
         $this->assertFalse($result['success']);
     }
+
+    public function test_a_session_token_signs_the_call_of_a_role(): void
+    {
+        $configs = [];
+        $mockClient = Mockery::mock(SesV2Client::class);
+        $mockClient->shouldReceive('getTenant')->twice()->andReturn(new Result(['Tenant' => []]));
+
+        $service = new SesTenantService;
+        $service->setClientFactory(function (array $config) use (&$configs, $mockClient) {
+            $configs[] = $config;
+
+            return $mockClient;
+        });
+
+        $service->getTenant('byomailer', 'ASIAIOSFODNN7EXAMPLE', 'temporary-secret-EXAMPLE', 'us-east-1', 'temporary-token-EXAMPLE');
+        $service->getTenant('byomailer', 'AKIAIOSFODNN7EXAMPLE', 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY', 'us-east-1');
+
+        $this->assertSame('temporary-token-EXAMPLE', $configs[0]['credentials']['token']);
+        $this->assertArrayNotHasKey('token', $configs[1]['credentials']);
+    }
 }

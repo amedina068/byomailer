@@ -26,6 +26,8 @@ class EmailCredentialResource extends JsonResource
             'type' => $this->type,
             'region' => $this->region,
             'access_key_hint' => $accessKey !== '' ? Str::substr($accessKey, -4) : null,
+            'uses_role' => $this->usesRole(),
+            'role_arn' => $this->role_arn,
             'can_create_template' => $this->can_create_template,
             'can_delete_template' => $this->can_delete_template,
             'can_send_bulk_email' => $this->can_send_bulk_email,

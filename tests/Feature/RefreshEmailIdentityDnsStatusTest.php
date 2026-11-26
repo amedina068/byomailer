@@ -239,7 +239,7 @@ class RefreshEmailIdentityDnsStatusTest extends TestCase
 
         $service = Mockery::mock(SesDomainIdentityService::class);
         $service->shouldReceive('getIdentityStatus')
-            ->with('example.com', 'key1', 'secret1', 'us-east-1')
+            ->with('example.com', 'key1', 'secret1', 'us-east-1', null)
             ->once()
             ->andReturn([
                 'success' => true,
@@ -248,7 +248,7 @@ class RefreshEmailIdentityDnsStatusTest extends TestCase
                 'mail_from_status' => 'SUCCESS',
             ]);
         $service->shouldReceive('getIdentityStatus')
-            ->with('other.com', 'key2', 'secret2', 'eu-west-1')
+            ->with('other.com', 'key2', 'secret2', 'eu-west-1', null)
             ->once()
             ->andReturn([
                 'success' => true,

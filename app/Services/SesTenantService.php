@@ -29,15 +29,16 @@ class SesTenantService
         string $tenantName,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
-        $result = $this->createTenant($tenantName, $accessKey, $secretKey, $region);
+        $result = $this->createTenant($tenantName, $accessKey, $secretKey, $region, $sessionToken);
 
         if (! $result['success']) {
             return $result;
         }
 
-        return $this->updateReputationPolicy($result['tenant_arn'], $region, 'standard', $accessKey, $secretKey);
+        return $this->updateReputationPolicy($result['tenant_arn'], $region, 'standard', $accessKey, $secretKey, $sessionToken);
     }
 
     /**
@@ -56,9 +57,10 @@ class SesTenantService
         string $configSetName,
         string $accessKey,
         string $secretKey,
+        ?string $sessionToken = null,
     ): array {
         $identityArn = self::buildIdentityArn($region, $accountId, $domain);
-        $identityResult = $this->associateResource($tenantName, $identityArn, $accessKey, $secretKey, $region);
+        $identityResult = $this->associateResource($tenantName, $identityArn, $accessKey, $secretKey, $region, $sessionToken);
 
         if (! $identityResult['success']) {
             return $identityResult;
@@ -66,7 +68,7 @@ class SesTenantService
 
         $configSetArn = self::buildConfigurationSetArn($region, $accountId, $configSetName);
 
-        return $this->associateResource($tenantName, $configSetArn, $accessKey, $secretKey, $region);
+        return $this->associateResource($tenantName, $configSetArn, $accessKey, $secretKey, $region, $sessionToken);
     }
 
     /**
@@ -78,10 +80,11 @@ class SesTenantService
         string $tenantName,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $response = $client->createTenant([
                 'TenantName' => $tenantName,
@@ -90,7 +93,7 @@ class SesTenantService
             return ['success' => true, 'tenant_arn' => $response['TenantArn']];
         } catch (AwsException $e) {
             if ($e->getAwsErrorCode() === 'AlreadyExistsException') {
-                $tenant = $this->getTenant($tenantName, $accessKey, $secretKey, $region);
+                $tenant = $this->getTenant($tenantName, $accessKey, $secretKey, $region, $sessionToken);
 
                 return [
                     'success' => true,
@@ -115,10 +118,11 @@ class SesTenantService
         string $resourceArn,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $client->createTenantResourceAssociation([
                 'TenantName' => $tenantName,
@@ -150,9 +154,10 @@ class SesTenantService
         string $policy,
         string $accessKey,
         string $secretKey,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $policyArn = "arn:aws:ses:{$region}:aws:reputation-policy/{$policy}";
 
@@ -180,10 +185,11 @@ class SesTenantService
         string $tenantName,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $response = $client->getTenant([
                 'TenantName' => $tenantName,
@@ -210,10 +216,11 @@ class SesTenantService
         string $tenantName,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $client->deleteTenant([
                 'TenantName' => $tenantName,
@@ -238,10 +245,11 @@ class SesTenantService
         string $resourceArn,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $client->deleteTenantResourceAssociation([
                 'TenantName' => $tenantName,
@@ -281,15 +289,16 @@ class SesTenantService
         return "arn:aws:ses:{$region}:{$accountId}:template/{$templateName}";
     }
 
-    private function createClient(string $accessKey, string $secretKey, string $region): SesV2Client
+    private function createClient(string $accessKey, string $secretKey, string $region, ?string $sessionToken = null): SesV2Client
     {
         $config = [
             'version' => '2019-09-27',
             'region' => $region,
-            'credentials' => [
+            'credentials' => array_filter([
                 'key' => $accessKey,
                 'secret' => $secretKey,
-            ],
+                'token' => $sessionToken,
+            ]),
         ];
 
         if ($this->clientFactory) {

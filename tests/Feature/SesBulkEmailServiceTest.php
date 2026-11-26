@@ -8,6 +8,7 @@ use App\Models\Newsletter;
 use App\Models\User;
 use App\Services\SesBulkEmailService;
 use App\Services\SesClientManager;
+use App\Services\SesCredentials;
 use App\Services\SesTenantService;
 use Aws\Result;
 use Aws\SesV2\SesV2Client;
@@ -55,7 +56,7 @@ class SesBulkEmailServiceTest extends TestCase
         $mockClientManager->shouldReceive('v2ClientFor')
             ->with(Mockery::on(fn ($u) => $u->is($user)))
             ->andReturn($mockV2Client);
-        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class));
+        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class), app(SesCredentials::class));
 
         $destinations = [
             [
@@ -151,7 +152,7 @@ class SesBulkEmailServiceTest extends TestCase
         $mockClientManager = Mockery::mock(SesClientManager::class);
         $mockClientManager->shouldReceive('v2ClientFor')
             ->andReturn($mockV2Client);
-        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class));
+        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class), app(SesCredentials::class));
 
         $destinations = [
             [
@@ -211,7 +212,7 @@ class SesBulkEmailServiceTest extends TestCase
         $mockClientManager->shouldReceive('v2ClientFor')
             ->andReturn($mockV2Client);
 
-        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class));
+        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class), app(SesCredentials::class));
 
         $destinations = [
             [
@@ -251,7 +252,7 @@ class SesBulkEmailServiceTest extends TestCase
         $mockClientManager = Mockery::mock(SesClientManager::class);
         $mockClientManager->shouldNotReceive('v2ClientFor');
 
-        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class));
+        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class), app(SesCredentials::class));
 
         $service->sendBulkTemplatedEmail(
             'test-template',
@@ -299,7 +300,7 @@ class SesBulkEmailServiceTest extends TestCase
         $mockClientManager->shouldReceive('v2ClientFor')
             ->andReturn($mockV2Client);
 
-        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class));
+        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class), app(SesCredentials::class));
         $service->createNewsletterTemplate($newsletter, $user);
 
         $this->assertNotNull($capturedPayload);
@@ -364,7 +365,7 @@ class SesBulkEmailServiceTest extends TestCase
         $mockClientManager->shouldReceive('v2ClientFor')
             ->andReturn($mockV2Client);
 
-        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class));
+        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class), app(SesCredentials::class));
         $service->createNewsletterTemplate($newsletter, $user);
 
         $html = $capturedPayload['TemplateContent']['Html'];
@@ -416,7 +417,7 @@ class SesBulkEmailServiceTest extends TestCase
         $mockClientManager->shouldReceive('v2ClientFor')
             ->andReturn($mockV2Client);
 
-        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class));
+        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class), app(SesCredentials::class));
         $service->createNewsletterTemplate($newsletter, $user);
 
         $html = $capturedPayload['TemplateContent']['Html'];
@@ -459,7 +460,7 @@ class SesBulkEmailServiceTest extends TestCase
         $mockClientManager->shouldReceive('v2ClientFor')
             ->andReturn($mockV2Client);
 
-        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class));
+        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class), app(SesCredentials::class));
         $service->createNewsletterTemplate($newsletter, $user);
 
         $html = $capturedPayload['TemplateContent']['Html'];
@@ -520,7 +521,7 @@ class SesBulkEmailServiceTest extends TestCase
         $mockClientManager->shouldReceive('v2ClientFor')
             ->andReturn($mockV2Client);
 
-        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class));
+        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class), app(SesCredentials::class));
         $service->createNewsletterTemplate($newsletter, $user);
 
         $html = $capturedPayload['TemplateContent']['Html'];
@@ -618,7 +619,7 @@ class SesBulkEmailServiceTest extends TestCase
         $mockClientManager = Mockery::mock(SesClientManager::class);
         $mockClientManager->shouldReceive('v2ClientFor')->andReturn($mockV2Client);
 
-        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class));
+        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class), app(SesCredentials::class));
         $templateName = $service->createNewsletterTemplate($newsletter, $user);
 
         $this->assertStringContainsString('href="{{{ checkout_url__utm }}}{{{ checkout_url__utm__qs }}}coupon=KEEPIT57"', $capturedTemplate['Html']);
@@ -684,7 +685,7 @@ class SesBulkEmailServiceTest extends TestCase
         $mockClientManager = Mockery::mock(SesClientManager::class);
         $mockClientManager->shouldReceive('v2ClientFor')->andReturn($mockV2Client);
 
-        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class));
+        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class), app(SesCredentials::class));
         $templateName = $service->createNewsletterTemplate($newsletter, $user);
 
         $unsubscribeUrl = 'https://mail.example.com/unsubscribe/abc';
@@ -783,7 +784,7 @@ class SesBulkEmailServiceTest extends TestCase
         $mockClientManager = Mockery::mock(SesClientManager::class);
         $mockClientManager->shouldReceive('v2ClientFor')->andReturn($mockV2Client);
 
-        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class));
+        $service = new SesBulkEmailService($mockClientManager, Mockery::mock(SesTenantService::class), app(SesCredentials::class));
         $service->sendBulkTemplatedEmail(
             'test-template',
             'sender@example.com',

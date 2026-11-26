@@ -258,4 +258,24 @@ class SnsTopicServiceTest extends TestCase
         $this->assertFalse($result['success']);
         $this->assertSame('Topic not found', $result['error']);
     }
+
+    public function test_a_session_token_signs_the_call_of_a_role(): void
+    {
+        $configs = [];
+        $mockClient = Mockery::mock(SnsClient::class);
+        $mockClient->shouldReceive('createTopic')->twice()->andReturn(new Result(['TopicArn' => 'arn:aws:sns:us-east-1:123456789012:events']));
+
+        $service = new SnsTopicService;
+        $service->setClientFactory(function (array $config) use (&$configs, $mockClient) {
+            $configs[] = $config;
+
+            return $mockClient;
+        });
+
+        $service->createTopic('events', 'ASIAIOSFODNN7EXAMPLE', 'temporary-secret-EXAMPLE', 'us-east-1', 'temporary-token-EXAMPLE');
+        $service->createTopic('events', 'AKIAIOSFODNN7EXAMPLE', 'wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY', 'us-east-1');
+
+        $this->assertSame('temporary-token-EXAMPLE', $configs[0]['credentials']['token']);
+        $this->assertArrayNotHasKey('token', $configs[1]['credentials']);
+    }
 }

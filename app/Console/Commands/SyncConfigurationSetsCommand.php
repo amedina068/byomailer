@@ -9,6 +9,7 @@ use App\Models\SequenceStep;
 use App\Models\User;
 use App\Services\SesClientManager;
 use App\Services\SesConfigurationSetService;
+use App\Services\SesCredentials;
 use App\Services\SesPermissionChecker;
 use Illuminate\Console\Command;
 use Throwable;
@@ -19,7 +20,7 @@ class SyncConfigurationSetsCommand extends Command
 
     protected $description = 'Sync SES configuration set tracking settings and API permissions from the API to the database';
 
-    public function handle(SesConfigurationSetService $configService, SesClientManager $clientManager): int
+    public function handle(SesConfigurationSetService $configService, SesClientManager $clientManager, SesCredentials $sesCredentials): int
     {
         $credentials = EmailCredential::withoutGlobalScopes()
             ->where('type', 'ses')
@@ -48,7 +49,7 @@ class SyncConfigurationSetsCommand extends Command
             try {
                 $hadSendPermission = $credential->can_send_email;
 
-                $this->syncIdentityTrackingSettings($user, $credential, $configService);
+                $this->syncIdentityTrackingSettings($user, $credential, $configService, $sesCredentials);
                 $this->syncPermissions($user, $clientManager);
 
                 $credential->refresh();
@@ -73,7 +74,8 @@ class SyncConfigurationSetsCommand extends Command
     private function syncIdentityTrackingSettings(
         User $user,
         EmailCredential $credential,
-        SesConfigurationSetService $configService
+        SesConfigurationSetService $configService,
+        SesCredentials $sesCredentials,
     ): void {
         $identities = EmailIdentity::withoutGlobalScopes()
             ->where('client_id', $credential->client_id)
@@ -86,12 +88,15 @@ class SyncConfigurationSetsCommand extends Command
             return;
         }
 
+        $aws = $sesCredentials->for($credential);
+
         foreach ($identities as $identity) {
             $result = $configService->fetchTrackingStatus(
                 $identity->configuration_set_name,
-                $credential->access_key,
-                $credential->secret_key,
-                $identity->region
+                $aws->getAccessKeyId(),
+                $aws->getSecretKey(),
+                $identity->region,
+                $aws->getSecurityToken()
             );
 
             if (! $result['success']) {

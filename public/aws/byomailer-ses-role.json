@@ -1,0 +1,122 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Makes the IAM role that BYOMailer assumes to send email through Amazon SES in this AWS account. The role can use only the SES and SNS actions that BYOMailer needs.",
+    "Parameters": {
+        "TrustedPrincipalArn": {
+            "Type": "String",
+            "Description": "The ARN of the IAM user or role of the BYOMailer server. BYOMailer shows this value.",
+            "AllowedPattern": "^arn:aws[a-z-]*:iam::[0-9]{12}:(user|role)/.+$",
+            "ConstraintDescription": "Enter the IAM user or role ARN that BYOMailer shows."
+        },
+        "ExternalId": {
+            "Type": "String",
+            "Description": "The external ID of your BYOMailer account. BYOMailer shows this value. Do not change it.",
+            "AllowedPattern": "^[a-f0-9]{64}$",
+            "ConstraintDescription": "Enter the 64-character external ID that BYOMailer shows."
+        },
+        "RoleName": {
+            "Type": "String",
+            "Description": "The name of the role. BYOMailer finds the role by this name.",
+            "Default": "byomailer-ses",
+            "AllowedPattern": "^[A-Za-z0-9+=,.@_-]{1,64}$"
+        }
+    },
+    "Resources": {
+        "ByoMailerRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "RoleName": {
+                    "Ref": "RoleName"
+                },
+                "Description": "BYOMailer assumes this role to send email through Amazon SES.",
+                "MaxSessionDuration": 3600,
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "AWS": {
+                                    "Ref": "TrustedPrincipalArn"
+                                }
+                            },
+                            "Action": "sts:AssumeRole",
+                            "Condition": {
+                                "StringEquals": {
+                                    "sts:ExternalId": {
+                                        "Ref": "ExternalId"
+                                    }
+                                }
+                            }
+                        }
+                    ]
+                },
+                "Policies": [
+                    {
+                        "PolicyName": "byomailer-ses",
+                        "PolicyDocument": {
+                            "Version": "2012-10-17",
+                            "Statement": [
+                                {
+                                    "Sid": "SesSendingAndSetup",
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "ses:CreateConfigurationSet",
+                                        "ses:CreateConfigurationSetEventDestination",
+                                        "ses:CreateEmailIdentity",
+                                        "ses:CreateEmailTemplate",
+                                        "ses:CreateTenant",
+                                        "ses:CreateTenantResourceAssociation",
+                                        "ses:DeleteConfigurationSet",
+                                        "ses:DeleteConfigurationSetTrackingOptions",
+                                        "ses:DeleteEmailTemplate",
+                                        "ses:DeleteTenantResourceAssociation",
+                                        "ses:GetAccount",
+                                        "ses:GetConfigurationSet",
+                                        "ses:GetConfigurationSetEventDestinations",
+                                        "ses:GetEmailIdentity",
+                                        "ses:GetTenant",
+                                        "ses:ListConfigurationSets",
+                                        "ses:ListEmailIdentities",
+                                        "ses:ListTemplates",
+                                        "ses:PutConfigurationSetTrackingOptions",
+                                        "ses:PutEmailIdentityMailFromAttributes",
+                                        "ses:SendBulkEmail",
+                                        "ses:SendRawEmail",
+                                        "ses:UpdateConfigurationSetEventDestination",
+                                        "ses:UpdateReputationEntityPolicy"
+                                    ],
+                                    "Resource": "*"
+                                },
+                                {
+                                    "Sid": "SnsEventTopics",
+                                    "Effect": "Allow",
+                                    "Action": [
+                                        "sns:CreateTopic",
+                                        "sns:DeleteTopic",
+                                        "sns:Subscribe",
+                                        "sns:Unsubscribe"
+                                    ],
+                                    "Resource": {
+                                        "Fn::Sub": "arn:${AWS::Partition}:sns:*:${AWS::AccountId}:mailautomation-*"
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                ]
+            }
+        }
+    },
+    "Outputs": {
+        "RoleArn": {
+            "Description": "The ARN of the role that BYOMailer assumes.",
+            "Value": {
+                "Fn::GetAtt": [
+                    "ByoMailerRole",
+                    "Arn"
+                ]
+            }
+        }
+    }
+}

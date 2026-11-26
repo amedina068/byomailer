@@ -12,6 +12,9 @@ import { computed, ref } from 'vue';
 import AwsOnboardingController from '@/actions/App/Http/Controllers/Onboarding/AwsOnboardingController';
 import EmailCredentialController from '@/actions/App/Http/Controllers/Settings/EmailCredentialController';
 import Heading from '@/components/Heading.vue';
+import AwsRoleConnect, {
+    type RoleConnection,
+} from '@/components/onboarding/AwsRoleConnect.vue';
 import AwsCredentialsForm from '@/components/settings/AwsCredentialsForm.vue';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +29,8 @@ interface Credential {
     type: string;
     region: string;
     access_key_hint?: string | null;
+    uses_role?: boolean;
+    role_arn?: string | null;
     can_create_template?: boolean;
     can_delete_template?: boolean;
     can_send_bulk_email?: boolean;
@@ -43,6 +48,7 @@ interface Credential {
 
 const props = defineProps<{
     credential?: Credential | null;
+    roleConnection?: RoleConnection | null;
 }>();
 
 const breadcrumbItems: BreadcrumbItem[] = [
@@ -175,7 +181,11 @@ const allPermissionsGranted = computed(() =>
                     <Heading
                         variant="small"
                         title="Current Status"
-                        description="Your keys are stored encrypted in the database."
+                        :description="
+                            credential.uses_role
+                                ? 'BYOMailer assumes the IAM role of your AWS account and keeps no keys.'
+                                : 'Your keys are stored encrypted in the database.'
+                        "
                     />
 
                     <p v-if="isViewer" class="text-sm text-muted-foreground">
@@ -199,10 +209,19 @@ const allPermissionsGranted = computed(() =>
                                           ).toLocaleString()
                                         : '—'
                                 }} </span
-                            >. Access key ending in
-                            <span class="font-medium">
-                                {{ credential.access_key_hint ?? '••••' }}
-                            </span>
+                            >.
+                            <template v-if="credential.uses_role">
+                                IAM role
+                                <span class="font-mono text-xs">{{
+                                    credential.role_arn
+                                }}</span>
+                            </template>
+                            <template v-else>
+                                Access key ending in
+                                <span class="font-medium">{{
+                                    credential.access_key_hint ?? '••••'
+                                }}</span>
+                            </template>
                         </AlertDescription>
                     </Alert>
                 </div>
@@ -454,6 +473,16 @@ const allPermissionsGranted = computed(() =>
                     <p v-if="permissionError" class="text-sm text-destructive">
                         {{ permissionError }}
                     </p>
+                </div>
+
+                <div
+                    v-if="roleConnection && !credential.uses_role"
+                    class="mt-10"
+                >
+                    <AwsRoleConnect
+                        :role-connection="roleConnection"
+                        :read-only="isViewer"
+                    />
                 </div>
 
                 <AwsCredentialsForm

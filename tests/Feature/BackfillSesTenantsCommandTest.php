@@ -67,7 +67,7 @@ class BackfillSesTenantsCommandTest extends TestCase
 
         $tenantService = $this->mockTenantService();
         $tenantService->shouldReceive('provisionTenant')
-            ->with('byomailer', $credential->access_key, $credential->secret_key, $credential->region)
+            ->with('byomailer', $credential->access_key, $credential->secret_key, $credential->region, null)
             ->once()
             ->andReturn(['success' => true]);
 
@@ -102,6 +102,7 @@ class BackfillSesTenantsCommandTest extends TestCase
                 $identity->configuration_set_name,
                 $credential->access_key,
                 $credential->secret_key,
+                null,
             )
             ->once()
             ->andReturn(['success' => true]);
@@ -258,7 +259,7 @@ class BackfillSesTenantsCommandTest extends TestCase
 
         $validator = $this->mockCredentialValidator('999888777666');
         $validator->shouldReceive('fetchAccountId')
-            ->with($credential->access_key, $credential->secret_key, $credential->region)
+            ->with($credential->access_key, $credential->secret_key, $credential->region, null)
             ->once()
             ->andReturn('999888777666');
 

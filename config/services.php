@@ -36,6 +36,21 @@ return [
         'queue_arn' => env('SES_EVENTS_SQS_QUEUE_ARN'),
     ],
 
+    /*
+    | An account can connect its AWS account through an IAM role that
+    | BYOMailer assumes. The role connection is on only when the principal
+    | ARN is set. Without the keys, the AWS SDK finds the credentials of the
+    | principal itself, for example from the instance role.
+    */
+    'ses_role' => [
+        'principal_arn' => env('SES_ROLE_PRINCIPAL_ARN'),
+        'key' => env('SES_ROLE_ACCESS_KEY_ID'),
+        'secret' => env('SES_ROLE_SECRET_ACCESS_KEY'),
+        'region' => env('SES_ROLE_STS_REGION', 'us-east-1'),
+        'role_name' => env('SES_ROLE_NAME', 'byomailer-ses'),
+        'template_url' => env('SES_ROLE_TEMPLATE_URL'),
+    ],
+
     'maxmind' => [
         'database_path' => env('MAXMIND_DATABASE_PATH', storage_path('app/geoip/GeoLite2-City.mmdb')),
         'license_key' => env('MAXMIND_LICENSE_KEY'),

@@ -29,7 +29,7 @@ class EnableSesEventDestinationsCommandTest extends TestCase
         $configService = Mockery::mock(SesConfigurationSetService::class);
         $configService->shouldReceive('enableDisabledSnsEventDestinations')
             ->once()
-            ->with('mailautomation-1-abc', $credential->access_key, $credential->secret_key, 'us-east-1')
+            ->with('mailautomation-1-abc', $credential->access_key, $credential->secret_key, 'us-east-1', null)
             ->andReturn(['success' => true, 'enabled' => ['sns-webhook']]);
         $this->app->instance(SesConfigurationSetService::class, $configService);
 
@@ -88,11 +88,11 @@ class EnableSesEventDestinationsCommandTest extends TestCase
         $configService = Mockery::mock(SesConfigurationSetService::class);
         $configService->shouldReceive('enableDisabledSnsEventDestinations')
             ->once()
-            ->with('mailautomation-owner', $ownerCredential->access_key, Mockery::any(), Mockery::any())
+            ->with('mailautomation-owner', $ownerCredential->access_key, Mockery::any(), Mockery::any(), null)
             ->andReturn(['success' => true, 'enabled' => []]);
         $configService->shouldReceive('enableDisabledSnsEventDestinations')
             ->once()
-            ->with('mailautomation-other', $otherCredential->access_key, Mockery::any(), Mockery::any())
+            ->with('mailautomation-other', $otherCredential->access_key, Mockery::any(), Mockery::any(), null)
             ->andReturn(['success' => true, 'enabled' => []]);
         $this->app->instance(SesConfigurationSetService::class, $configService);
 
@@ -111,11 +111,11 @@ class EnableSesEventDestinationsCommandTest extends TestCase
 
         $configService = Mockery::mock(SesConfigurationSetService::class);
         $configService->shouldReceive('enableDisabledSnsEventDestinations')
-            ->with('mailautomation-failing', Mockery::any(), Mockery::any(), Mockery::any())
+            ->with('mailautomation-failing', Mockery::any(), Mockery::any(), Mockery::any(), null)
             ->once()
             ->andReturn(['success' => false, 'error' => 'Access denied']);
         $configService->shouldReceive('enableDisabledSnsEventDestinations')
-            ->with('mailautomation-working', Mockery::any(), Mockery::any(), Mockery::any())
+            ->with('mailautomation-working', Mockery::any(), Mockery::any(), Mockery::any(), null)
             ->once()
             ->andReturn(['success' => true, 'enabled' => ['sns-webhook']]);
         $this->app->instance(SesConfigurationSetService::class, $configService);

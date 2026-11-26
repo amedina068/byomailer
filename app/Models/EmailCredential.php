@@ -58,6 +58,15 @@ class EmailCredential extends Model
     }
 
     /**
+     * Whether BYOMailer reaches AWS through an IAM role of the account, in
+     * place of access keys.
+     */
+    public function usesRole(): bool
+    {
+        return filled($this->role_arn);
+    }
+
+    /**
      * @return BelongsTo<Client, $this>
      */
     public function client(): BelongsTo

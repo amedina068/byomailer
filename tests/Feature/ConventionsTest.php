@@ -125,7 +125,6 @@ class ConventionsTest extends TestCase
         'App\Console\Commands\MigrateSnsToSqsCommand::handle' => 97,
         'App\Console\Commands\PollSesEventsCommand::handle' => 90,
         'App\Http\Controllers\DocumentationPostmanController::newslettersFolder' => 207,
-        'App\Http\Controllers\Onboarding\AwsOnboardingController::storeCredentials' => 89,
         'App\Http\Middleware\HandleInertiaRequests::mainNavigationLinks' => 107,
         'App\Jobs\SendSequenceContactMailJob::sendMail' => 91,
         'App\Mcp\Tools\BulkUpdateContactsTool::handle' => 83,

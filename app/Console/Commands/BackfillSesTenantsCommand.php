@@ -2,9 +2,12 @@
 
 namespace App\Console\Commands;
 
+use App\Exceptions\AwsCredentialsException;
 use App\Models\EmailCredential;
 use App\Services\AwsCredentialValidator;
+use App\Services\SesCredentials;
 use App\Services\SesTenantService;
+use Aws\Credentials\Credentials;
 use Illuminate\Console\Command;
 
 class BackfillSesTenantsCommand extends Command
@@ -16,6 +19,7 @@ class BackfillSesTenantsCommand extends Command
     public function __construct(
         private SesTenantService $tenantService,
         private AwsCredentialValidator $credentialValidator,
+        private SesCredentials $sesCredentials,
     ) {
         parent::__construct();
     }
@@ -51,16 +55,18 @@ class BackfillSesTenantsCommand extends Command
         foreach ($credentials as $credential) {
             $this->line("Processing credential {$credential->id} (user {$credential->user_id}, client {$credential->client_id}, region {$credential->region})...");
 
+            if (! $aws = $this->awsCredentialsFor($credential)) {
+                $failed++;
+
+                continue;
+            }
+
             if (! $credential->aws_account_id) {
                 if ($dryRun) {
                     $this->line('  [DRY RUN] Would fetch account ID via STS.');
                 } else {
                     $this->line('  Fetching AWS account ID...');
-                    $accountId = $this->credentialValidator->fetchAccountId(
-                        $credential->access_key,
-                        $credential->secret_key,
-                        $credential->region
-                    );
+                    $accountId = $this->credentialValidator->fetchAccountId($aws->getAccessKeyId(), $aws->getSecretKey(), $credential->region, $aws->getSecurityToken());
 
                     if (! $accountId) {
                         $this->warn('  Failed to fetch account ID, skipping.');
@@ -78,12 +84,7 @@ class BackfillSesTenantsCommand extends Command
             if ($dryRun) {
                 $this->line("  [DRY RUN] Would create tenant '{$tenantName}'.");
             } else {
-                $result = $this->tenantService->provisionTenant(
-                    $tenantName,
-                    $credential->access_key,
-                    $credential->secret_key,
-                    $credential->region
-                );
+                $result = $this->tenantService->provisionTenant($tenantName, $aws->getAccessKeyId(), $aws->getSecretKey(), $credential->region, $aws->getSecurityToken());
 
                 if (! $result['success']) {
                     $this->warn('  Failed to create tenant: '.($result['error'] ?? 'Unknown error'));
@@ -124,8 +125,9 @@ class BackfillSesTenantsCommand extends Command
                     $credential->aws_account_id,
                     $identity->domain,
                     $identity->configuration_set_name,
-                    $credential->access_key,
-                    $credential->secret_key,
+                    $aws->getAccessKeyId(),
+                    $aws->getSecretKey(),
+                    $aws->getSecurityToken(),
                 );
 
                 if (! $result['success']) {
@@ -144,5 +146,16 @@ class BackfillSesTenantsCommand extends Command
         $this->info(($dryRun ? '[DRY RUN] ' : '')."Done. Created: {$created}, Failed: {$failed}.");
 
         return self::SUCCESS;
+    }
+
+    private function awsCredentialsFor(EmailCredential $credential): ?Credentials
+    {
+        try {
+            return $this->sesCredentials->for($credential);
+        } catch (AwsCredentialsException $exception) {
+            $this->warn("  {$exception->getMessage()} Skipping.");
+
+            return null;
+        }
     }
 }

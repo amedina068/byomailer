@@ -4,10 +4,12 @@ namespace App\Services;
 
 use App\Enums\DnsRecordPurpose;
 use App\Enums\IdentityStatus;
+use App\Exceptions\AwsCredentialsException;
 use App\Exceptions\EmailIdentityProvisioningException;
 use App\Models\EmailCredential;
 use App\Models\EmailIdentity;
 use App\Models\User;
+use Aws\Credentials\Credentials;
 use Illuminate\Support\Str;
 
 /**
@@ -23,6 +25,7 @@ class EmailIdentityProvisioningService
         private SesConfigurationSetService $configurationSetService,
         private SesTenantService $tenantService,
         private EmailIdentityStatusSyncService $statusSyncService,
+        private SesCredentials $sesCredentials,
     ) {}
 
     /**
@@ -35,8 +38,8 @@ class EmailIdentityProvisioningService
      */
     public function provision(User $user, array $input): EmailIdentity
     {
-
         $credential = $this->credentialFor($user);
+        $aws = $this->awsCredentialsFor($credential);
 
         $email = $input['email'];
         $name = $input['name'] ?? null;
@@ -55,12 +58,7 @@ class EmailIdentityProvisioningService
         $awsStatusForApply = null;
 
         if ($isExistingAws) {
-            $awsStatusForApply = $this->domainIdentityService->getIdentityStatus(
-                $originalDomain,
-                $credential->access_key,
-                $credential->secret_key,
-                $credential->region
-            );
+            $awsStatusForApply = $this->domainIdentityService->getIdentityStatus($originalDomain, $aws->getAccessKeyId(), $aws->getSecretKey(), $credential->region, $aws->getSecurityToken());
 
             if (! ($awsStatusForApply['success'] ?? false)) {
                 throw EmailIdentityProvisioningException::awsFailed(
@@ -77,12 +75,7 @@ class EmailIdentityProvisioningService
                 $this->setMailFromDomain($originalDomain, $mailFromSubdomain, $credential);
             }
         } else {
-            $createResult = $this->domainIdentityService->createDomainIdentity(
-                $originalDomain,
-                $credential->access_key,
-                $credential->secret_key,
-                $credential->region
-            );
+            $createResult = $this->domainIdentityService->createDomainIdentity($originalDomain, $aws->getAccessKeyId(), $aws->getSecretKey(), $credential->region, $aws->getSecurityToken());
 
             if (! $createResult['success']) {
                 throw EmailIdentityProvisioningException::awsFailed($createResult['error'] ?? 'Failed to create domain identity.');
@@ -135,12 +128,14 @@ class EmailIdentityProvisioningService
     public function refreshStatus(User $user, EmailIdentity $identity): EmailIdentity
     {
         $credential = $this->credentialFor($user);
+        $aws = $this->awsCredentialsFor($credential);
 
         $result = $this->domainIdentityService->getIdentityStatus(
             $identity->domain,
-            $credential->access_key,
-            $credential->secret_key,
+            $aws->getAccessKeyId(),
+            $aws->getSecretKey(),
             $credential->region,
+            $aws->getSecurityToken(),
         );
 
         if (! ($result['success'] ?? false)) {
@@ -165,15 +160,17 @@ class EmailIdentityProvisioningService
             throw EmailIdentityProvisioningException::noConfigurationSet();
         }
 
+        $aws = $this->awsCredentialsFor($credential);
         $eventTypes = $this->configurationSetService->getEventTypesForTracking($openTracking, $clickTracking);
         $eventResult = $this->configurationSetService->updateSnsEventDestination(
             $identity->configuration_set_name,
             'sns-webhook',
             $credential->sns_topic_arn,
             $eventTypes,
-            $credential->access_key,
-            $credential->secret_key,
-            $credential->region
+            $aws->getAccessKeyId(),
+            $aws->getSecretKey(),
+            $credential->region,
+            $aws->getSecurityToken()
         );
 
         if (! $eventResult['success']) {
@@ -205,14 +202,29 @@ class EmailIdentityProvisioningService
     /**
      * @throws EmailIdentityProvisioningException
      */
+    private function awsCredentialsFor(EmailCredential $credential): Credentials
+    {
+        try {
+            return $this->sesCredentials->for($credential);
+        } catch (AwsCredentialsException $exception) {
+            throw EmailIdentityProvisioningException::awsFailed($exception->getMessage());
+        }
+    }
+
+    /**
+     * @throws EmailIdentityProvisioningException
+     */
     private function setMailFromDomain(string $domain, string $mailFromSubdomain, EmailCredential $credential): void
     {
+        $aws = $this->awsCredentialsFor($credential);
+
         $result = $this->domainIdentityService->setMailFromDomain(
             $domain,
             $mailFromSubdomain,
-            $credential->access_key,
-            $credential->secret_key,
-            $credential->region
+            $aws->getAccessKeyId(),
+            $aws->getSecretKey(),
+            $credential->region,
+            $aws->getSecurityToken()
         );
 
         if (! $result['success']) {
@@ -285,12 +297,14 @@ class EmailIdentityProvisioningService
         bool $clickTracking,
     ): void {
         $configSetName = 'mailautomation-identity-'.$identity->id.'-'.Str::uuid()->toString();
+        $aws = $this->awsCredentialsFor($credential);
 
         $configResult = $this->configurationSetService->createConfigurationSet(
             $configSetName,
-            $credential->access_key,
-            $credential->secret_key,
-            $credential->region
+            $aws->getAccessKeyId(),
+            $aws->getSecretKey(),
+            $credential->region,
+            $aws->getSecurityToken()
         );
 
         if (! $configResult['success']) {
@@ -303,17 +317,19 @@ class EmailIdentityProvisioningService
                 'sns-webhook',
                 $credential->sns_topic_arn,
                 $this->configurationSetService->getEventTypesForTracking($openTracking, $clickTracking),
-                $credential->access_key,
-                $credential->secret_key,
-                $credential->region
+                $aws->getAccessKeyId(),
+                $aws->getSecretKey(),
+                $credential->region,
+                $aws->getSecurityToken()
             );
 
             if (! $eventResult['success']) {
                 $this->configurationSetService->deleteConfigurationSet(
                     $configSetName,
-                    $credential->access_key,
-                    $credential->secret_key,
-                    $credential->region
+                    $aws->getAccessKeyId(),
+                    $aws->getSecretKey(),
+                    $credential->region,
+                    $aws->getSecurityToken()
                 );
 
                 throw EmailIdentityProvisioningException::awsFailed($eventResult['error'] ?? 'Failed to create configuration set.');
@@ -341,14 +357,17 @@ class EmailIdentityProvisioningService
             throw EmailIdentityProvisioningException::awsFailed('Missing AWS account ID or configuration set name for tenant association.');
         }
 
+        $aws = $this->awsCredentialsFor($credential);
+
         $result = $this->tenantService->associateIdentityWithTenant(
             $credential->tenant_name,
             $credential->region,
             $credential->aws_account_id,
             $identity->domain,
             $identity->configuration_set_name,
-            $credential->access_key,
-            $credential->secret_key,
+            $aws->getAccessKeyId(),
+            $aws->getSecretKey(),
+            $aws->getSecurityToken(),
         );
 
         if (! $result['success']) {

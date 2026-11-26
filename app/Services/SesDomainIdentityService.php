@@ -58,10 +58,11 @@ class SesDomainIdentityService
         string $domain,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $result = $client->createEmailIdentity([
                 'EmailIdentity' => $domain,
@@ -96,10 +97,11 @@ class SesDomainIdentityService
         string $mailFromSubdomain,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $client->putEmailIdentityMailFromAttributes([
                 'EmailIdentity' => $identity,
@@ -194,10 +196,11 @@ class SesDomainIdentityService
     public function listDomainIdentities(
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $result = $client->listEmailIdentities([
                 'PageSize' => 100,
@@ -239,10 +242,11 @@ class SesDomainIdentityService
         string $identity,
         string $accessKey,
         string $secretKey,
-        string $region
+        string $region,
+        ?string $sessionToken = null,
     ): array {
         try {
-            $client = $this->createClient($accessKey, $secretKey, $region);
+            $client = $this->createClient($accessKey, $secretKey, $region, $sessionToken);
 
             $result = $client->getEmailIdentity([
                 'EmailIdentity' => $identity,
@@ -268,15 +272,16 @@ class SesDomainIdentityService
         }
     }
 
-    private function createClient(string $accessKey, string $secretKey, string $region): SesV2Client
+    private function createClient(string $accessKey, string $secretKey, string $region, ?string $sessionToken = null): SesV2Client
     {
         $config = [
             'version' => '2019-09-27',
             'region' => $region,
-            'credentials' => [
+            'credentials' => array_filter([
                 'key' => $accessKey,
                 'secret' => $secretKey,
-            ],
+                'token' => $sessionToken,
+            ]),
         ];
 
         if ($this->clientFactory) {

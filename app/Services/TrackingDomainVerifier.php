@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Exceptions\AwsCredentialsException;
 use App\Models\EmailIdentity;
 use Closure;
 use Illuminate\Support\Facades\Cache;
@@ -17,7 +18,10 @@ class TrackingDomainVerifier
 
     private ?Closure $dnsResolver = null;
 
-    public function __construct(private SesConfigurationSetService $configService) {}
+    public function __construct(
+        private SesConfigurationSetService $configService,
+        private SesCredentials $credentials,
+    ) {}
 
     public static function tlsAllowCacheKey(string $domain): string
     {
@@ -116,12 +120,19 @@ class TrackingDomainVerifier
             return ['verified' => false, 'error' => $warm['error']];
         }
 
+        try {
+            $aws = $this->credentials->for($credential);
+        } catch (AwsCredentialsException $exception) {
+            return ['verified' => false, 'error' => $exception->getMessage()];
+        }
+
         $result = $this->configService->putTrackingOptions(
             $identity->configuration_set_name,
             $identity->custom_tracking_domain,
-            $credential->access_key,
-            $credential->secret_key,
-            $credential->region
+            $aws->getAccessKeyId(),
+            $aws->getSecretKey(),
+            $credential->region,
+            $aws->getSecurityToken()
         );
 
         if (! $result['success']) {

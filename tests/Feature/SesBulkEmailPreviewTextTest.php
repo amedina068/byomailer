@@ -6,6 +6,7 @@ use App\Models\EmailIdentity;
 use App\Models\User;
 use App\Services\SesBulkEmailService;
 use App\Services\SesClientManager;
+use App\Services\SesCredentials;
 use App\Services\SesTenantService;
 use Aws\SesV2\SesV2Client;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -59,7 +60,7 @@ class SesBulkEmailPreviewTextTest extends TestCase
         $manager = Mockery::mock(SesClientManager::class);
         $manager->shouldReceive('v2ClientFor')->andReturn($v2Client);
 
-        $service = new SesBulkEmailService($manager, Mockery::mock(SesTenantService::class));
+        $service = new SesBulkEmailService($manager, Mockery::mock(SesTenantService::class), app(SesCredentials::class));
         $service->createNewsletterTemplate($newsletter->fresh('message'), $user);
 
         return ['html' => $capturedHtml];

@@ -301,7 +301,7 @@ class AwsOnboardingTest extends TestCase
             ]);
         $mockSnsService->shouldReceive('deleteTopic')
             ->once()
-            ->with('arn:aws:sns:us-east-1:123456789012:mailautomation', Mockery::type('string'), Mockery::type('string'), Mockery::type('string'))
+            ->with('arn:aws:sns:us-east-1:123456789012:mailautomation', Mockery::type('string'), Mockery::type('string'), Mockery::type('string'), null)
             ->andReturn(['success' => true]);
 
         $this->app->instance(AwsCredentialValidator::class, $mockValidator);

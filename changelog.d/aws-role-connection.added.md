@@ -1,0 +1,1 @@
+- An account can connect its AWS account through an IAM role that a CloudFormation stack makes, in place of access keys. The operator turns it on with `SES_ROLE_PRINCIPAL_ARN`.

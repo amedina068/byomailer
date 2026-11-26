@@ -25,6 +25,16 @@ class Client extends Model
     protected $guarded = [];
 
     /**
+     * The external ID goes into the trust policy of the IAM role of the
+     * account. It never goes into an array or a JSON response.
+     *
+     * @var list<string>
+     */
+    protected $hidden = [
+        'aws_external_id',
+    ];
+
+    /**
      * @return array<string, string>
      */
     protected function casts(): array
@@ -33,6 +43,28 @@ class Client extends Model
             'role' => ClientRole::class,
             'sunset_inactive_days' => 'integer',
         ];
+    }
+
+    /**
+     * Get the external ID for the IAM role of this account.
+     *
+     * BYOMailer makes the ID one time from random bytes. The account cannot
+     * choose it. The update only writes an empty column, so two requests at
+     * the same time keep the ID that was saved first.
+     */
+    public function awsExternalId(): string
+    {
+        if ($this->aws_external_id === null) {
+            static::query()
+                ->whereKey($this->getKey())
+                ->whereNull('aws_external_id')
+                ->update(['aws_external_id' => bin2hex(random_bytes(32))]);
+
+            $this->aws_external_id = static::query()->whereKey($this->getKey())->value('aws_external_id');
+            $this->syncOriginalAttribute('aws_external_id');
+        }
+
+        return $this->aws_external_id;
     }
 
     public function isAdmin(): bool

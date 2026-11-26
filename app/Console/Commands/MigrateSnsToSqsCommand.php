@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\EmailCredential;
 use App\Models\User;
+use App\Services\SesCredentials;
 use App\Services\SnsTopicService;
 use Illuminate\Console\Command;
 use Throwable;
@@ -16,7 +17,7 @@ class MigrateSnsToSqsCommand extends Command
 
     protected $description = 'Migrate existing SNS HTTP subscriptions to SQS subscriptions';
 
-    public function handle(SnsTopicService $snsTopicService): int
+    public function handle(SnsTopicService $snsTopicService, SesCredentials $sesCredentials): int
     {
         $sqsQueueArn = config('services.sqs_ses_events.queue_arn');
 
@@ -65,13 +66,9 @@ class MigrateSnsToSqsCommand extends Command
             }
 
             try {
-                $subscribeResult = $snsTopicService->subscribeSqsEndpoint(
-                    $credential->sns_topic_arn,
-                    $sqsQueueArn,
-                    $credential->access_key,
-                    $credential->secret_key,
-                    $credential->region
-                );
+                $aws = $sesCredentials->for($credential);
+
+                $subscribeResult = $snsTopicService->subscribeSqsEndpoint($credential->sns_topic_arn, $sqsQueueArn, $aws->getAccessKeyId(), $aws->getSecretKey(), $credential->region, $aws->getSecurityToken());
 
                 if (! $subscribeResult['success']) {
                     $this->error("  {$label}: Failed to subscribe SQS — {$subscribeResult['error']}");
@@ -88,12 +85,7 @@ class MigrateSnsToSqsCommand extends Command
                 ])->save();
 
                 if ($oldSubscriptionArn && ! str_starts_with($oldSubscriptionArn, 'pending')) {
-                    $unsubResult = $snsTopicService->unsubscribe(
-                        $oldSubscriptionArn,
-                        $credential->access_key,
-                        $credential->secret_key,
-                        $credential->region
-                    );
+                    $unsubResult = $snsTopicService->unsubscribe($oldSubscriptionArn, $aws->getAccessKeyId(), $aws->getSecretKey(), $credential->region, $aws->getSecurityToken());
 
                     if (! $unsubResult['success']) {
                         $this->warn("  {$label}: SQS subscribed but failed to unsubscribe old HTTPS — {$unsubResult['error']}");

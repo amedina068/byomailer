@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
+use App\Services\SesCredentials;
 use App\Services\SesDomainIdentityService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -11,6 +12,7 @@ class AwsIdentityListController extends Controller
 {
     public function __construct(
         private SesDomainIdentityService $domainIdentityService,
+        private SesCredentials $sesCredentials,
     ) {}
 
     public function __invoke(Request $request): JsonResponse
@@ -25,10 +27,13 @@ class AwsIdentityListController extends Controller
             ], 422);
         }
 
+        $aws = $this->sesCredentials->for($credential);
+
         $result = $this->domainIdentityService->listDomainIdentities(
-            $credential->access_key,
-            $credential->secret_key,
+            $aws->getAccessKeyId(),
+            $aws->getSecretKey(),
             $credential->region,
+            $aws->getSecurityToken(),
         );
 
         if (! $result['success']) {

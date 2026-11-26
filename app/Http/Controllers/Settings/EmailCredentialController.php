@@ -9,6 +9,7 @@ use App\Http\Resources\EmailCredentialResource;
 use App\Models\EmailCredential;
 use App\Services\AwsCredentialValidator;
 use App\Services\SesClientManager;
+use App\Support\AwsRoleSetup;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -29,6 +30,7 @@ class EmailCredentialController extends Controller
             'credential' => $credential
                 ? EmailCredentialResource::make($credential)->resolve($request)
                 : null,
+            'roleConnection' => AwsRoleSetup::for($request->user()->client),
         ]);
     }
 
@@ -68,6 +70,7 @@ class EmailCredentialController extends Controller
         $saveSesCredential->handle($user, [
             'access_key' => $data['access_key'],
             'secret_key' => $data['secret_key'],
+            'role_arn' => null,
             'region' => $data['region'],
             'aws_account_id' => $accountId,
         ]);
