@@ -4,6 +4,7 @@ namespace App\Mcp\Tools;
 
 use App\Enums\SequenceStatus;
 use App\Mcp\Concerns\ConfirmsLiveEdits;
+use App\Mcp\Concerns\FormatsComplianceWarnings;
 use App\Models\Sequence;
 use App\Models\SequenceStep;
 use App\Models\User;
@@ -20,7 +21,7 @@ use Laravel\Mcp\Server\Tool;
 #[Description('Activate (status "live") or pause (status "draft", or its alias "paused") one step of a sequence. The result returns the stored statuses: "live" or "draft". A paused step has the status "draft". This affects real contacts, so the first call only returns a preview: the change, the contacts enrolled in the sequence and the pending mails of this step. Nothing is saved. Show the preview to the user, and after the user confirms, call the tool again with the same arguments and confirm_live set to true. Never set confirm_live without that confirmation. The dashboard runs the same checks: activation fails when the account cannot send email or the step has no subject or body. A missing {{ unsubscribe_url }} link or a missing postal address never blocks the activation. The preview and the result list them in warnings. Show the warnings to the user. A live step sends only while its sequence is live. Find step ids with sequence-content-tool.')]
 class SetSequenceStepStatusTool extends Tool
 {
-    use ConfirmsLiveEdits;
+    use ConfirmsLiveEdits, FormatsComplianceWarnings;
 
     protected string $name = 'set-sequence-step-status';
 
@@ -64,7 +65,7 @@ class SetSequenceStepStatusTool extends Tool
             }
         }
 
-        $warnings = $activate ? $this->sequenceStatusService->stepWarnings($step) : [];
+        $warnings = $activate ? $this->mcpWarnings($this->sequenceStatusService->stepWarnings($step)) : [];
 
         if (! $this->confirmsLive($validated)) {
             $impact = $this->sequenceStatusService->stepImpact($sequence, $step);

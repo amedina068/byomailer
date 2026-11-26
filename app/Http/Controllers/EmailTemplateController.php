@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\CreateEmailTemplate;
+use App\Actions\UpdateEmailTemplate;
 use App\Http\Requests\StoreEmailTemplateRequest;
 use App\Http\Requests\UpdateEmailTemplateRequest;
 use App\Http\Resources\EmailTemplateResource;
@@ -46,17 +48,13 @@ class EmailTemplateController extends Controller
         ]);
     }
 
-    public function store(StoreEmailTemplateRequest $request): RedirectResponse
+    public function store(StoreEmailTemplateRequest $request, CreateEmailTemplate $createEmailTemplate): RedirectResponse
     {
-        $template = new EmailTemplate;
-        $template->forceFill([
-            'user_id' => $request->user()->id,
-            'client_id' => $request->user()->client_id,
-            'name' => $request->validated('name'),
-            'html_content' => $request->validated('html_content'),
-        ])->save();
-
-        $template->markDefaultIfNone();
+        $template = $createEmailTemplate->handle(
+            $request->user(),
+            $request->validated('name'),
+            $request->validated('html_content'),
+        );
 
         return to_route('email-templates.edit', $template);
     }
@@ -71,12 +69,12 @@ class EmailTemplateController extends Controller
         ]);
     }
 
-    public function update(UpdateEmailTemplateRequest $request, int $emailTemplate): RedirectResponse
+    public function update(UpdateEmailTemplateRequest $request, int $emailTemplate, UpdateEmailTemplate $updateEmailTemplate): RedirectResponse
     {
         $emailTemplate = EmailTemplate::query()
             ->findOrFail($emailTemplate);
 
-        $emailTemplate->update([
+        $updateEmailTemplate->handle($emailTemplate, [
             'name' => $request->validated('name'),
             'html_content' => $request->validated('html_content'),
         ]);
@@ -84,7 +82,7 @@ class EmailTemplateController extends Controller
         return to_route('email-templates.index');
     }
 
-    public function startFromStarter(Request $request, int $starter): RedirectResponse
+    public function startFromStarter(Request $request, int $starter, CreateEmailTemplate $createEmailTemplate): RedirectResponse
     {
         $source = EmailTemplate::query()
             ->withoutGlobalScope(ClientScope::class)
@@ -92,30 +90,18 @@ class EmailTemplateController extends Controller
             ->active()
             ->findOrFail($starter);
 
-        $template = new EmailTemplate;
-        $template->forceFill([
-            'user_id' => $request->user()->id,
-            'client_id' => $request->user()->client_id,
-            'name' => $source->name,
-            'html_content' => $source->html_content,
-        ])->save();
-
-        $template->markDefaultIfNone();
+        $template = $createEmailTemplate->handle($request->user(), $source->name, $source->html_content);
 
         return to_route('email-templates.edit', $template);
     }
 
-    public function startBlank(Request $request): RedirectResponse
+    public function startBlank(Request $request, CreateEmailTemplate $createEmailTemplate): RedirectResponse
     {
-        $template = new EmailTemplate;
-        $template->forceFill([
-            'user_id' => $request->user()->id,
-            'client_id' => $request->user()->client_id,
-            'name' => 'Untitled template '.now()->format('Y-m-d H:i'),
-            'html_content' => DefaultTemplateContent::html(),
-        ])->save();
-
-        $template->markDefaultIfNone();
+        $template = $createEmailTemplate->handle(
+            $request->user(),
+            'Untitled template '.now()->format('Y-m-d H:i'),
+            DefaultTemplateContent::html(),
+        );
 
         return to_route('email-templates.edit', $template);
     }

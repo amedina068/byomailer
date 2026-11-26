@@ -1,0 +1,1 @@
+- The MCP server can list, create, update, archive and restore saved segments. A filter change to a segment that a scheduled newsletter or a live sequence uses needs the confirmation of the user.

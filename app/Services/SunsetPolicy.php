@@ -2,9 +2,11 @@
 
 namespace App\Services;
 
+use App\Models\Client;
 use App\Models\Contact;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Selects the contacts that the sunset sweep marks as inactive. A contact is a
@@ -49,6 +51,30 @@ class SunsetPolicy
     {
         return collect($this->candidateQueries($clientId, $cutoff))
             ->sum(fn (Builder $candidates): int => $candidates->count());
+    }
+
+    /**
+     * The number of contacts that the next sunset run marks, for the Profile
+     * page and the MCP profile tool. The count scans the contacts of the
+     * client, so the result stays in the cache for 10 minutes.
+     *
+     * @return array{count: int, days: int}|null
+     */
+    public function preview(Client $client): ?array
+    {
+        $days = $client->sunset_inactive_days;
+
+        if ($days === null) {
+            return null;
+        }
+
+        $count = Cache::remember(
+            self::previewCacheKey($client->id, $days),
+            600,
+            fn (): int => $this->candidateCount($client->id, now()->subDays($days)),
+        );
+
+        return ['count' => $count, 'days' => $days];
     }
 
     /**

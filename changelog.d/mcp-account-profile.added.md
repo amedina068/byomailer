@@ -1,0 +1,1 @@
+- The MCP server has `view-account-profile-tool` and `update-account-profile-tool`. An AI client can read and change the postal address, the timezone and the sunset rule of the account. The MCP postal address warning names `update-account-profile-tool`.

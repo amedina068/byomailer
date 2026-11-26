@@ -107,7 +107,6 @@ class ConventionsTest extends TestCase
         'resources/js/pages/Dashboard.vue' => 1035,
         'resources/js/pages/documentation/api/Newsletters.vue' => 1129,
         'resources/js/pages/documentation/Api.vue' => 737,
-        'resources/js/pages/documentation/guides/McpServer.vue' => 1266,
         'resources/js/pages/newsletters/Create.vue' => 1526,
         'resources/js/pages/newsletters/Show.vue' => 983,
         'resources/js/pages/sequences/Show.vue' => 886,

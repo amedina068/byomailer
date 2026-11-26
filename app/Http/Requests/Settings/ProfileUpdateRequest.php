@@ -22,8 +22,7 @@ class ProfileUpdateRequest extends FormRequest
     {
         return [
             ...$this->profileRules($this->user()->id),
-            'sunset_inactive_days' => ['nullable', 'integer', 'min:30', 'max:730'],
-            'postal_address' => ['nullable', 'string', 'max:500'],
+            ...$this->accountSettingsRules(),
         ];
     }
 

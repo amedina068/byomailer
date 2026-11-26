@@ -1,0 +1,1 @@
+- The MCP server has tools for tags, contact attribute defaults and projects: `list-tags`, `rename-tag`, `delete-tag`, `list-contact-attributes`, `update-contact-attribute-default`, `list-projects`, `create-project`, `update-project` and `delete-project`. A tag delete and a project delete show a preview first and need the confirmation of the user.

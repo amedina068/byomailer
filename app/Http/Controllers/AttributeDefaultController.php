@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\UpdateAttributeDefault;
 use App\Http\Requests\UpdateAttributeDefaultRequest;
 use App\Models\ContactAttribute;
 use Illuminate\Http\RedirectResponse;
@@ -24,11 +25,12 @@ class AttributeDefaultController extends Controller
         ]);
     }
 
-    public function update(UpdateAttributeDefaultRequest $request, int $attributeId): RedirectResponse
+    public function update(UpdateAttributeDefaultRequest $request, int $attributeId, UpdateAttributeDefault $updateAttributeDefault): RedirectResponse
     {
-        $attribute = ContactAttribute::query()->findOrFail($attributeId);
-
-        $attribute->update(['default_value' => $request->validated('default_value')]);
+        $updateAttributeDefault->handle(
+            ContactAttribute::query()->findOrFail($attributeId),
+            $request->validated('default_value'),
+        );
 
         return back();
     }

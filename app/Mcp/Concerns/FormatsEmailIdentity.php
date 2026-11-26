@@ -49,4 +49,31 @@ trait FormatsEmailIdentity
             ], $identity->getDnsRecords()),
         ];
     }
+
+    /**
+     * The link domain state of an identity, with the CNAME record that the
+     * domain owner must publish.
+     *
+     * @return array<string, mixed>
+     */
+    protected function linkDomainDetails(EmailIdentity $identity): array
+    {
+        $cnameTarget = config('services.cloudflare.cname_target');
+        $verified = $identity->hasVerifiedLinkDomain();
+
+        return [
+            'id' => $identity->id,
+            'email' => $identity->email,
+            'custom_link_domain' => $identity->custom_link_domain,
+            'custom_link_domain_verified' => $verified,
+            'dns_records' => $identity->custom_link_domain !== null && filled($cnameTarget) ? [[
+                'type' => 'CNAME',
+                'name' => $identity->custom_link_domain,
+                'value' => $cnameTarget,
+                'priority' => null,
+                'purpose' => 'link_domain',
+                'verified' => $verified,
+            ]] : [],
+        ];
+    }
 }

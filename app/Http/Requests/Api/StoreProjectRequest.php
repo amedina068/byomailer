@@ -2,12 +2,12 @@
 
 namespace App\Http\Requests\Api;
 
-use App\Http\Requests\Concerns\HasUniqueProjectNameRule;
+use App\Concerns\ProjectValidationRules;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreProjectRequest extends FormRequest
 {
-    use HasUniqueProjectNameRule;
+    use ProjectValidationRules;
 
     public function authorize(): bool
     {
@@ -19,14 +19,7 @@ class StoreProjectRequest extends FormRequest
      */
     public function rules(): array
     {
-        return [
-            'name' => [
-                'required',
-                'string',
-                'max:255',
-                $this->uniqueNameForClient($this->ignoreId()),
-            ],
-        ];
+        return $this->projectRules($this->user()?->client_id, $this->ignoreId());
     }
 
     protected function ignoreId(): ?int
