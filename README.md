@@ -15,9 +15,9 @@ You need no `.env` file, no keys and no database server. The setup page creates 
 
 | The first login | A newsletter |
 |---|---|
-| ![The dashboard of a new instance shows the Amazon SES steps first](.github/screenshots/ses-steps.png) | ![The editor of a newsletter](.github/screenshots/newsletter-editor.png) |
+| ![The dashboard of a new instance shows the Amazon SES steps first](.github/screenshots/ses-steps.webp) | ![The editor of a newsletter](.github/screenshots/newsletter-editor.webp) |
 | **The dashboard** | **Contacts** |
-| ![The dashboard with the stats of the last seven days](.github/screenshots/dashboard.png) | ![The contact list with tags and lists](.github/screenshots/contacts.png) |
+| ![The dashboard with the stats of the last seven days](.github/screenshots/dashboard.webp) | ![The contact list with tags and lists](.github/screenshots/contacts.webp) |
 
 BYOMailer is a Laravel 13 app with an Inertia and Vue 3 dashboard.
 
@@ -94,12 +94,14 @@ cd byomailer
 cp .env.example .env
 ```
 
-In `.env`, set `APP_DOMAIN`, `DB_PASSWORD` and `DB_ROOT_PASSWORD`. Remove the `#` from the lines of the "MySQL and Redis" block. The block sets `COMPOSE_PROFILES=mysql`, so Compose also starts MySQL and Redis. Then start the stack:
+In `.env`, set `APP_DOMAIN`. Remove the `#` from the lines of the "MySQL and Redis" block, and set `DB_PASSWORD` to a new value from `openssl rand -hex 24`. The block sets `COMPOSE_PROFILES=mysql`, so Compose also starts MySQL and Redis. Then start the stack:
 
 ```bash
 docker compose up -d --build
 docker compose logs -f web
 ```
+
+The Compose stack listens on `127.0.0.1:8080` and does not start Caddy. Put a reverse proxy with TLS on the host in front of it.
 
 Read [Install with Docker](https://byomailer.com/docs/getting-started/installation-docker) for each service and each volume, and [Manual installation](https://byomailer.com/docs/getting-started/installation-manual) for a server without Docker.
 

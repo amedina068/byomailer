@@ -72,8 +72,10 @@ cd byomailer
 cp .env.example .env
 ```
 
-- In `.env`, set `APP_DOMAIN`. Set `DB_PASSWORD` and `DB_ROOT_PASSWORD` to two new values from `openssl rand -hex 24`.
+- In `.env`, set `APP_DOMAIN`.
 - In `.env`, remove the `#` from the lines of the "MySQL and Redis" block. The block sets `COMPOSE_PROFILES=mysql`.
+- In the same block, set `DB_PASSWORD` to a new value from `openssl rand -hex 24`.
+- The Compose stack listens on `127.0.0.1:8080` with no HTTPS. For a domain, tell the human to put a reverse proxy with TLS in front of it.
 - Start the stack with `docker compose up -d --build`.
 - Run `docker compose ps` every 10 seconds. Continue when the `web` service shows `healthy`.
 - If `web` is not `healthy` after 5 minutes, run `docker compose logs --tail 50 web`. Report the last error line.
