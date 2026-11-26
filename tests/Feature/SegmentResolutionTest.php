@@ -305,7 +305,7 @@ class SegmentResolutionTest extends TestCase
         $payload = NewsletterResource::make($newsletter->load('segment'))->resolve(Request::create('/'));
 
         $this->assertSame($segment->id, $payload['segment_id']);
-        $this->assertSame($filters, $payload['filters']);
+        $this->assertSameJsonData($filters, $payload['filters']);
     }
 
     public function test_sequence_resource_exposes_segment_filters(): void
@@ -319,6 +319,6 @@ class SegmentResolutionTest extends TestCase
         $payload = SequenceResource::make($sequence->load('segment'))->resolve(Request::create('/'));
 
         $this->assertSame($segment->id, $payload['segment_id']);
-        $this->assertSame($filters, $payload['filters']);
+        $this->assertSameJsonData($filters, $payload['filters']);
     }
 }

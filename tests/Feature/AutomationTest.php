@@ -729,7 +729,7 @@ class AutomationTest extends TestCase
         ], $tag));
 
         $response->assertRedirect(route('automations.index'));
-        $this->assertSame([
+        $this->assertSameJsonData([
             'type' => 'attribute_changed',
             'attribute' => 'plan',
             'operator' => 'changed_to',
@@ -752,7 +752,7 @@ class AutomationTest extends TestCase
         ], $tag));
 
         $response->assertRedirect(route('automations.index'));
-        $this->assertSame([
+        $this->assertSameJsonData([
             'type' => 'attribute_changed',
             'attribute' => 'plan',
             'operator' => 'changed',
@@ -860,7 +860,7 @@ class AutomationTest extends TestCase
             ], $tag))
             ->assertRedirect(route('automations.index'));
 
-        $this->assertSame([
+        $this->assertSameJsonData([
             'type' => 'attribute_changed',
             'attribute' => 'plan',
             'operator' => 'changed_to',

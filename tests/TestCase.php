@@ -59,4 +59,31 @@ abstract class TestCase extends BaseTestCase
     {
         RateLimiter::for('ses-sending', fn (): Limit => Limit::none());
     }
+
+    /**
+     * Compare decoded JSON data. The keys of an object can have any order, but
+     * the values and the order of a list must be the same.
+     *
+     * A MySQL JSON column does not keep the key order: it sorts the keys by
+     * length, then by name. SQLite keeps the order of the write.
+     */
+    protected function assertSameJsonData(mixed $expected, mixed $actual, string $message = ''): void
+    {
+        $this->assertSame(self::sortJsonKeys($expected), self::sortJsonKeys($actual), $message);
+    }
+
+    private static function sortJsonKeys(mixed $value): mixed
+    {
+        if (! is_array($value)) {
+            return $value;
+        }
+
+        $value = array_map(self::sortJsonKeys(...), $value);
+
+        if (! array_is_list($value)) {
+            ksort($value);
+        }
+
+        return $value;
+    }
 }
