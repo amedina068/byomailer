@@ -132,6 +132,7 @@ The integrations below are optional. When their variables are empty, the feature
 | `TRACKING_PROXY_*` | Custom tracking domains through a Caddy proxy with on-demand TLS. |
 | `BYOMAILER_API_*` | Adds each new account to a list on another BYOMailer server. |
 | `SNAPSBREW_*` | Open Graph images for the documentation pages. |
+| `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` | Google sign-in for existing users. See [Google sign-in](#google-sign-in). |
 
 ### The owner
 
@@ -156,11 +157,29 @@ The instance has two registration modes:
 
 In both modes, team invites work. `REGISTRATION_ENABLED` gives the mode until the owner sets one. To change the mode, open **Admin > Settings**. The mode that the owner sets stays in the database, and it overrides `REGISTRATION_ENABLED`.
 
+### Google sign-in
+
+Google sign-in is off by default. To turn it on:
+
+1. In the Google Cloud console, open **APIs & Services > Credentials**.
+2. Create an OAuth client ID of the type **Web application**.
+3. Add the authorized redirect URI `https://<your APP_URL host>/auth/google/callback`.
+4. Set `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` in `.env`.
+5. Run `docker compose up -d` again, so that the containers read the new values.
+
+The login page then shows **Log in with Google**. Google sign-in never creates an account. The first Google sign-in links the Google account to the user with the same email address. BYOMailer links the accounts only when these rules pass:
+
+- Google verified the email address.
+- The user has a confirmed email address in BYOMailer. The owner and each user who accepted an invitation have one.
+- The user is not deactivated or archived, and has no open invitation.
+
+A user with two-factor authentication must enter the code after Google. When one of the two values is empty, the login page shows no Google link, and the `/auth/google/*` routes answer 404.
+
 ### Deactivate a user
 
 The owner can deactivate a user in **Admin > Users**. A deactivated user keeps all data, but BYOMailer refuses the user everywhere:
 
-- The login form refuses the user and shows the reason.
+- The login form and the Google sign-in refuse the user and show the reason.
 - An open web session and a "Remember me" login end at the next request.
 - The API tokens of the user stop working on the API (`/api/v1`) and on the MCP server (`/mcp`).
 - The invitation link of an invited user stops working.

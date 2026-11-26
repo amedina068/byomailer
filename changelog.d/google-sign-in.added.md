@@ -1,0 +1,1 @@
+- Google sign-in for existing users. It is off until the operator sets `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET`. It never creates an account, and two-factor authentication stays required.

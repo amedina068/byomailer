@@ -22,6 +22,7 @@
         "laravel/horizon": "^5.47",
         "laravel/mcp": "^0.8.0",
         "laravel/sanctum": "*",
+        "laravel/socialite": "^5.33",
         "laravel/tinker": "^3.0",
         "laravel/wayfinder": "^0.1.20",
         "league/flysystem-aws-s3-v3": "^3.0",

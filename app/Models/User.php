@@ -40,6 +40,7 @@ class User extends Authenticatable implements HasMedia
      */
     protected $hidden = [
         'password',
+        'google_id',
         'two_factor_secret',
         'two_factor_recovery_codes',
         'remember_token',
