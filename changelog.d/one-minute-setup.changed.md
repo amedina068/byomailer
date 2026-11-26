@@ -1,3 +1,3 @@
 - The setup page shows the form only for the correct setup token. Without the token, the page tells you how to find the setup URL. After the setup, `/setup` sends you to the login page.
-- The dashboard shows the Amazon SES steps first: connect AWS, verify a sending domain, leave the SES sandbox, and, for the owner, receive the SES events.
+- The dashboard shows the Amazon SES steps first: create the SES event queue, connect AWS, verify a sending domain and leave the SES sandbox. The AWS connection needs the queue, so the queue is the first step. Only the owner sees the link to the queue guide.
 - The HTTP error pages (401, 403, 404, 419, 429, 500 and 503) say what happened and what to do next. They load no build assets.

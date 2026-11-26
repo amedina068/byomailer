@@ -20,8 +20,10 @@ const props = defineProps<{
     pendingIdentityId: number | null;
     /** True while SES is in the sandbox. Null before the AWS connection. */
     sandbox: boolean | null;
-    /** The SQS settings of the instance. Null for a user who is not the owner. */
-    eventsConfigured: boolean | null;
+    /** The SQS queue of the instance has its URL and its ARN. */
+    eventsConfigured: boolean;
+    /** Only the owner can set the SQS settings of the instance. */
+    canConfigureEvents: boolean;
 }>();
 
 const SES_EVENTS_DOCS = 'https://byomailer.com/docs/self-hosting/ses-events';
@@ -33,12 +35,43 @@ interface Step {
     title: string;
     description: string;
     done: boolean;
-    action: { label: string; href: string; external: boolean };
-    /** An independent step does not wait for the steps before it. */
-    independent?: boolean;
+    action: { label: string; href: string; external: boolean } | null;
 }
 
+/**
+ * The AWS connection subscribes the SNS topic of the account to the SQS
+ * queue of the instance. It fails without the queue, so the queue is first.
+ */
+const eventQueueStep = (): Step | null => {
+    if (!props.canConfigureEvents) {
+        return props.eventsConfigured
+            ? null
+            : {
+                  id: 'events',
+                  title: 'Create the SES event queue',
+                  description:
+                      'The AWS connection needs the SQS queue of this instance. Ask the owner of this instance to set the SQS settings.',
+                  done: false,
+                  action: null,
+              };
+    }
+
+    return {
+        id: 'events',
+        title: 'Create the SES event queue',
+        description:
+            'SES sends the bounces and the complaints to one SQS queue. Create the queue. Then set its settings on the server and restart the container.',
+        done: props.eventsConfigured,
+        action: {
+            label: 'Read the SES events guide',
+            href: SES_EVENTS_DOCS,
+            external: true,
+        },
+    };
+};
+
 const steps = computed<Step[]>(() => {
+    const queue = eventQueueStep();
     const list: Step[] = [
         {
             id: 'aws',
@@ -86,39 +119,17 @@ const steps = computed<Step[]>(() => {
         },
     ];
 
-    if (props.eventsConfigured !== null) {
-        list.push({
-            id: 'events',
-            title: 'Receive the SES events',
-            description:
-                'Bounces and complaints come back through one SQS queue. Without the queue, BYOMailer does not see them. Set the SQS settings on the server.',
-            done: props.eventsConfigured,
-            action: {
-                label: 'Read the SES events guide',
-                href: SES_EVENTS_DOCS,
-                external: true,
-            },
-            independent: true,
-        });
-    }
-
-    return list;
+    return queue ? [queue, ...list] : list;
 });
+
+const currentId = computed(() => steps.value.find((step) => !step.done)?.id);
 
 const stateOf = (step: Step): StepState => {
     if (step.done) {
         return 'done';
     }
 
-    if (step.independent) {
-        return 'current';
-    }
-
-    const firstOpen = steps.value.find(
-        (item) => !item.done && !item.independent,
-    );
-
-    return firstOpen?.id === step.id ? 'current' : 'todo';
+    return currentId.value === step.id ? 'current' : 'todo';
 };
 
 const visible = computed(() => steps.value.some((step) => !step.done));
@@ -218,7 +229,7 @@ const doneCount = computed(
                         {{ step.description }}
                     </p>
                 </div>
-                <template v-if="stateOf(step) === 'current'">
+                <template v-if="stateOf(step) === 'current' && step.action">
                     <Button
                         v-if="step.action.external"
                         as-child

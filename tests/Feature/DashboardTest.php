@@ -400,7 +400,7 @@ class DashboardTest extends TestCase
 
     public function test_the_owner_of_a_new_instance_sees_the_ses_setup_state(): void
     {
-        config(['services.sqs_ses_events.queue_url' => null]);
+        config(['services.sqs_ses_events.queue_url' => null, 'services.sqs_ses_events.queue_arn' => null]);
         $owner = User::factory()->create(['is_owner' => true]);
         $this->actingAs($owner);
 
@@ -409,12 +409,13 @@ class DashboardTest extends TestCase
             ->where('hasCredentials', false)
             ->where('sesSetup.sandbox', null)
             ->where('sesSetup.eventsConfigured', false)
+            ->where('sesSetup.canConfigureEvents', true)
         );
     }
 
     public function test_the_ses_setup_state_reports_the_sandbox_and_the_event_queue(): void
     {
-        config(['services.sqs_ses_events.queue_url' => 'https://sqs.us-east-1.amazonaws.com/111111111111/byomailer-ses-events']);
+        $this->configureEventQueue();
         $owner = User::factory()->create(['is_owner' => true]);
         EmailCredential::factory()->for($owner)->create(['type' => 'ses', 'production_access_enabled' => false]);
         $this->actingAs($owner);
@@ -422,6 +423,17 @@ class DashboardTest extends TestCase
         $this->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
             ->where('sesSetup.sandbox', true)
             ->where('sesSetup.eventsConfigured', true)
+        );
+    }
+
+    public function test_the_event_queue_needs_both_the_url_and_the_arn(): void
+    {
+        $this->configureEventQueue();
+        config(['services.sqs_ses_events.queue_arn' => null]);
+        $this->actingAs(User::factory()->create(['is_owner' => true]));
+
+        $this->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
+            ->where('sesSetup.eventsConfigured', false)
         );
     }
 
@@ -436,13 +448,22 @@ class DashboardTest extends TestCase
         );
     }
 
-    public function test_only_the_owner_sees_the_state_of_the_event_queue(): void
+    public function test_a_user_who_is_not_the_owner_cannot_configure_the_event_queue(): void
     {
-        $user = User::factory()->create(['is_owner' => false]);
-        $this->actingAs($user);
+        config(['services.sqs_ses_events.queue_url' => null, 'services.sqs_ses_events.queue_arn' => null]);
+        $this->actingAs(User::factory()->create(['is_owner' => false]));
 
         $this->get(route('dashboard'))->assertInertia(fn (Assert $page) => $page
-            ->where('sesSetup.eventsConfigured', null)
+            ->where('sesSetup.eventsConfigured', false)
+            ->where('sesSetup.canConfigureEvents', false)
         );
+    }
+
+    private function configureEventQueue(): void
+    {
+        config([
+            'services.sqs_ses_events.queue_url' => 'https://sqs.us-east-1.amazonaws.com/111111111111/byomailer-ses-events',
+            'services.sqs_ses_events.queue_arn' => 'arn:aws:sqs:us-east-1:111111111111:byomailer-ses-events',
+        ]);
     }
 }

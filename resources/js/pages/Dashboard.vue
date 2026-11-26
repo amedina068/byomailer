@@ -112,7 +112,11 @@ const props = defineProps<{
     hasVerifiedIdentity: boolean;
     pendingIdentityId: number | null;
     missingPermissions: string[];
-    sesSetup: { sandbox: boolean | null; eventsConfigured: boolean | null };
+    sesSetup: {
+        sandbox: boolean | null;
+        eventsConfigured: boolean;
+        canConfigureEvents: boolean;
+    };
     monthlySesCost: MonthlySesCost;
     weeklyStats: WeeklyStats;
     contactGrowth?: ContactGrowthPoint[];
@@ -219,6 +223,7 @@ const statCards = computed(() => [
                 :pending-identity-id="pendingIdentityId"
                 :sandbox="sesSetup.sandbox"
                 :events-configured="sesSetup.eventsConfigured"
+                :can-configure-events="sesSetup.canConfigureEvents"
             />
 
             <SesPermissionBanner
