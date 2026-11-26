@@ -104,7 +104,7 @@ class UpdateSegmentTool extends Tool
     {
         $newFilters = $this->filterPreparationService->prepareFilters($filters, $user);
 
-        if ($newFilters === ($segment->filters ?? [])) {
+        if ($this->sortKeys($newFilters) === $this->sortKeys($segment->filters ?? [])) {
             return null;
         }
 
@@ -177,5 +177,19 @@ class UpdateSegmentTool extends Tool
             ...$this->filtersSchema($schema, 'New segment filters, 1 to 20. The array replaces all the current filters. Use view-newsletter-filters-tool to build it.'),
             ...$this->confirmLiveSchema($schema),
         ];
+    }
+
+    /**
+     * Sort the keys of each filter, so that the comparison does not depend on
+     * key order. MySQL returns the keys of a JSON column in its own order.
+     *
+     * @param  array<array-key, mixed>  $value
+     * @return array<array-key, mixed>
+     */
+    private function sortKeys(array $value): array
+    {
+        ksort($value);
+
+        return array_map(fn (mixed $item): mixed => is_array($item) ? $this->sortKeys($item) : $item, $value);
     }
 }

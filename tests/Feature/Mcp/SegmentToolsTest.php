@@ -113,7 +113,7 @@ class SegmentToolsTest extends TestCase
         $segment = Segment::query()->sole();
         $this->assertSame($user->client_id, $segment->client_id);
         $this->assertSame('Contacts with the vip tag', $segment->description);
-        $this->assertSame($this->tagFilters('vip'), $segment->filters);
+        $this->assertSameFilters($this->tagFilters('vip'), $segment->filters);
     }
 
     public function test_create_segment_rejects_an_unknown_tag_and_saves_nothing(): void
@@ -169,7 +169,7 @@ class SegmentToolsTest extends TestCase
         $segment->refresh();
         $this->assertSame('Recent', $segment->name);
         $this->assertSame('Keep me', $segment->description);
-        $this->assertSame($this->tagFilters('vip'), $segment->filters);
+        $this->assertSameFilters($this->tagFilters('vip'), $segment->filters);
     }
 
     public function test_update_segment_previews_a_filter_change_for_a_scheduled_newsletter_and_saves_after_confirmation(): void
@@ -193,7 +193,7 @@ class SegmentToolsTest extends TestCase
                 ->etc());
 
         $segment->refresh();
-        $this->assertSame($oldFilters, $segment->filters);
+        $this->assertSameFilters($oldFilters, $segment->filters);
         $this->assertNotSame('VIPs', $segment->name);
 
         ByoMailerServer::actingAs($user)->tool(UpdateSegmentTool::class, [...$arguments, 'confirm_live' => true])
@@ -201,9 +201,9 @@ class SegmentToolsTest extends TestCase
             ->assertSee('"applied":true');
 
         $segment->refresh();
-        $this->assertSame($this->tagFilters('vip'), $segment->filters);
+        $this->assertSameFilters($this->tagFilters('vip'), $segment->filters);
         $this->assertSame('VIPs', $segment->name);
-        $this->assertSame($this->tagFilters('vip'), $newsletter->refresh()->effectiveFilters());
+        $this->assertSameFilters($this->tagFilters('vip'), $newsletter->refresh()->effectiveFilters());
     }
 
     public function test_update_segment_previews_a_filter_change_for_a_live_sequence(): void
@@ -226,7 +226,7 @@ class SegmentToolsTest extends TestCase
                 ->where('live_sequences.0.id', $sequence->id)
                 ->etc());
 
-        $this->assertSame($oldFilters, $segment->refresh()->filters);
+        $this->assertSameFilters($oldFilters, $segment->refresh()->filters);
     }
 
     public function test_update_segment_needs_no_confirmation_when_the_audience_of_a_live_record_does_not_change(): void
@@ -266,7 +266,7 @@ class SegmentToolsTest extends TestCase
             'filters' => [],
         ])->assertHasErrors(['A segment needs at least one filter.']);
 
-        $this->assertSame($oldFilters, $segment->refresh()->filters);
+        $this->assertSameFilters($oldFilters, $segment->refresh()->filters);
     }
 
     public function test_update_segment_rejects_the_name_of_another_segment_but_keeps_its_own_name(): void
@@ -325,5 +325,23 @@ class SegmentToolsTest extends TestCase
             ->assertSee('"applied":true');
 
         $this->assertNull($segment->refresh()->archived_at);
+    }
+
+    /**
+     * Compare two filter arrays without key order. MySQL returns the keys of a
+     * JSON column in its own order.
+     *
+     * @param  array<array-key, mixed>  $expected
+     * @param  array<array-key, mixed>|null  $actual
+     */
+    private function assertSameFilters(array $expected, ?array $actual): void
+    {
+        $sort = function (array $value) use (&$sort): array {
+            ksort($value);
+
+            return array_map(fn (mixed $item): mixed => is_array($item) ? $sort($item) : $item, $value);
+        };
+
+        $this->assertSame($sort($expected), $sort($actual ?? []));
     }
 }
