@@ -145,7 +145,7 @@ class AutomationToolsTest extends TestCase
             'actions' => [['type' => 'add_tag', 'value' => $tag->id]],
         ])->assertOk();
 
-        $this->assertSame(
+        $this->assertSameJsonData(
             ['type' => 'attribute_changed', 'attribute' => 'plan', 'operator' => 'changed_to', 'value' => 'pro'],
             Automation::query()->sole()->condition,
         );

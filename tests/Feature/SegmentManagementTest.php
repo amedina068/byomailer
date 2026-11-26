@@ -250,11 +250,11 @@ class SegmentManagementTest extends TestCase
         $newsletter->refresh();
         $this->assertSame($segment->id, $newsletter->segment_id);
         $this->assertSame([], $newsletter->filters);
-        $this->assertSame($filters, $newsletter->effectiveFilters());
+        $this->assertSameJsonData($filters, $newsletter->effectiveFilters());
 
         $sequence->refresh();
         $this->assertSame($segment->id, $sequence->segment_id);
-        $this->assertSame($filters, $sequence->effectiveFilters());
+        $this->assertSameJsonData($filters, $sequence->effectiveFilters());
 
         $this->assertDatabaseHas('segments', ['id' => $segment->id]);
     }

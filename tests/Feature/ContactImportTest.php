@@ -141,7 +141,7 @@ CSV;
         $this->assertTrue($contact->lists()->where('lists.id', $existingList->id)->exists());
         $this->assertTrue($contact->tags()->where('name', 'VIP')->exists());
         $this->assertTrue($contact->tags()->where('name', 'Prospect')->exists());
-        $this->assertSame([
+        $this->assertSameJsonData([
             'Industry' => 'AI',
             'Phone' => '555-0101',
         ], $contact->extra_attributes);

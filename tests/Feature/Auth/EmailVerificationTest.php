@@ -68,7 +68,8 @@ class EmailVerificationTest extends TestCase
         $verificationUrl = URL::temporarySignedRoute(
             'verification.verify',
             now()->addMinutes(60),
-            ['id' => 123, 'hash' => sha1($user->email)]
+            // A fixed id can be the id of the user: MySQL does not reset the auto-increment counter.
+            ['id' => $user->id + 1, 'hash' => sha1($user->email)]
         );
 
         $this->actingAs($user)->get($verificationUrl);
