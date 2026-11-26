@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Settings;
 
+use App\Actions\InviteTeamMember;
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Settings\Concerns\ManagesTeamMembers;
@@ -12,10 +13,7 @@ use App\Mail\UserInviteMail;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -49,63 +47,18 @@ class TeamController extends Controller
         ]);
     }
 
-    public function store(InviteTeamMemberRequest $request): RedirectResponse
+    public function store(InviteTeamMemberRequest $request, InviteTeamMember $invite): RedirectResponse
     {
         $this->ensureAdmin($request->user());
 
-        $client = $request->user()->client;
-        $email = Str::lower($request->string('email')->toString());
-        $expiresAt = now()->addDay();
-        $intendedRole = UserRole::from($request->string('role')->toString());
-
-        $existingUser = User::query()->where('email', $email)->first();
-
-        if ($existingUser !== null) {
-            if ($existingUser->client_id !== $client->id) {
-                throw ValidationException::withMessages([
-                    'email' => 'This email address is already in use.',
-                ]);
-            }
-
-            if ($existingUser->archived_at !== null) {
-                throw ValidationException::withMessages([
-                    'email' => 'This user is archived. Restore them instead of inviting again.',
-                ]);
-            }
-
-            if ($existingUser->invite_expires_at === null) {
-                throw ValidationException::withMessages([
-                    'email' => 'This user is already part of your team.',
-                ]);
-            }
-
-            $existingUser->forceFill([
-                'name' => $request->string('name')->toString(),
-                'email' => $email,
-                'invite_expires_at' => $expiresAt,
-                'password' => Hash::make(Str::random(40)),
-                'email_verified_at' => null,
-                'role' => $intendedRole->value,
-            ])->save();
-
-            $invitee = $existingUser->fresh();
-        } else {
-            $invitee = $client->users()->create([
-                'name' => $request->string('name')->toString(),
-                'email' => $email,
-                'role' => $intendedRole->value,
-                'invite_expires_at' => $expiresAt,
-                'password' => Hash::make(Str::random(40)),
-            ]);
-        }
-
-        $inviteUrl = URL::temporarySignedRoute(
-            'invites.show',
-            $expiresAt,
-            ['user' => $invitee->uuid]
+        $invitation = $invite->handle(
+            $request->user()->client,
+            $request->string('name')->toString(),
+            $request->string('email')->toString(),
+            UserRole::from($request->string('role')->toString()),
         );
 
-        Mail::to($invitee->email)->send(new UserInviteMail($invitee, $inviteUrl));
+        Mail::to($invitation['user']->email)->send(new UserInviteMail($invitation['user'], $invitation['url']));
 
         return redirect()->route('team.index')->with('success', 'Invitation sent.');
     }

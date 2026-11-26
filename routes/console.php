@@ -13,9 +13,23 @@ use App\Console\Commands\SendPermissionAlertCommand;
 use App\Console\Commands\SendSequenceBlockedDigestCommand;
 use App\Console\Commands\SendWeeklySummaryMail;
 use App\Console\Commands\SyncConfigurationSetsCommand;
+use App\Jobs\RecordQueueHeartbeat;
 use App\Models\WebhookDelivery;
+use App\Support\Instance\Heartbeats;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Schedule;
+
+/*
+| The two heartbeats that `byomailer:status` and `byomailer:doctor` read. The
+| scheduler writes its own beat, and a queue worker writes the queue beat.
+*/
+Schedule::call(fn () => Heartbeats::beat(Heartbeats::SCHEDULER))
+    ->name('byomailer:scheduler-heartbeat')
+    ->everyMinute();
+
+Schedule::job(new RecordQueueHeartbeat)
+    ->name('byomailer:queue-heartbeat')
+    ->everyMinute();
 
 Schedule::command(RefreshEmailIdentityDnsStatus::class)->everyFifteenMinutes();
 Schedule::command(CheckCustomTrackingDomainDns::class)->everyThirtyMinutes()->withoutOverlapping();

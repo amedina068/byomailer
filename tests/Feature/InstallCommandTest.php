@@ -39,7 +39,7 @@ class InstallCommandTest extends TestCase
         $this->artisan('byomailer:install')
             ->expectsQuestion('Name', 'Prompted Admin')
             ->expectsQuestion('Email', 'prompted@example.com')
-            ->expectsQuestion('Password', 'another-long-password')
+            ->expectsOutputToContain('/login/link/')
             ->assertSuccessful();
 
         $this->assertDatabaseHas('users', ['email' => 'prompted@example.com', 'name' => 'Prompted Admin']);

@@ -36,6 +36,7 @@ use App\Http\Controllers\EmailTemplateController;
 use App\Http\Controllers\EmailTemplateListController;
 use App\Http\Controllers\GalleryImageController;
 use App\Http\Controllers\InviteController;
+use App\Http\Controllers\LoginLinkController;
 use App\Http\Controllers\MailListController;
 use App\Http\Controllers\MailListImportController;
 use App\Http\Controllers\NewsletterAbWinnerController;
@@ -94,6 +95,12 @@ Route::middleware(['guest', 'throttle:10,1'])->group(function () {
     Route::get('setup', [SetupController::class, 'show'])->name('setup.show');
     Route::post('setup', [SetupController::class, 'store'])->name('setup.store');
 });
+
+// The one-time login link that `byomailer:install` returns.
+Route::get('login/link/{user}/{nonce}', LoginLinkController::class)
+    ->whereNumber('user')
+    ->middleware('throttle:10,1')
+    ->name('login.link');
 
 Route::get('tls/ask', TlsAskController::class)
     ->middleware('throttle:tls-ask')
