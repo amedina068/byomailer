@@ -40,7 +40,9 @@ return [
             'connection' => env('DB_QUEUE_CONNECTION'),
             'table' => env('DB_QUEUE_TABLE', 'jobs'),
             'queue' => env('DB_QUEUE', 'default'),
-            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 90),
+            // The same value as the redis connection: more than the longest
+            // job timeout (300 seconds for a newsletter job).
+            'retry_after' => (int) env('DB_QUEUE_RETRY_AFTER', 330),
             'after_commit' => false,
         ],
 
@@ -119,6 +121,20 @@ return [
     | Supported drivers: "database-uuids", "dynamodb", "file", "null"
     |
     */
+
+    /*
+    |--------------------------------------------------------------------------
+    | Send Limiter
+    |--------------------------------------------------------------------------
+    |
+    | The newsletter and sequence send jobs share the `ses-sending` rate
+    | limit. "redis" keeps the counters in Redis. "cache" keeps them in the
+    | cache store, for an install with no Redis (the Docker image). The
+    | default is "redis" only when the queue is redis.
+    |
+    */
+
+    'ses_sending_limiter' => env('SES_SENDING_LIMITER', env('QUEUE_CONNECTION') === 'redis' ? 'redis' : 'cache'),
 
     'failed' => [
         'driver' => env('QUEUE_FAILED_DRIVER', 'database-uuids'),

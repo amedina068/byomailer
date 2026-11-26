@@ -4,6 +4,7 @@ use App\Http\Middleware\AddSecurityHeaders;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;
 use App\Http\Middleware\LogoutDeactivatedUser;
+use App\Http\Middleware\RedirectLoopbackHost;
 use App\Http\Middleware\RedirectToSetup;
 use App\Http\Middleware\RestrictHostToLinkRoutes;
 use App\Http\Middleware\TrustProxies;
@@ -37,6 +38,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->replace(BaseTrustProxies::class, TrustProxies::class);
 
         $middleware->prepend(RestrictHostToLinkRoutes::class);
+
+        // 127.0.0.1 and [::1] go to the APP_URL host, before the host check
+        // above answers 404.
+        $middleware->prepend(RedirectLoopbackHost::class);
 
         // Refuse frames from other sites and MIME sniffing on each response.
         $middleware->append(AddSecurityHeaders::class);
