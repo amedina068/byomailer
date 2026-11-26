@@ -1,5 +1,8 @@
 # BYOMailer
 
+[![CI](https://github.com/amedina068/byomailer/actions/workflows/ci.yml/badge.svg)](https://github.com/amedina068/byomailer/actions/workflows/ci.yml)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/amedina068/byomailer/badge)](https://scorecard.dev/viewer/?uri=github.com/amedina068/byomailer)
+
 BYOMailer is an email marketing app that sends through your own Amazon SES account. You keep your contacts, your sending reputation, and your AWS bill. BYOMailer adds the lists, the editor, the campaigns, and the tracking on top of SES.
 
 BYOMailer is a Laravel 13 app with an Inertia and Vue 3 dashboard. You can run it with Docker on one server.

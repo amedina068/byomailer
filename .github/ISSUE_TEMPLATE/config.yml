@@ -1,3 +1,10 @@
 # Each issue uses a template. GitHub adds a "Report a security vulnerability"
 # link to the template list when private vulnerability reporting is on.
 blank_issues_enabled: false
+contact_links:
+  - name: Question
+    url: https://github.com/amedina068/byomailer/discussions/categories/q-a
+    about: Ask a question about BYOMailer in the Q&A category of the discussions.
+  - name: Documentation
+    url: https://byomailer.com/docs
+    about: Read how to install, configure and use BYOMailer.

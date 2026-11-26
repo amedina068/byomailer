@@ -235,6 +235,22 @@ At release time, `scripts/changelog-release.sh` moves the fragments into `CHANGE
 5. Run Pint and the tests for the code that you changed.
 6. Open a pull request. Fill in the pull request template. Tell what changed and why.
 
+## Pull request titles
+
+The title of each pull request must follow [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/). The `PR title` check fails when the title does not follow the format. Examples:
+
+- `feat: add a CSV export of the sequence stats`
+- `fix(newsletters): start one send only`
+- `docs: explain the SES event queue`
+
+Use one of these types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `build`, `ci`, `chore` or `revert`. The scope in parentheses is optional.
+
+GitHub makes the release notes from the titles of the merged pull requests. Write each title for a person who reads the release notes.
+
+## Triage
+
+Each issue form adds a type label and the `needs-triage` label to a new issue. The maintainer reads each new issue, removes `needs-triage` and sets the correct type label: `bug`, `enhancement`, `documentation` or `question`.
+
 ## Security
 
 Do not open a public issue for a security problem. Report it in private through a GitHub security advisory. [SECURITY.md](SECURITY.md) gives the steps.
