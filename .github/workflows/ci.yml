@@ -16,7 +16,7 @@ concurrency:
 
 env:
   PHP_VERSION: "8.4"
-  PHP_EXTENSIONS: bcmath, exif, gd, intl, pdo_sqlite, redis, zip
+  PHP_EXTENSIONS: bcmath, exif, gd, intl, pdo_mysql, pdo_sqlite, redis, zip
 
 # Each job that runs "composer install" keeps the Composer download cache.
 # The cache key changes when composer.lock changes.
@@ -97,10 +97,39 @@ jobs:
       - name: Check the locked packages for security advisories
         run: composer audit --locked --no-interaction
 
+  # The suite runs on SQLite (the default of the Docker image) and on MySQL
+  # 8.4 (the production database). The sqlite job starts no service: an empty
+  # image name skips it.
   php-tests:
-    name: PHP tests
+    name: PHP tests (${{ matrix.db }})
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        db: [sqlite, mysql]
+    services:
+      mysql:
+        image: ${{ matrix.db == 'mysql' && 'mysql:8.4' || '' }}
+        env:
+          MYSQL_DATABASE: byomailer_test
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 --silent"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=20
+    # phpunit.xml sets sqlite and :memory:. A variable of the job wins. The
+    # parallel run makes one database for each process, so it uses root.
+    env:
+      DB_CONNECTION: ${{ matrix.db }}
+      DB_DATABASE: ${{ matrix.db == 'mysql' && 'byomailer_test' || ':memory:' }}
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_USERNAME: root
+      DB_PASSWORD: root
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
@@ -128,8 +157,58 @@ jobs:
           cp .env.example .env
           php artisan key:generate
 
+      # Prove that the full migration chain builds a new database. The
+      # schema path names no file, so the step runs each migration instead of
+      # the dump in database/schema.
+      - name: Run each migration on a new database
+        run: |
+          touch /tmp/ci.sqlite
+          php artisan migrate --force --no-interaction --schema-path=/tmp/no-schema-dump.sql
+        env:
+          DB_DATABASE: ${{ matrix.db == 'mysql' && 'byomailer_test' || '/tmp/ci.sqlite' }}
+          QUEUE_CONNECTION: "null"
+
       - name: Run the PHP tests
         run: php artisan test --compact --parallel
+
+  # The files in database/schema come from the migrations. A change to the
+  # migrations without the new dumps fails this job. Laravel still runs a
+  # migration that a dump does not list, so a stale dump is slow, not wrong.
+  schema-dumps:
+    name: Schema dumps
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: ${{ env.PHP_EXTENSIONS }}
+          coverage: none
+
+      - name: Find the Composer cache folder
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: composer-${{ runner.os }}-php${{ env.PHP_VERSION }}-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-${{ runner.os }}-php${{ env.PHP_VERSION }}-
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --no-progress --prefer-dist
+
+      - name: Prepare the environment
+        run: |
+          cp .env.example .env
+          php artisan key:generate
+
+      - name: Make the dumps again and compare them
+        run: |
+          scripts/dump-schemas.sh
+          git diff --exit-code database/schema
 
   js-tests:
     name: JavaScript tests

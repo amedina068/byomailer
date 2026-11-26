@@ -15,6 +15,7 @@ use App\Services\SendDecision;
 use App\Services\SequenceStepScheduler;
 use App\Services\SesPermissionChecker;
 use App\Services\UserMailerFactory;
+use App\Support\SesSendingLimit;
 use App\Support\Tenant;
 use Aws\Exception\AwsException;
 use Carbon\CarbonInterface;
@@ -23,7 +24,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
-use Illuminate\Queue\Middleware\RateLimitedWithRedis;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -73,7 +73,7 @@ class SendSequenceContactMailJob implements ShouldQueue
      */
     public function middleware(): array
     {
-        return [(new RateLimitedWithRedis('ses-sending'))->releaseAfter(1)];
+        return [SesSendingLimit::middleware()];
     }
 
     public function handle(

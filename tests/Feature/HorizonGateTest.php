@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
+use Tests\Concerns\LoadsHorizon;
 use Tests\TestCase;
 
 /**
@@ -14,7 +15,7 @@ use Tests\TestCase;
  */
 class HorizonGateTest extends TestCase
 {
-    use RefreshDatabase;
+    use LoadsHorizon, RefreshDatabase;
 
     public function test_a_listed_admin_email_that_is_not_the_owner_cannot_view_horizon(): void
     {
