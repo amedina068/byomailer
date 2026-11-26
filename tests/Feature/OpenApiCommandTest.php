@@ -34,7 +34,7 @@ class OpenApiCommandTest extends TestCase
         $yaml = Yaml::parseFile($this->folder.'/openapi.yaml');
         $json = json_decode(File::get($this->folder.'/openapi.json'), true, flags: JSON_THROW_ON_ERROR);
 
-        $this->assertSame('3.1.0', $yaml['openapi']);
+        $this->assertSame('3.1.2', $yaml['openapi']);
         $this->assertSame('BYOMailer', $yaml['info']['title']);
         $this->assertEquals($json, $yaml);
     }
@@ -106,6 +106,25 @@ class OpenApiCommandTest extends TestCase
         $email = Yaml::parseFile($this->folder.'/openapi.yaml')['components']['schemas']['ContactRequest']['properties']['email'];
 
         $this->assertSame(['type' => 'string', 'format' => 'email'], $email);
+    }
+
+    public function test_the_variables_endpoints_document_content_variables_as_a_map_of_strings(): void
+    {
+        $this->export()->assertSuccessful();
+
+        $paths = Yaml::parseFile($this->folder.'/openapi.yaml')['paths'];
+
+        foreach (['/newsletters/{newsletterId}/variables', '/sequences/{sequenceId}/variables'] as $path) {
+            foreach (['get', 'patch'] as $method) {
+                $schema = $paths[$path][$method]['responses'][200]['content']['application/json']['schema'];
+
+                $this->assertSame(
+                    ['type' => 'object', 'additionalProperties' => ['type' => 'string']],
+                    $schema['properties']['data']['properties']['content_variables'],
+                    "{$method} {$path}",
+                );
+            }
+        }
     }
 
     public function test_scramble_export_writes_the_same_json_as_the_command_and_no_yaml(): void

@@ -52,6 +52,7 @@ class SequenceVariablesController extends Controller
             'data' => [
                 'sequence_id' => $sequence->id,
                 'detected_variables' => $detected,
+                /** @var array<string, string> */
                 'content_variables' => ContentVariables::withDetected($detected, $sequence->content_variables),
             ],
         ]);
