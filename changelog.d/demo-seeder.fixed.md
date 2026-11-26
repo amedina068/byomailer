@@ -1,0 +1,1 @@
+- `php artisan db:seed` fills a new database with the demo data again. Before, it stopped at the first query with no tenant, and then at a factory state that does not exist.

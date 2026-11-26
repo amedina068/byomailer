@@ -22,6 +22,7 @@ use App\Models\User;
 use App\Models\VisualAutomation;
 use App\Models\VisualAutomationContactStep;
 use App\Models\VisualAutomationEnrollment;
+use App\Support\Tenant;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
@@ -48,6 +49,21 @@ class DatabaseSeeder extends Seeder
             ])->id,
         ]);
 
+        // Each client-scoped query needs a tenant, as in a request of the app.
+        Tenant::run($user->client_id, fn () => $this->seedDemoClient($user));
+
+        $this->seedClient('Acme Co', 'owner@acme.test');
+        $this->seedClient('Northwind', 'owner@northwind.test');
+        $this->seedClient('Free Tier Co', 'owner@freetier.test');
+        $this->seedClient('Trial Labs', 'owner@triallabs.test');
+    }
+
+    /**
+     * Seed the data of the demo user: identities, lists, topics, tags, 500
+     * contacts, newsletters, sequences, automations, mails and logs.
+     */
+    private function seedDemoClient(User $user): void
+    {
         EmailCredential::factory()->for($user)->create([
             'access_key' => env('TEST_AWS_KEY_ID', 'AKIADEMOUSER12345678'),
             'secret_key' => env('TEST_AWS_KEY_SECRET', 'demo-secret-access-key-value-1234567890-cred'),
@@ -294,6 +310,18 @@ class DatabaseSeeder extends Seeder
                 $sampleContacts = $contacts->take(6);
                 $sampleContacts->each(function (Contact $contact, int $index) use ($sequence): void {
                     $step = $sequence->steps[$index % $sequence->steps->count()];
+
+                    // The enrollment above can schedule this step already. A
+                    // contact has one mail for each step.
+                    $scheduled = ContactMail::query()
+                        ->where('contact_id', $contact->id)
+                        ->where('mailable_type', SequenceStep::class)
+                        ->where('mailable_id', $step->id)
+                        ->exists();
+
+                    if ($scheduled) {
+                        return;
+                    }
 
                     $mail = ContactMail::factory()
                         ->for($contact)
@@ -632,36 +660,30 @@ class DatabaseSeeder extends Seeder
         EmailLog::insert($logEntries);
 
         app(SegmentSeeder::class)->seedDemoSegments($user->client, $customersListId);
-
-        $this->seedClient('Acme Co', 'owner@acme.test', subscribed: true);
-        $this->seedClient('Northwind', 'owner@northwind.test', subscribed: true);
-        $this->seedClient('Free Tier Co', 'owner@freetier.test', subscribed: false);
-        $this->seedClient('Trial Labs', 'owner@triallabs.test', subscribed: false);
     }
 
     /**
      * Seed a self-contained client with a verified identity, lists, contacts,
-     * a draft newsletter, and a live sequence. Some clients get an active
-     * subscription; the rest stay on the free tier so the subscription gate
-     * can be exercised end to end.
+     * a draft newsletter, and a live sequence.
      */
-    private function seedClient(string $clientName, string $ownerEmail, bool $subscribed): void
+    private function seedClient(string $clientName, string $ownerEmail): void
     {
-        $clientFactory = Client::factory()->state([
+        $client = Client::factory()->create([
             'name' => $clientName,
             'timezone' => 'America/New_York',
         ]);
-
-        if ($subscribed) {
-            $clientFactory = $clientFactory->subscribed();
-        }
-
-        $client = $clientFactory->create();
 
         $user = User::factory()->for($client)->create([
             'name' => $clientName.' Owner',
             'email' => $ownerEmail,
         ]);
+
+        Tenant::run($client->id, fn () => $this->seedClientData($client, $user));
+    }
+
+    private function seedClientData(Client $client, User $user): void
+    {
+        $clientName = $client->name;
 
         EmailCredential::factory()->for($user)->create([
             'access_key' => 'AKIA'.Str::upper(Str::random(16)),
