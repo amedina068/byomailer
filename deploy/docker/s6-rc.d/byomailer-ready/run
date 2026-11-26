@@ -1,0 +1,47 @@
+#!/command/with-contenv sh
+# Prints the ready line and the URL to open when the app answers. These two
+# lines are the last lines of the boot log:
+#
+#   ✓ BYOMailer is ready (5s)
+#   → Open http://localhost:8080/setup?token=...
+#
+# While the instance has no account, the URL is the setup page. After that,
+# it is the app URL.
+cd /var/www/html || exit 1
+
+port="${NGINX_HTTP_PORT:-8080}"
+
+tries=0
+until curl -fsS -o /dev/null --max-time 2 "http://127.0.0.1:${port}/up" 2>/dev/null; do
+    tries=$((tries + 1))
+    if [ "$tries" -ge 600 ]; then
+        echo "❌ BYOMailer did not answer on http://127.0.0.1:${port}/up after 5 minutes. Read the log above."
+        exec /command/s6-pause
+    fi
+    sleep 0.5
+done
+
+# The age of process 1 is the time since the container started. The start
+# time that 05-byomailer-data.sh wrote is the second choice.
+seconds="$(ps -o etimes= -p 1 2>/dev/null | tr -d ' ')"
+if [ -z "$seconds" ]; then
+    started="$(cat /tmp/byomailer-started-at 2>/dev/null || date +%s)"
+    seconds=$(( $(date +%s) - started ))
+fi
+
+setup_url="$(php artisan byomailer:setup-url --no-ansi 2>/dev/null)" || setup_url=""
+case "$setup_url" in
+    http://* | https://*)
+        open_url="$setup_url"
+        ;;
+    *)
+        # shellcheck disable=SC2016
+        open_url="$(php -r 'require "vendor/autoload.php"; $app = require "bootstrap/app.php"; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap(); echo config("app.url");' 2>/dev/null)"
+        ;;
+esac
+
+echo ""
+echo "✓ BYOMailer is ready (${seconds}s)"
+echo "→ Open ${open_url}"
+
+exec /command/s6-pause
