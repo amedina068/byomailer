@@ -3,8 +3,10 @@
 namespace Tests\Feature;
 
 use App\Models\Client;
+use App\Models\Contact;
 use App\Models\MailList;
 use App\Models\Segment;
+use App\Models\Sequence;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Database\Seeders\SegmentSeeder;
@@ -66,5 +68,26 @@ class DatabaseSeederTest extends TestCase
                 'values' => [$customers->id],
             ],
         ], $segment->filters);
+    }
+
+    /**
+     * `php artisan db:seed` runs the demo seeder on a new database. Each
+     * client-scoped query must run inside a tenant, as in the app.
+     */
+    public function test_the_demo_seeder_fills_a_new_database(): void
+    {
+        $this->seed(DatabaseSeeder::class);
+
+        $demo = User::query()->where('email', 'demo@example.com')->sole();
+
+        $this->assertSame(5, Client::query()->count());
+        $this->assertGreaterThanOrEqual(500, Contact::withoutGlobalScopes()->where('client_id', $demo->client_id)->count());
+
+        foreach (['owner@acme.test', 'owner@northwind.test', 'owner@freetier.test', 'owner@triallabs.test'] as $email) {
+            $owner = User::query()->where('email', $email)->sole();
+
+            $this->assertSame(30, Contact::withoutGlobalScopes()->where('client_id', $owner->client_id)->count());
+            $this->assertSame(1, Sequence::withoutGlobalScopes()->where('client_id', $owner->client_id)->count());
+        }
     }
 }
