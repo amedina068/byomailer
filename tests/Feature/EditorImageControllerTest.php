@@ -195,7 +195,7 @@ class EditorImageControllerTest extends TestCase
 
     private function gifPolyglotNamedHtml(): UploadedFile
     {
-        $path = tempnam(sys_get_temp_dir(), 'polyglot');
+        $path = $this->temporaryFile('polyglot');
         file_put_contents($path, base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7').'<html><script>alert(1)</script></html>');
 
         return new UploadedFile($path, 'evil.html', null, null, true);

@@ -86,4 +86,23 @@ abstract class TestCase extends BaseTestCase
 
         return $value;
     }
+
+    /**
+     * Create an empty temporary file and delete it after the test.
+     *
+     * The upload tests wrote files to the system temp folder and did not
+     * delete them. After many runs, those files filled the folder.
+     */
+    protected function temporaryFile(string $prefix, string $extension = ''): string
+    {
+        $base = (string) tempnam(sys_get_temp_dir(), $prefix);
+        $path = $base.$extension;
+
+        $this->beforeApplicationDestroyed(function () use ($base, $path): void {
+            @unlink($base);
+            @unlink($path);
+        });
+
+        return $path;
+    }
 }
