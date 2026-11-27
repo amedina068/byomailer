@@ -205,7 +205,7 @@ class GalleryImageControllerTest extends TestCase
     {
         Storage::fake('public');
         $user = User::factory()->create();
-        $path = tempnam(sys_get_temp_dir(), 'polyglot');
+        $path = $this->temporaryFile('polyglot');
         file_put_contents($path, base64_decode('R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7').'<html><script>alert(1)</script></html>');
         $file = new UploadedFile($path, 'evil.html', null, null, true);
 
